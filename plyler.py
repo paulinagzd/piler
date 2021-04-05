@@ -24,11 +24,9 @@ reserved = {
   'strs': 'STRINGS',
   'boos' : 'BOOLS',
   'if' : 'IF',
-  'then': 'THEN',
+  'then' : 'THEN',
   'else' : 'ELSE',
-  'do' : 'DO',
-  'while' : 'WHILE',
-  'for' : 'FOR',
+  'while' : 'WHILE'
 }
 
 # terminals and regEx
@@ -36,10 +34,7 @@ tokens = [
   'CSTINT',
   'CSTFLT',
   'CSTSTRING',
-  'CSTBOOL',
-  'CSTINTS',
-  'CSTFLTS',
-  'CSTSTRS',
+  'CSTBOOL', #####################
   'ID',
   'PLUS',
   'MINUS',
@@ -54,11 +49,11 @@ tokens = [
   'COMMA',
   'COLON',
   'SEMICOLON',
-  'EQUAL',
   'AS',
   'GT',
   'LT',
   'NE',
+  'EQ'
 ] + list(reserved.values())
 
 t_PLUS = r'\+'
@@ -77,20 +72,15 @@ t_SEMICOLON = r'\;'
 t_AS = r'\='
 t_GT = r'\>'
 t_LT = r'\<'
-t_NE = r'\>\<'
-t_EQ = r'\<\>'
+t_NE = r'\!\='
+t_EQ = r'\=\='
 
-t_ignore = r' \t'
+t_ignore = r' '
 
 def t_CSTINT(t):
   r'\d+'
   t.value = int(t.value)
   return t
-
-# def t_CSTINTS(t):
-#   r'\d+'
-#   t.value = int(t.value)
-#   return t
 
 def t_CSTFLT(t):
   r'\d+\.\d+'
@@ -120,9 +110,6 @@ def t_error(t):
 lexer = lex.lex()
 
 # grammar
-
-# ciclos
-# 
 ################################################
 # PROGRAMA
 def p_programa(p):
@@ -135,7 +122,7 @@ def p_programa(p):
 ################################################
 def p_loop(p):
   '''
-  loop: WHILE condition_body THEN bloque SEMICOLON
+  loop : WHILE cond2 THEN bloque SEMICOLON
   '''
 
 ################################################
@@ -148,86 +135,82 @@ def p_vars(p):
 def p_v1(p):
   '''
   v1 : ID v2 COLON tipo SEMICOLON v3 
-    |  ID v2 COLON arr SEMICOLON v3
-
   '''
 
 def p_v2(p):
   '''
   v2 : COMMA ID v2
-    | empty 
+     | empty 
   '''
 
 def p_v3(p):
   '''
   v3 : v1
-    | empty
+     | empty
   '''
 
 ################################################
 # TIPO
 def p_tipo(p):
   '''
-  tipo : INT
-       | FLOAT
-       | BOOL
-       | STRING
-       | arr
+  tipo : unitario
+       |  multiple
+  '''
+
+def p_unitario(p):
+  '''
+  unitario : INT
+           | FLOAT
+           | BOOL
+           | STRING
   '''
   p[0] = p[1]
 
-  def p_arr(p):
-    '''
-    arr: arr1 ID arr2 SEMICOLON
-    '''
-
-  
-  def p_arr1(p):
-    '''
-    arr1: INTS
-        | FLOATS
-        | STRINGS
-        | BOOLS
-    '''
-
-  def p_arr2(p):
-    '''
-    arr2: AS OBRACKET cadena CBRACKET
-        | empty
-    '''
-
-  def p_cadena(p):
-    '''
-    cadena: CSTINT cadena_int
-          | CSTFLT cadena_flt
-          | CSTSTRING cadena_str
-          | CSTBOOL cadena_boo
-    '''
-  
-def p_cadena_str(p):
+def p_multiple(p):
   '''
-  cadena_str: COMMA CSTSTRING cadena_str
-            | empty
+  multiple : INTS
+           | FLOATS
+           | BOOLS
+           | STRINGS
+  '''
+  p[0] = p[1]
+
+def p_arr(p):
+  '''
+  arr : OBRACKET cadena CBRACKET
+      | empty
   '''
 
-  
-def p_cadena_boo(p):
+def p_cadena(p):
   '''
-  cadena_boo: COMMA CSTBOOL cadena_boo
-            | empty
+  cadena : CSTINT cadena_int
+         | CSTFLT cadena_flt
+         | CSTSTRING cadena_str
+         | CSTBOOL cadena_boo
   '''
-
 
 def p_cadena_int(p):
   '''
-  cadena_int: COMMA CSTINT cadena_int
-            | empty
+  cadena_int : COMMA CSTINT cadena_int
+             | empty
   '''
 
 def p_cadena_flt(p):
   '''
-  cadena_flt: COMMA CSTFLT cadena_flt
-            | empty
+  cadena_flt : COMMA CSTFLT cadena_flt
+             | empty
+  '''
+
+def p_cadena_str(p):
+  '''
+  cadena_str : COMMA CSTSTRING cadena_str
+             | empty
+  '''
+  
+def p_cadena_boo(p):
+  '''
+  cadena_boo : COMMA CSTBOOL cadena_boo
+             | empty
   '''
   
 # ints jaja = [1, 2, 3, ]
@@ -237,7 +220,7 @@ def p_cadena_flt(p):
 # BLOQUE
 def p_bloque(p):
   '''
-  bloque : OBRACE b1 CBRACE
+  bloque : OCURLY b1 CCURLY
   '''
 
 def p_b1(p):
@@ -253,32 +236,41 @@ def p_estatuto(p):
   estatuto : asignacion
            | condition
            | escritura
+           | loop
   '''
 
 ################################################
 # ASIGNACION
 def p_asignacion(p):
   '''
-  asignacion : ID AS expresion SEMICOLON
+  asignacion : ID AS asi1 SEMICOLON
+  '''
+
+def p_asi1(p):
+  '''
+  asi1 : expresion
+       | CSTSTRING
+       | boolean
+       | arr
   '''
 
 ################################################
 # condition
 def p_condition(p):
   '''
-  condition : IF condition_body THEN bloque cond1 SEMICOLON
+  condition : IF cond2 THEN bloque cond1 SEMICOLON
   '''
 
 def p_cond1(p):
   '''
   cond1 : ELSE bloque
-        | ELSE IF condition_body THEN bloque
+        | ELSE IF cond2 THEN bloque
         | empty
   '''
 
-def p_condition_body(p):
+def p_cond2(p):
   '''
-    condition_body : OPAREN expresion CPAREN
+    cond2 : OPAREN expresion CPAREN
   '''
 
 ################################################
@@ -297,6 +289,14 @@ def p_e1(p):
   '''
 
 ################################################
+# BOOLEAN
+def p_boolean(p):
+  '''
+  boolean : TRUE
+          | FALSE
+  '''
+
+################################################
 # EXPRESION
 def p_expresion(p):
   '''
@@ -312,7 +312,6 @@ def p_expresion(p):
 def p_exp(p):
   '''
   exp : termino exp1
-      | O
   '''
 
 def p_exp1(p):
@@ -341,9 +340,9 @@ def p_term1(p):
 def p_factor(p):
   '''
   factor : OPAREN expresion CPAREN
-         | PLUS varCST
-         | MINUS varCST
-         | varCST
+         | PLUS varcst
+         | MINUS varcst
+         | varcst
   '''
 
 ################################################
@@ -353,17 +352,15 @@ def p_varcst(p):
   varcst : ID
          | CSTINT
          | CSTFLT
-         | CSTSTRING
-         | CSTBOOL
   '''
 
 ################################################
 # EMPTY
 def p_empty(p):
-    '''
-    empty :
-    '''
-    p[0] = None
+  '''
+  empty : 
+  '''
+  p[0] = None
 
 ################################################
 # ERROR
@@ -375,21 +372,26 @@ def p_error(p):
 
 parser = yacc.yacc()
 
-# lexer.input(
-#     '''
-#     program p2021;
-#     var even, odd: int; 
-#     {
-#       if(even > odd) {
-#         print("Hello world!");
-#       } else {
-#         print('Goodbye world.');
-#       };
-#     }
-#     '''
-# )
+lexer.input(
+  '''
+  program multi;
+  var a, b, c : ints;
+  d, e, f : flt;
+  {
+      a = 4;
+      b = 5;
+      while ( a < b ) then {
+          print('Yay, "ello" kasjkasj');
+      };
+  }
+  '''
+)
 
 while True:
+  # tok = lexer.token()
+  # if not tok:
+  #   break
+  # print(tok)
     try:
       reading = input('Name of file > ')
       correct = reading
