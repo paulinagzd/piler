@@ -1,0 +1,13 @@
+program multi;
+var a, b, c: int;
+d, e, f : float;
+{
+    a = 4;
+    b = 5;
+    if ( a < b ) {
+        print("Yay");
+    }
+    else {
+        print("Nay");
+    };
+}
