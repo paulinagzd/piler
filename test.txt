@@ -1,0 +1,22 @@
+program viendo;
+var ints globales[1], globs[12][12];
+var boos matriz[12][12];
+var str strinn, stru;
+{
+  class Animal: {
+    att: 
+      var int estatura;
+      var flts horario[1], comidas[2][2];
+
+    met:
+      func void cambiarEstatura() {
+        print(2*2);
+      }
+  };
+
+  func int hola(ints globales[20].Animal, boo you) {
+    for ( Animal[8].obj[stru][20] from 0 to 10 by 1) {
+      read(stru);
+    };
+  }
+}
