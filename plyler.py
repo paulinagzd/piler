@@ -2,7 +2,7 @@
 # Luis Felipe Miranda Icazbalceta
 # A01194111
 # A00820799
-# Tarea 3.2 con PLY
+# Lexer y Parser de Piler en PLY
 
 import ply.lex as lex
 import ply.yacc as yacc
@@ -18,6 +18,7 @@ reserved = {
   'var' : 'VAR',
   'int' : 'INT',
   'flt' : 'FLOAT',
+  'cha' : 'CHAR', 
   'str' : 'STRING',
   'boo' : 'BOOL',
   'True' : 'TRUE',
@@ -25,6 +26,7 @@ reserved = {
   'ints': 'INTS',
   'flts': 'FLOATS',
   'strs': 'STRINGS',
+  'chas' : 'CHARS',
   'boos' : 'BOOLS',
   'if' : 'IF',
   'then' : 'THEN',
@@ -46,8 +48,9 @@ tokens = [
   'CSTINT',
   'CSTFLT',
   'CSTSTRING',
-  # 'CSTBOOL', #####################
+  'CSTCHAR',
   'ID',
+  'COMMENT',
   'PLUS',
   'MINUS',
   'MULT',
@@ -69,7 +72,7 @@ tokens = [
   'GT',
   'LT',
   'NE',
-  'EQ'
+  'EQ',
 ] + list(reserved.values())
 
 t_PLUS = r'\+'
@@ -110,6 +113,16 @@ def t_CSTFLT(t):
 def t_ID(t):
   r'[A-Za-z]([A-Za-z]|[0-9])*'
   t.type = reserved.get(t.value, 'ID')
+  return t
+
+def t_COMMENT(t):
+  r'(?s)/\*.*?\*/'
+  # r'/\*(.|\n)*?\*/'
+  t.lineno += t.value.count('\n')
+
+def t_CSTCHAR(t):
+  r'\'[\w]\''
+  t.value = str(t.value)
   return t
 
 def t_CSTSTRING(t):
@@ -255,6 +268,7 @@ def p_tipo_simple(p):
          | FLOAT
          | BOOL
          | STRING
+         | CHAR
   '''
   p[0] = p[1]
 
@@ -264,6 +278,7 @@ def p_tipo_multiple(p):
            | FLOATS
            | BOOLS
            | STRINGS
+           | CHARS
   '''
   p[0] = p[1]
 
@@ -305,11 +320,20 @@ def p_estatuto(p):
            | dec
   '''
 
+def p_estatuto_redux(p):
+  '''
+  estatuto_redux : asignacion
+                 | llamada
+                 | escritura
+                 | leer
+                 | ternaria
+
+  '''
 ################################################
 # ASIGNACION
 def p_asignacion(p):
   '''
-  asignacion : variable AS exp SEMICOLON
+  asignacion : variable AS exp
   '''
 
 ################################################
@@ -335,14 +359,14 @@ def p_cond2(p):
 # condicion ternaria
 def p_ternaria(p):
   '''
-  ternaria : exp QUESTION estatuto COLON estatuto SEMICOLON
+  ternaria : exp QUESTION estatuto_redux COLON estatuto_redux SEMICOLON
   '''
 
 ################################################
 # ESCRITURA
 def p_escritura(p):
   '''
-  escritura : PRINT OPAREN exp e1 CPAREN SEMICOLON
+  escritura : PRINT OPAREN exp e1 CPAREN
   '''
 
 def p_e1(p):
@@ -355,7 +379,7 @@ def p_e1(p):
 # LEER
 def p_leer(p):
   '''
-  leer  : READ OPAREN exp e1 CPAREN SEMICOLON
+  leer  : READ OPAREN exp e1 CPAREN
   '''
 
 ################################################
@@ -389,8 +413,8 @@ def p_variable2(p):
 # LLAMADA FUNCION
 def p_llamada_funcion(p):
   '''
-  llamada : ID OPAREN exp llamada1 CPAREN SEMICOLON
-          | ID OPAREN CPAREN SEMICOLON
+  llamada : ID OPAREN exp llamada1 CPAREN
+          | ID OPAREN CPAREN
   '''
 
 def p_llamada_funcion1(p):
@@ -479,6 +503,7 @@ def p_varcst(p):
   '''
   varcst : CSTINT
          | CSTFLT
+         | CSTCHAR
          | CSTSTRING
          | boolean
   '''
@@ -494,26 +519,16 @@ def p_empty(p):
 ################################################
 # ERROR
 def p_error(p):
-    print("SYNTAX ERROR! AT")
-    print(p)   
+    print("SYNTAX ERROR! BEFORE THE", p.value , "ON LINE", p.lineno)
 
 ################################################
 
 parser = yacc.yacc()
 
-lexer.input(
-  '''
-  program multi;
-  var ints a[12][12];
-  {
-      a = 4;
-      b = 5;
-      while ( a < b ) then {
-          print('Yay, "ello" kasjkasj');
-      };
-  }
-  '''
-)
+# lexer.input(
+#   '''
+#   '''
+# )
 
 while True:
   # tok = lexer.token()
