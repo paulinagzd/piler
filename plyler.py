@@ -2,7 +2,7 @@
 # Luis Felipe Miranda Icazbalceta
 # A01194111
 # A00820799
-# Tarea 3.2 con PLY
+# Lexer y Parser de Piler en PLY
 
 import ply.lex as lex
 import ply.yacc as yacc
@@ -11,10 +11,14 @@ import sys
 # reserved words
 reserved = {
   'program' : 'PROGRAM',
+  'func' : 'FUNCTION',
+  'void' : 'VOID',
   'print' : 'PRINT',
+  'read' : 'READ',
   'var' : 'VAR',
   'int' : 'INT',
   'flt' : 'FLOAT',
+  'cha' : 'CHAR', 
   'str' : 'STRING',
   'boo' : 'BOOL',
   'True' : 'TRUE',
@@ -22,11 +26,21 @@ reserved = {
   'ints': 'INTS',
   'flts': 'FLOATS',
   'strs': 'STRINGS',
+  'chas' : 'CHARS',
   'boos' : 'BOOLS',
   'if' : 'IF',
   'then' : 'THEN',
   'else' : 'ELSE',
-  'while' : 'WHILE'
+  'while' : 'WHILE',
+  'for' : 'FOR',
+  'from' : 'FROM',
+  'to' : 'TO',
+  'by' : 'BY',
+  'class' : 'CLASS',
+  'att' : 'ATTRIBUTES',
+  'met' : 'METHODS',
+  'file' : 'FILE',
+  'dataframe' : 'DATAFRAME'
 }
 
 # terminals and regEx
@@ -34,8 +48,9 @@ tokens = [
   'CSTINT',
   'CSTFLT',
   'CSTSTRING',
-  'CSTBOOL', #####################
+  'CSTCHAR',
   'ID',
+  'COMMENT',
   'PLUS',
   'MINUS',
   'MULT',
@@ -46,14 +61,18 @@ tokens = [
   'CCURLY',
   'OBRACKET',
   'CBRACKET',
+  'PERIOD',
   'COMMA',
   'COLON',
   'SEMICOLON',
+  'QUESTION',
+  'AND',
+  'OR',
   'AS',
   'GT',
   'LT',
   'NE',
-  'EQ'
+  'EQ',
 ] + list(reserved.values())
 
 t_PLUS = r'\+'
@@ -66,9 +85,13 @@ t_OCURLY = r'\{'
 t_CCURLY = r'\}'
 t_OBRACKET = r'\['
 t_CBRACKET = r'\]'
+t_PERIOD = r'\.'
 t_COMMA = r'\,'
 t_COLON = r'\:'
 t_SEMICOLON = r'\;'
+t_QUESTION = r'\?'
+t_AND = r'\&\&'
+t_OR = r'\|\|'
 t_AS = r'\='
 t_GT = r'\>'
 t_LT = r'\<'
@@ -90,6 +113,16 @@ def t_CSTFLT(t):
 def t_ID(t):
   r'[A-Za-z]([A-Za-z]|[0-9])*'
   t.type = reserved.get(t.value, 'ID')
+  return t
+
+def t_COMMENT(t):
+  r'(?s)/\*.*?\*/'
+  # r'/\*(.|\n)*?\*/'
+  t.lineno += t.value.count('\n')
+
+def t_CSTCHAR(t):
+  r'\'[\w]\''
+  t.value = str(t.value)
   return t
 
 def t_CSTSTRING(t):
@@ -115,107 +148,147 @@ lexer = lex.lex()
 def p_programa(p):
   '''
   programa : PROGRAM ID SEMICOLON bloque
-           | PROGRAM ID SEMICOLON vars bloque
+           | PROGRAM ID SEMICOLON dec bloque
   '''
   p[0] = 'SUCCESS'
 
 ################################################
-def p_loop(p):
+# FUNCION
+def p_funcion(p):
   '''
-  loop : WHILE cond2 THEN bloque SEMICOLON
+  funcion : FUNCTION func1 ID OPAREN param CPAREN bloque
+  '''
+
+def p_funcion1(p):
+  '''
+  func1 : simple
+        | VOID
+  '''
+
+def p_param(p):
+  '''
+  param : simple ID variable2 param1
+        | multiple ID variable1 variable1 variable2 param1
+        | empty
+  '''
+
+def p_param1(p): ####### OJO
+  '''
+  param1 : COMMA param
+         | empty
   '''
 
 ################################################
-# VARS
-def p_vars(p):
+# CLASE
+def p_clase(p):
   '''
-  vars : VAR v1
-  '''
-
-def p_v1(p):
-  '''
-  v1 : ID v2 COLON tipo SEMICOLON v3 
+    clase : CLASS ID COLON clase_bloque SEMICOLON
   '''
 
-def p_v2(p):
-  '''
-  v2 : COMMA ID v2
-     | empty 
+def p_clase_bloque(p):
+  ''' 
+  clase_bloque :  OCURLY ATTRIBUTES COLON clase_bloque1 METHODS COLON clase_metodos_bloque CCURLY
   '''
 
-def p_v3(p):
+def p_clase_bloque1(p):
+  ''' 
+  clase_bloque1 : dec
+                | empty
+  '''   
+
+def p_clase_metodos_bloque(p):
+  ''' 
+  clase_metodos_bloque : funcion clase_metodos_bloque
+                       | empty
   '''
-  v3 : v1
-     | empty
+
+################################################
+# CICLO WHILE
+def p_ciclo_while(p):
+  '''
+  ciclo_while : WHILE cond2 THEN bloque SEMICOLON
+  '''
+
+################################################
+# CICLO FOR
+def p_ciclo_for(p):
+  '''
+  ciclo_for : FOR OPAREN variable FROM ciclo_for1 TO ciclo_for1 BY ciclo_for1 CPAREN THEN bloque SEMICOLON
+  '''
+
+def p_ciclo_for1(p):
+  '''
+  ciclo_for1 : CSTINT
+             | variable
+  '''
+
+ ################################################
+# DECLARACION VARS
+def p_dec_var(p):
+  '''
+  dec : VAR tipo SEMICOLON dec1
+  '''
+
+def p_dec_var1(p):
+  '''
+  dec1 : dec
+       | empty
   '''
 
 ################################################
 # TIPO
 def p_tipo(p):
   '''
-  tipo : unitario
-       |  multiple
+  tipo : compuesto ID tipo1
+       | simple ID tipo1
+       | multiple ID tipo3 tipo3 tipo2
   '''
 
-def p_unitario(p):
+def p_tipo1(p):
   '''
-  unitario : INT
-           | FLOAT
-           | BOOL
-           | STRING
+  tipo1 : COMMA ID tipo1
+        | empty
+  '''
+
+def p_tipo2(p):
+  '''
+  tipo2 : COMMA ID tipo3 tipo3
+        | empty
+  '''
+
+def p_tipo3(p):
+  '''
+  tipo3 : OBRACKET CSTINT CBRACKET
+        | empty
+  '''
+
+def p_tipo_simple(p):
+  '''
+  simple : INT
+         | FLOAT
+         | BOOL
+         | STRING
+         | CHAR
   '''
   p[0] = p[1]
 
-def p_multiple(p):
+def p_tipo_multiple(p):
   '''
   multiple : INTS
            | FLOATS
            | BOOLS
            | STRINGS
+           | CHARS
   '''
   p[0] = p[1]
 
-def p_arr(p):
+def p_tipo_compuesto(p):
   '''
-  arr : OBRACKET cadena CBRACKET
-      | empty
-  '''
-
-def p_cadena(p):
-  '''
-  cadena : CSTINT cadena_int
-         | CSTFLT cadena_flt
-         | CSTSTRING cadena_str
-         | CSTBOOL cadena_boo
-  '''
-
-def p_cadena_int(p):
-  '''
-  cadena_int : COMMA CSTINT cadena_int
-             | empty
-  '''
-
-def p_cadena_flt(p):
-  '''
-  cadena_flt : COMMA CSTFLT cadena_flt
-             | empty
-  '''
-
-def p_cadena_str(p):
-  '''
-  cadena_str : COMMA CSTSTRING cadena_str
-             | empty
+  compuesto : ID
+            | DATAFRAME
+            | FILE
   '''
   
-def p_cadena_boo(p):
-  '''
-  cadena_boo : COMMA CSTBOOL cadena_boo
-             | empty
-  '''
-  
-# ints jaja = [1, 2, 3, ]
-# var tal, tal, tal : int,
-# 
 ################################################
 # BLOQUE
 def p_bloque(p):
@@ -234,31 +307,40 @@ def p_b1(p):
 def p_estatuto(p):
   '''
   estatuto : asignacion
-           | condition
+           | llamada
+           | condicion
            | escritura
-           | loop
+           | leer
+           | ciclo_while
+           | ciclo_for
+           | ternaria
+           | bloque
+           | funcion
+           | clase
+           | dec
   '''
 
+def p_estatuto_redux(p):
+  '''
+  estatuto_redux : asignacion
+                 | llamada
+                 | escritura
+                 | leer
+                 | ternaria
+
+  '''
 ################################################
 # ASIGNACION
 def p_asignacion(p):
   '''
-  asignacion : ID AS asi1 SEMICOLON
-  '''
-
-def p_asi1(p):
-  '''
-  asi1 : expresion
-       | CSTSTRING
-       | boolean
-       | arr
+  asignacion : variable AS exp
   '''
 
 ################################################
-# condition
-def p_condition(p):
+# CONDICIONAL
+def p_condicion(p):
   '''
-  condition : IF cond2 THEN bloque cond1 SEMICOLON
+  condicion : IF cond2 THEN bloque cond1 SEMICOLON
   '''
 
 def p_cond1(p):
@@ -270,22 +352,34 @@ def p_cond1(p):
 
 def p_cond2(p):
   '''
-    cond2 : OPAREN expresion CPAREN
+    cond2 : OPAREN exp CPAREN
+  '''
+
+################################################
+# condicion ternaria
+def p_ternaria(p):
+  '''
+  ternaria : exp QUESTION estatuto_redux COLON estatuto_redux SEMICOLON
   '''
 
 ################################################
 # ESCRITURA
 def p_escritura(p):
   '''
-  escritura : PRINT OPAREN expresion e1 CPAREN SEMICOLON
-            | PRINT OPAREN CSTSTRING e1 CPAREN SEMICOLON
+  escritura : PRINT OPAREN exp e1 CPAREN
   '''
 
 def p_e1(p):
   '''
-  e1 : COMMA expresion e1
-     | COMMA CSTSTRING e1
+  e1 : COMMA exp e1
      | empty
+  '''
+
+################################################
+# LEER
+def p_leer(p):
+  '''
+  leer  : READ OPAREN exp e1 CPAREN
   '''
 
 ################################################
@@ -297,28 +391,86 @@ def p_boolean(p):
   '''
 
 ################################################
-# EXPRESION
-def p_expresion(p):
+# VARIABLE (llamada)
+def p_variable(p):
   '''
-  expresion : exp
-            | exp LT exp
-            | exp GT exp
-            | exp NE exp
-            | exp EQ exp
+  variable : ID variable1 variable1 variable2
+  '''
+
+def p_variable1(p):
+  '''
+  variable1 : OBRACKET exp CBRACKET
+            | empty
+  '''
+
+def p_variable2(p):
+  '''
+  variable2 : PERIOD ID variable1 variable1 variable2
+            | empty 
+  '''
+
+################################################
+# LLAMADA FUNCION
+def p_llamada_funcion(p):
+  '''
+  llamada : ID OPAREN exp llamada1 CPAREN
+          | ID OPAREN CPAREN
+  '''
+
+def p_llamada_funcion1(p):
+  '''
+  llamada1 : COMMA exp llamada1
+           | empty
   '''
 
 ################################################
 # EXP
 def p_exp(p):
   '''
-  exp : termino exp1
+  exp : texp exp1
   '''
 
 def p_exp1(p):
   '''
-  exp1 : PLUS exp
-       | MINUS exp
+  exp1 : OR texp exp1
        | empty
+  '''
+
+def p_texp(p):
+  '''
+  texp : gexp texp1
+  '''
+
+def p_texp1(p):
+  '''
+  texp1 : AND gexp texp1
+        | empty
+  '''
+
+def p_gexp(p):
+  '''
+  gexp : mexp gexp1
+  '''
+
+def p_gexp1(p):
+  '''
+  gexp1 : LT mexp
+        | GT mexp
+        | EQ mexp
+        | NE mexp
+        | empty
+  '''
+
+def p_mexp(p):
+  '''
+  mexp : termino mexp1
+  '''
+
+def p_mexp1(p):
+  '''
+  mexp1 : PLUS termino mexp1
+        | MINUS termino mexp1
+        | empty
   '''
 
 ################################################
@@ -330,8 +482,8 @@ def p_termino(p):
 
 def p_term1(p):
   '''
-  term1 : MULT termino
-        | DIV termino
+  term1 : MULT factor term1
+        | DIV factor term1
         | empty
   '''
 
@@ -339,19 +491,21 @@ def p_term1(p):
 # FACTOR
 def p_factor(p):
   '''
-  factor : OPAREN expresion CPAREN
-         | PLUS varcst
-         | MINUS varcst
+  factor : OPAREN exp CPAREN
          | varcst
+         | variable
+         | llamada
   '''
 
 ################################################
 #VARCST
 def p_varcst(p):
   '''
-  varcst : ID
-         | CSTINT
+  varcst : CSTINT
          | CSTFLT
+         | CSTCHAR
+         | CSTSTRING
+         | boolean
   '''
 
 ################################################
@@ -365,27 +519,16 @@ def p_empty(p):
 ################################################
 # ERROR
 def p_error(p):
-    print("SYNTAX ERROR! AT")
-    print(p)   
+    print("SYNTAX ERROR! BEFORE THE", p.value , "ON LINE", p.lineno)
 
 ################################################
 
 parser = yacc.yacc()
 
-lexer.input(
-  '''
-  program multi;
-  var a, b, c : ints;
-  d, e, f : flt;
-  {
-      a = 4;
-      b = 5;
-      while ( a < b ) then {
-          print('Yay, "ello" kasjkasj');
-      };
-  }
-  '''
-)
+# lexer.input(
+#   '''
+#   '''
+# )
 
 while True:
   # tok = lexer.token()
