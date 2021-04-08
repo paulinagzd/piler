@@ -309,7 +309,7 @@ def p_estatuto(p):
 # ASIGNACION
 def p_asignacion(p):
   '''
-  asignacion : ID AS exp SEMICOLON
+  asignacion : variable AS exp SEMICOLON
   '''
 
 ################################################
