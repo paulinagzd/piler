@@ -165,12 +165,6 @@ def p_param1(p): ####### OJO
          | empty
   '''
 
-def p_param2(p):
-  '''
-  param2 : simple
-         | multiple
-  '''
-
 ################################################
 # CLASE
 def p_clase(p):
@@ -206,7 +200,7 @@ def p_ciclo_while(p):
 # CICLO FOR
 def p_ciclo_for(p):
   '''
-  ciclo_for : FOR OPAREN variable FROM ciclo_for1 TO ciclo_for1 BY ciclo_for1 CPAREN bloque SEMICOLON
+  ciclo_for : FOR OPAREN variable FROM ciclo_for1 TO ciclo_for1 BY ciclo_for1 CPAREN THEN bloque SEMICOLON
   '''
 
 def p_ciclo_for1(p):
@@ -281,48 +275,6 @@ def p_tipo_compuesto(p):
   '''
   
 ################################################
-# def p_arr(p):
-#   '''
-#   arr : OBRACKET cadena CBRACKET
-#       | empty
-#   '''
-
-# def p_cadena(p):
-#   '''
-#   cadena : CSTINT cadena_int
-#          | CSTFLT cadena_flt
-#          | CSTSTRING cadena_str
-#          | CSTBOOL cadena_boo
-#   '''
-
-# def p_cadena_int(p):
-#   '''
-#   cadena_int : COMMA CSTINT cadena_int
-#              | empty
-#   '''
-
-# def p_cadena_flt(p):
-#   '''
-#   cadena_flt : COMMA CSTFLT cadena_flt
-#              | empty
-#   '''
-
-# def p_cadena_str(p):
-#   '''
-#   cadena_str : COMMA CSTSTRING cadena_str
-#              | empty
-#   '''
-  
-# def p_cadena_boo(p):
-#   '''
-#   cadena_boo : COMMA CSTBOOL cadena_boo
-#              | empty
-#   '''
-  
-# ints jaja = [1, 2, 3, ]
-# var tal, tal, tal : int,
-# 
-################################################
 # BLOQUE
 def p_bloque(p):
   '''
@@ -359,13 +311,6 @@ def p_asignacion(p):
   '''
   asignacion : ID AS exp SEMICOLON
   '''
-# def p_asi1(p):
-#   '''
-#   asi1 : exp
-#        | CSTSTRING
-#        | boolean
-#        | arr
-#   '''
 
 ################################################
 # CONDICIONAL
@@ -405,12 +350,6 @@ def p_e1(p):
   e1 : COMMA exp e1
      | empty
   '''
-
-# def p_e2(p):
-#   '''
-#   e2 : exp
-#      | factor
-#   '''
 
 ################################################
 # LEER
@@ -461,17 +400,6 @@ def p_llamada_funcion1(p):
   '''
 
 ################################################
-# # exp
-# def p_exp(p):
-#   '''
-#   exp : exp
-#             | exp LT exp
-#             | exp GT exp
-#             | exp NE exp
-#             | exp EQ exp
-#   '''
-
-################################################
 # EXP
 def p_exp(p):
   '''
@@ -520,19 +448,6 @@ def p_mexp1(p):
         | MINUS termino mexp1
         | empty
   '''
-
-
-# def p_exp(p):
-#   '''
-#   exp : termino exp1
-#   '''
-
-# def p_exp1(p):
-#   '''
-#   exp1 : PLUS exp
-#        | MINUS exp
-#        | empty
-#   '''
 
 ################################################
 # TERMINO
