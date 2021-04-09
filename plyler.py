@@ -224,12 +224,12 @@ def p_ciclo_for1(p):
 
  ################################################
 # DECLARACION VARS
-def p_dec_var(p):
+def p_dec(p):
   '''
   dec : VAR tipo SEMICOLON dec1
   '''
 
-def p_dec_var1(p):
+def p_dec1(p):
   '''
   dec1 : dec
        | empty
@@ -346,7 +346,7 @@ def p_condicion(p):
 def p_cond1(p):
   '''
   cond1 : ELSE bloque
-        | ELSE IF cond2 THEN bloque
+        | ELSE IF cond2 THEN bloque cond1
         | empty
   '''
 
