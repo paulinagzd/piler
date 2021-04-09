@@ -171,15 +171,20 @@ def p_funcion1(p):
 
 def p_param(p):
   '''
-  param : simple ID param1
-        | multiple ID variable1 variable1 param1
+  param : param2 param1
         | empty
   '''
 
-def p_param1(p): ####### OJO
+def p_param1(p):
   '''
-  param1 : COMMA param
+  param1 : COMMA param2 param1
          | empty
+  '''
+
+def p_param2(p): ####### OJO
+  '''
+  param2 : simple ID
+         | multiple ID variable1 variable1
   '''
 
 ################################################
