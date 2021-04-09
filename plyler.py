@@ -73,6 +73,8 @@ tokens = [
   'LT',
   'NE',
   'EQ',
+  'GTE',
+  'LTE',
 ] + list(reserved.values())
 
 t_PLUS = r'\+'
@@ -97,6 +99,8 @@ t_GT = r'\>'
 t_LT = r'\<'
 t_NE = r'\!\='
 t_EQ = r'\=\='
+t_GTE = r'\>\='
+t_LTE = r'\<\='
 
 t_ignore = r' '
 
@@ -167,8 +171,8 @@ def p_funcion1(p):
 
 def p_param(p):
   '''
-  param : simple ID variable2 param1
-        | multiple ID variable1 variable1 variable2 param1
+  param : simple ID param1
+        | multiple ID variable1 variable1 param1
         | empty
   '''
 
@@ -241,7 +245,7 @@ def p_tipo(p):
   '''
   tipo : compuesto ID tipo1
        | simple ID tipo1
-       | multiple ID tipo3 tipo3 tipo2
+       | multiple ID OBRACKET CSTINT CBRACKET tipo3 tipo2
   '''
 
 def p_tipo1(p):
@@ -252,7 +256,7 @@ def p_tipo1(p):
 
 def p_tipo2(p):
   '''
-  tipo2 : COMMA ID tipo3 tipo3
+  tipo2 : COMMA ID OBRACKET CSTINT CBRACKET tipo3
         | empty
   '''
 
@@ -288,7 +292,8 @@ def p_tipo_compuesto(p):
             | DATAFRAME
             | FILE
   '''
-  
+  p[0] = p[1]
+
 ################################################
 # BLOQUE
 def p_bloque(p):
@@ -327,7 +332,6 @@ def p_estatuto_redux(p):
                  | escritura
                  | leer
                  | ternaria
-
   '''
 ################################################
 # ASIGNACION
@@ -456,6 +460,8 @@ def p_gexp1(p):
   '''
   gexp1 : LT mexp
         | GT mexp
+        | GTE mexp
+        | LTE mexp
         | EQ mexp
         | NE mexp
         | empty
