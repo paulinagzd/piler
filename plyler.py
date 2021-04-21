@@ -6,7 +6,10 @@
 
 import ply.lex as lex
 import ply.yacc as yacc
+from symbolTable import Variable, Function, SymbolTable
 import sys
+
+context = 'global'
 
 # reserved words
 reserved = {
@@ -149,10 +152,6 @@ lexer = lex.lex()
 # grammar
 ################################################
 
-precedence = (
-    ('left','PLUS','MINUS'),
-    ('left','MULTIPLY','DIVIDE')
-)
 # PROGRAMA
 def p_programa(p):
   '''
@@ -169,6 +168,8 @@ def p_funcion(p):
   '''
 
   p[0] = tuple(p[1:])
+  symbolTable.addFunction(p[0][2])
+  context = p[0][2]
 
 
 def p_funcion1(p):
@@ -176,8 +177,10 @@ def p_funcion1(p):
   func1 : simple
         | VOID
   '''
-
   p[0] = p[1]
+
+  if p[0] == 'void':
+    symbolTable.functionTable[context].type = 'void'
 
 def p_param(p):
   '''
@@ -219,6 +222,7 @@ def p_clase_bloque(p):
   clase_bloque :  OCURLY ATTRIBUTES COLON clase_bloque1 METHODS COLON clase_metodos_bloque CCURLY
   '''
   p[0] = tuple(p[1:])
+  
 
 
 def p_clase_bloque1(p):
@@ -268,6 +272,7 @@ def p_dec(p):
   dec : VAR tipo SEMICOLON dec1
   '''
   p[0] = tuple(p[1:])
+  symbolTable.functionTable[context].addVariable(p[0][])
 
 
 def p_dec1(p):
@@ -317,6 +322,8 @@ def p_tipo_simple(p):
          | CHAR
   '''
   p[0] = p[1]
+
+  symbolTable.functionTable[context].type = p[0]
 
 def p_tipo_multiple(p):
   '''
@@ -604,6 +611,8 @@ def p_error(p):
 
 parser = yacc.yacc()
 
+symbolTable = SymbolTable()
+
 # lexer.input(
 #   '''
 #   '''
@@ -622,6 +631,8 @@ while True:
       correctFile.close()
       if parser.parse(curr) == 'SUCCESS':
         print("SUCCESSFULLY COMPILED!")
+      
+      print(symbolTable.functionTable)
 
     except EOFError:
       print("INCORRECT")

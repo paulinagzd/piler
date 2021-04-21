@@ -1,60 +1,56 @@
 class Variable:
-    def __init__(self,name,type,function):
-        self.name = name
-        self.type = type
-        self.scope = [function.name]
+    def __init__(self):
+        self.name = None
+        self.type = None
         self.value = None
 
 class Function:
-    def __init__(self,name,type,parent):
-        self.name = name
-        self.type = type
-        self.parent = parent # this can be a function object
+    def __init__(self):
+        self.name = None
+        self.type = None
         self.variableTable = {} 
     
     # Variable dictionary storing design -> variable_name : variable_object
-    def addVariable(self,variable):
-        if variable.name in self.variableTable.keys():
+    def addVariable(self,variableName):
+        if variableName in self.variableTable.keys():
             print("Variable already declared")
         else:
-            self.variableTable[variable.name] = variable
-            if self.parent:
-                self.variableTable[variable.name].scope
+            self.variableTable[variableName] = Variable()
     
-    def getVariable(self,variable):
-        if variable.name not in self.variableTable.keys():
+    def getVariable(self,variableName):
+        if variableName not in self.variableTable.keys():
             print("Variable doesn't exist")
         else:
-            return self.variableTable[variable.name]
+            return self.variableTable[variableName]
 
 
-    def setVariable(self,variable,value):
-        if variable.name not in self.variableTable.keys():
+    def setVariable(self,variableName,value):
+        if variableName not in self.variableTable.keys():
             print("Variable doesn't exist")
         else:
-            self.variableTable[variable.name].value = value
+            self.variableTable[variableName].value = value
         
 
 class SymbolTable:
-    def __init__(self,programName):
-        self.functionTable = {} # Symbol Table storage -> function_name : function_object
+    def __init__(self):
+        self.functionTable = {'global': Function()} # Symbol Table storage -> function_name : function_object
     
-    def addFunction(self,function):
-        if function.name in self.functionTable.keys():
+    def addFunction(self,functionName):
+        if functionName in self.functionTable.keys():
             print("Function already declared")
         else:
-            self.variableTable[function.name] = function
+            self.functionTable[functionName] = Function()
         
-    def getFunction(self,function):
-        if function.name not in self.functionTable.keys():
+    def getFunction(self,functionName):
+        if functionName not in self.functionTable.keys():
             print("Function doesn't exist")
         else:
-            return self.variableTable[function.name]
+            return self.variableTable[functionName]
 
-    def deleteFunction(self,function):
+    def deleteFunction(self,functionName):
         if self.functionTable:
             if function.name in self.functionTable.keys():
-                del self.functionTable[function.name]
+                del self.functionTable[functionName]
             else:
                 print("Function doesn't exist")
         else:
