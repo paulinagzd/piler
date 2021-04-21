@@ -1,0 +1,15 @@
+program viendo;
+var ints globales[1], globs[12][12];
+var boos matriz[12][12];
+var str strinn, stru;
+var cha c;
+{
+  /* Este programa es
+  demostracion */
+
+  func int hola(ints globales[20], boo you) {
+    var str ha;
+    var int a, e, i;
+    
+  }
+}

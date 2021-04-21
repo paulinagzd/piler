@@ -9,8 +9,6 @@ import ply.yacc as yacc
 from symbolTable import Variable, Function, SymbolTable
 import sys
 
-context = 'global'
-
 # reserved words
 reserved = {
   'program' : 'PROGRAM',
@@ -159,17 +157,19 @@ def p_programa(p):
            | PROGRAM ID SEMICOLON dec bloque
   '''
   p[0] = tuple(p[1:])
+  symbolTable.context = p[0][1]
+  symbolTable.addFunction(symbolTable.context)
 
 ################################################
 # FUNCION
 def p_funcion(p):
   '''
-  funcion : FUNCTION func1 ID OPAREN param CPAREN bloque
+  funcion : FUNCTION func1 ID saw_id OPAREN param CPAREN bloque
   '''
 
   p[0] = tuple(p[1:])
   symbolTable.addFunction(p[0][2])
-  context = p[0][2]
+  symbolTable.context = p[0][2]
 
 
 def p_funcion1(p):
@@ -180,7 +180,7 @@ def p_funcion1(p):
   p[0] = p[1]
 
   if p[0] == 'void':
-    symbolTable.functionTable[context].type = 'void'
+    symbolTable.functionTable[symbolTable.context].type = 'void'
 
 def p_param(p):
   '''
@@ -202,8 +202,8 @@ def p_param1(p):
 
 def p_param2(p): ####### OJO
   '''
-  param2 : simple ID
-         | multiple ID variable1 variable1
+  param2 : simple ID saw_id
+         | multiple ID saw_id variable1 variable1
   '''
   p[0] = tuple(p[1:])
 
@@ -215,15 +215,13 @@ def p_clase(p):
     clase : CLASS ID COLON clase_bloque SEMICOLON
   '''
   p[0] = tuple(p[1:])
-
+  # symbolTable.functionTable[context].addVariable(p[0][1])
 
 def p_clase_bloque(p):
   ''' 
   clase_bloque :  OCURLY ATTRIBUTES COLON clase_bloque1 METHODS COLON clase_metodos_bloque CCURLY
   '''
   p[0] = tuple(p[1:])
-  
-
 
 def p_clase_bloque1(p):
   ''' 
@@ -238,7 +236,6 @@ def p_clase_metodos_bloque(p):
                        | empty
   '''
   p[0] = tuple(p[1:])
-
 
 ################################################
 # CICLO WHILE
@@ -272,8 +269,6 @@ def p_dec(p):
   dec : VAR tipo SEMICOLON dec1
   '''
   p[0] = tuple(p[1:])
-  symbolTable.functionTable[context].addVariable(p[0][])
-
 
 def p_dec1(p):
   '''
@@ -286,22 +281,24 @@ def p_dec1(p):
 # TIPO
 def p_tipo(p):
   '''
-  tipo : compuesto ID tipo1
-       | simple ID tipo1
-       | multiple ID OBRACKET CSTINT CBRACKET tipo3 tipo2
+  tipo : compuesto ID saw_id tipo1
+       | simple ID saw_id tipo1
+       | multiple ID saw_id OBRACKET CSTINT CBRACKET tipo3 tipo2
   '''
   p[0] = tuple(p[1:])
+  symbolTable.functionTable[symbolTable.context].addVariable(p[0][1])
 
 def p_tipo1(p):
   '''
-  tipo1 : COMMA ID tipo1
+  tipo1 : COMMA ID saw_id tipo1
         | empty
   '''
   p[0] = tuple(p[1:])
+  symbolTable.functionTable[symbolTable.context].addVariable(p[0][1])
 
 def p_tipo2(p):
   '''
-  tipo2 : COMMA ID OBRACKET CSTINT CBRACKET tipo3
+  tipo2 : COMMA ID saw_id OBRACKET CSTINT CBRACKET tipo3
         | empty
   '''
   p[0] = tuple(p[1:])
@@ -315,32 +312,31 @@ def p_tipo3(p):
 
 def p_tipo_simple(p):
   '''
-  simple : INT
-         | FLOAT
-         | BOOL
-         | STRING
-         | CHAR
+  simple : INT saw_type
+         | FLOAT saw_type
+         | BOOL saw_type
+         | STRING saw_type
+         | CHAR saw_type
   '''
   p[0] = p[1]
-
-  symbolTable.functionTable[context].type = p[0]
+  symbolTable.functionTable[symbolTable.context].type = p[0]
 
 def p_tipo_multiple(p):
   '''
-  multiple : INTS
-           | FLOATS
-           | BOOLS
-           | STRINGS
-           | CHARS
+  multiple : INTS saw_type
+           | FLOATS saw_type
+           | BOOLS saw_type
+           | STRINGS saw_type
+           | CHARS saw_type
   '''
   p[0] = p[1]
 
 def p_tipo_compuesto(p):
   '''
-  compuesto : ID
-            | DATAFRAME
-            | FILE
-  '''
+  compuesto : ID saw_type
+            | DATAFRAME saw_type
+            | FILE saw_type
+  ''' 
   p[0] = p[1]
 
 ################################################
@@ -461,7 +457,7 @@ def p_boolean(p):
 # VARIABLE (llamada)
 def p_variable(p):
   '''
-  variable : ID variable1 variable1 variable2
+  variable : ID saw_id variable1 variable1 variable2
   '''
   p[0] = tuple(p[1:])
 
@@ -474,7 +470,7 @@ def p_variable1(p):
 
 def p_variable2(p):
   '''
-  variable2 : PERIOD ID variable1 variable1 variable2
+  variable2 : PERIOD ID saw_id variable1 variable1 variable2
             | empty 
   '''
   p[0] = tuple(p[1:])
@@ -483,8 +479,8 @@ def p_variable2(p):
 # LLAMADA FUNCION
 def p_llamada_funcion(p):
   '''
-  llamada : ID OPAREN exp llamada1 CPAREN
-          | ID OPAREN CPAREN
+  llamada : ID saw_id OPAREN exp llamada1 CPAREN
+          | ID saw_id OPAREN CPAREN
   '''
   p[0] = tuple(p[1:])
 
@@ -608,7 +604,25 @@ def p_error(p):
     print("SYNTAX ERROR! BEFORE THE", p.value , "ON LINE", p.lineno)
 
 ################################################
+# AUX RULES FOR SYMBOL TABLE
+def p_saw_type(p):
+  '''
+  saw_type : 
+  '''
+  symbolTable.latest_type = p[-1]
 
+def p_saw_id(p):
+  '''
+  saw_id : 
+  '''
+  symbolTable.latest_id = p[-1]
+
+def p_saw_variable(p):
+  '''
+  saw_variable : 
+  '''
+  symbolTable.latest_variable = p[-1]
+  
 parser = yacc.yacc()
 
 symbolTable = SymbolTable()

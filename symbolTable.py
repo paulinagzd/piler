@@ -12,12 +12,15 @@ class Function:
     
     # Variable dictionary storing design -> variable_name : variable_object
     def addVariable(self,variableName):
+        print(variableName)
         if variableName in self.variableTable.keys():
             print("Variable already declared")
         else:
             self.variableTable[variableName] = Variable()
     
     def getVariable(self,variableName):
+        print(variableName)
+
         if variableName not in self.variableTable.keys():
             print("Variable doesn't exist")
         else:
@@ -25,16 +28,37 @@ class Function:
 
 
     def setVariable(self,variableName,value):
+        print(variableName)
+
         if variableName not in self.variableTable.keys():
             print("Variable doesn't exist")
         else:
             self.variableTable[variableName].value = value
         
+class Scope:
+    def __init__(self):
+        self.functions = {}
+        self.variables = {}
+
+    def addVariable(self, name, type = None):
+        if name not in self.variables():
+            self.variables[name] = Variable(name, type)
+        else:
+            print('ALREADY DECLARED!')
+            return False
 
 class SymbolTable:
     def __init__(self):
-        self.functionTable = {'global': Function()} # Symbol Table storage -> function_name : function_object
-    
+        self.functionTable = {} # Symbol Table storage -> function_name : function_object
+        self.context = None
+        self.latest_type = None
+        self.latest_id = None
+        self.latest_func = None
+        self.val = None
+
+    def saveLatestVariable(self):
+
+
     def addFunction(self,functionName):
         if functionName in self.functionTable.keys():
             print("Function already declared")
