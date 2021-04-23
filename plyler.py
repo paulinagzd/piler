@@ -6,6 +6,7 @@
 
 import ply.lex as lex
 import ply.yacc as yacc
+from symbolTable import Variable, Function, SymbolTable
 import sys
 
 # reserved words
@@ -40,7 +41,8 @@ reserved = {
   'att' : 'ATTRIBUTES',
   'met' : 'METHODS',
   'file' : 'FILE',
-  'dataframe' : 'DATAFRAME'
+  'dataframe' : 'DATAFRAME',
+  'return' : 'RETURN',
 }
 
 # terminals and regEx
@@ -149,35 +151,36 @@ lexer = lex.lex()
 # grammar
 ################################################
 
-precedence = (
-    ('left','PLUS','MINUS'),
-    ('left','MULTIPLY','DIVIDE')
-)
 # PROGRAMA
 def p_programa(p):
   '''
-  programa : PROGRAM ID SEMICOLON bloque
-           | PROGRAM ID SEMICOLON dec bloque
+  programa : PROGRAM ID saw_id saw_program SEMICOLON bloque
+           | PROGRAM ID saw_id saw_program SEMICOLON dec bloque
   '''
   p[0] = tuple(p[1:])
+  # symbolTable.context = p[0][1]
+  # symbolTable.addFunction(symbolTable.context)
 
 ################################################
 # FUNCION
 def p_funcion(p):
   '''
-  funcion : FUNCTION func1 ID OPAREN param CPAREN bloque
+  funcion : FUNCTION func1 ID saw_id saw_function OPAREN param CPAREN bloque
   '''
-
   p[0] = tuple(p[1:])
+  # symbolTable.addFunction(p[0][2])
+  # symbolTable.context = p[0][2]
 
 
 def p_funcion1(p):
   '''
   func1 : simple
-        | VOID
+        | VOID saw_type
   '''
-
   p[0] = p[1]
+
+  # if p[0] == 'void':
+  #   symbolTable.functionTable[symbolTable.context].type = 'void'
 
 def p_param(p):
   '''
@@ -199,8 +202,8 @@ def p_param1(p):
 
 def p_param2(p): ####### OJO
   '''
-  param2 : simple ID
-         | multiple ID variable1 variable1
+  param2 : simple ID saw_id_param
+         | multiple ID saw_id_param variable1 variable1
   '''
   p[0] = tuple(p[1:])
 
@@ -209,17 +212,16 @@ def p_param2(p): ####### OJO
 # CLASE
 def p_clase(p):
   '''
-    clase : CLASS ID COLON clase_bloque SEMICOLON
+    clase : CLASS ID saw_id saw_class COLON clase_bloque SEMICOLON
   '''
   p[0] = tuple(p[1:])
-
+  # symbolTable.functionTable[context].addVariable(p[0][1])
 
 def p_clase_bloque(p):
   ''' 
-  clase_bloque :  OCURLY ATTRIBUTES COLON clase_bloque1 METHODS COLON clase_metodos_bloque CCURLY
+  clase_bloque :  OCURLY ATTRIBUTES COLON clase_bloque1 METHODS COLON clase_metodos_bloque class_scope_end CCURLY
   '''
   p[0] = tuple(p[1:])
-
 
 def p_clase_bloque1(p):
   ''' 
@@ -234,7 +236,6 @@ def p_clase_metodos_bloque(p):
                        | empty
   '''
   p[0] = tuple(p[1:])
-
 
 ################################################
 # CICLO WHILE
@@ -269,7 +270,6 @@ def p_dec(p):
   '''
   p[0] = tuple(p[1:])
 
-
 def p_dec1(p):
   '''
   dec1 : dec
@@ -281,22 +281,24 @@ def p_dec1(p):
 # TIPO
 def p_tipo(p):
   '''
-  tipo : compuesto ID tipo1
-       | simple ID tipo1
-       | multiple ID OBRACKET CSTINT CBRACKET tipo3 tipo2
+  tipo : compuesto ID saw_id saw_variable tipo1
+       | simple ID saw_id saw_variable tipo1
+       | multiple ID saw_id saw_variable OBRACKET CSTINT CBRACKET tipo3 tipo2
   '''
   p[0] = tuple(p[1:])
+  # symbolTable.functionTable[symbolTable.context].addVariable(p[0][1])
 
 def p_tipo1(p):
   '''
-  tipo1 : COMMA ID tipo1
+  tipo1 : COMMA ID saw_id saw_variable tipo1
         | empty
   '''
   p[0] = tuple(p[1:])
+  # symbolTable.functionTable[symbolTable.context].addVariable(p[0][1])
 
 def p_tipo2(p):
   '''
-  tipo2 : COMMA ID OBRACKET CSTINT CBRACKET tipo3
+  tipo2 : COMMA ID saw_id OBRACKET CSTINT CBRACKET tipo3
         | empty
   '''
   p[0] = tuple(p[1:])
@@ -310,37 +312,38 @@ def p_tipo3(p):
 
 def p_tipo_simple(p):
   '''
-  simple : INT
-         | FLOAT
-         | BOOL
-         | STRING
-         | CHAR
+  simple : INT saw_type
+         | FLOAT saw_type
+         | BOOL saw_type
+         | STRING saw_type
+         | CHAR saw_type
   '''
   p[0] = p[1]
+  # symbolTable.functionTable[symbolTable.context].type = p[0]
 
 def p_tipo_multiple(p):
   '''
-  multiple : INTS
-           | FLOATS
-           | BOOLS
-           | STRINGS
-           | CHARS
+  multiple : INTS saw_type
+           | FLOATS saw_type
+           | BOOLS saw_type
+           | STRINGS saw_type
+           | CHARS saw_type
   '''
   p[0] = p[1]
 
 def p_tipo_compuesto(p):
   '''
-  compuesto : ID
-            | DATAFRAME
-            | FILE
-  '''
+  compuesto : ID saw_type
+            | DATAFRAME saw_type
+            | FILE saw_type
+  ''' 
   p[0] = p[1]
 
 ################################################
 # BLOQUE
 def p_bloque(p):
   '''
-  bloque : OCURLY b1 CCURLY
+  bloque : OCURLY b1 CCURLY scope_end
   '''
   p[0] = tuple(p[1:])
 
@@ -384,7 +387,7 @@ def p_estatuto_redux(p):
 # ASIGNACION
 def p_asignacion(p):
   '''
-  asignacion : variable AS exp
+  asignacion : variable AS exp saw_asig
   '''
   p[0] = tuple(p[1:])
 
@@ -454,7 +457,7 @@ def p_boolean(p):
 # VARIABLE (llamada)
 def p_variable(p):
   '''
-  variable : ID variable1 variable1 variable2
+  variable : ID saw_id variable1 variable1 variable2
   '''
   p[0] = tuple(p[1:])
 
@@ -467,7 +470,7 @@ def p_variable1(p):
 
 def p_variable2(p):
   '''
-  variable2 : PERIOD ID variable1 variable1 variable2
+  variable2 : PERIOD ID saw_id variable1 variable1 variable2
             | empty 
   '''
   p[0] = tuple(p[1:])
@@ -476,8 +479,8 @@ def p_variable2(p):
 # LLAMADA FUNCION
 def p_llamada_funcion(p):
   '''
-  llamada : ID OPAREN exp llamada1 CPAREN
-          | ID OPAREN CPAREN
+  llamada : ID saw_id OPAREN exp llamada1 CPAREN
+          | ID saw_id OPAREN CPAREN
   '''
   p[0] = tuple(p[1:])
 
@@ -579,11 +582,11 @@ def p_factor(p):
 #VARCST
 def p_varcst(p):
   '''
-  varcst : CSTINT
-         | CSTFLT
-         | CSTCHAR
-         | CSTSTRING
-         | boolean
+  varcst : CSTINT saw_end_value
+         | CSTFLT saw_end_value
+         | CSTCHAR saw_end_value
+         | CSTSTRING saw_end_value
+         | boolean saw_end_value
   '''
   p[0] = tuple(p[1:])
 
@@ -599,10 +602,105 @@ def p_empty(p):
 # ERROR
 def p_error(p):
     print("SYNTAX ERROR! BEFORE THE", p.value , "ON LINE", p.lineno)
-
+  
 ################################################
+# AUX RULES FOR SYMBOL TABLE
+def p_saw_program(p):
+  '''
+  saw_program : 
+  '''
+  # print(p[0])
+  symbolTable.instantiate()
+
+def p_saw_class(p):
+  '''
+  saw_class : 
+  '''
+  print(p[-3])
+  symbolTable.latestId = p[-2]
+  symbolTable.latestType = p[-3]
+  symbolTable.addLatestClass()
+
+def p_saw_type(p):
+  '''
+  saw_type : 
+  '''
+  # print(p[-1])
+  symbolTable.latestType = p[-1]
+
+def p_saw_id(p):
+  '''
+  saw_id : 
+  '''
+  symbolTable.latestId = p[-1]
+
+
+def p_saw_id_param(p):
+  '''
+  saw_id_param : 
+  '''
+  # print('param', p[-1], p[-2])
+  symbolTable.latestId = p[-1]
+  symbolTable.latestType = p[-2]
+  symbolTable.addLatestParameterVariable()
+
+
+def p_saw_variable(p):
+  '''
+  saw_variable : 
+  '''
+  symbolTable.addLatestVariable()
+
+def p_saw_asig(p):
+  '''
+  saw_asig : 
+  '''
+  value = p[-1]
+  # print('VALUE VALUE VALUE VALUE VALUE VALUE', value)
+  # symbolTable.addLatestVariableValue(value)
+
+def p_saw_end_value(p):
+  '''
+  saw_end_value : 
+  '''
+  value = p[-1]
+  # print('END END END ENDVALUE VALUE VALUE VALUE VALUE VALUE', value)
+  # symbolTable.addLatestVariableValue(value)
+
+def p_saw_function(p):
+  '''
+  saw_function : 
+  '''
+  symbolTable.addLatestFunction()
+
+
+def p_scope_start(p):
+  '''
+  scope_start : 
+  '''
+  symbolTable.scopeStarts()
+
+def p_scope_end(p):
+  '''
+  scope_end : 
+  '''
+  symbolTable.scopeEnds()
+
+
+def p_class_scope_start(p):
+  '''
+  class_scope_start : 
+  '''
+  # symbolTable.addLatestFunction()
+
+def p_class_scope_end(p):
+  '''
+  class_scope_end : 
+  '''
 
 parser = yacc.yacc()
+
+symbolTable = SymbolTable()
 
 # lexer.input(
 #   '''
@@ -622,8 +720,9 @@ while True:
       correctFile.close()
       if parser.parse(curr) == 'SUCCESS':
         print("SUCCESSFULLY COMPILED!")
+      
+      # symbolTable.printScopes()
 
     except EOFError:
       print("INCORRECT")
     if not reading: continue
-
