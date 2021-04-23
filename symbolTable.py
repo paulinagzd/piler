@@ -1,3 +1,5 @@
+from semanticCube import SemanticCube
+
 # global variable to instantiate only ONCE
 s = None
 class Variable:
@@ -8,6 +10,9 @@ class Variable:
 
     def setValue(self, value):
         self.value = value
+
+    def setType(self, type):
+        self.type = type
 
     # def __repr__(self):
     #     return "<VARIABLE with type %s value %s> \n" % (self.type, self.value)    # def __str__(self):
@@ -116,7 +121,8 @@ class SymbolTable:
         self.context = None
         self.latestType = None
         self.latestId = None
-        self.latestValue = None
+        self.latestValue = []
+        self.latestOps = []
         self.latestFunction = None
         self.__latestScope = None
         self.globalScopeObject = None
@@ -149,24 +155,55 @@ class SymbolTable:
         self.setLatestScope(self.globalScope)
 
     def addLatestVariable(self):
-        print('variable:', self.latestId, self.latestType, self.getLatestScope())
+        # print('variable:', self.latestId, self.latestType, self.getLatestScope())
         self.getLatestScope().addVariable(self.latestId, self.latestType, None)
 
     def addLatestVariableValue(self, value):
-        print('variable:', self.latestId, self.latestType, self.getLatestScope())
+        # print('variable:', self.latestId, self.latestType, self.getLatestScope())
         self.getLatestScope().addVariable(self.latestId, self.latestType, value)
 
     def addLatestParameterVariable(self):
-        print('param:', self.latestId, self.latestType, self.getLatestScope())
+        # print('param:', self.latestId, self.latestType, self.getLatestScope())
         self.getLatestScope().addVariable(self.latestId, self.latestType, None)
 
     def addLatestClass(self):
-        print('class:', self.latestId, self.latestType)
+        # print('class:', self.latestId, self.latestType)
         self.getLatestScope().addClass(self.latestId, self.latestType)
 
     def addLatestFunction(self):
-        print('function:', self.latestId, self.latestType)
+        # print('function:', self.latestId, self.latestType)
         self.getLatestScope().addFunction(self.latestId, self.latestType)
+
+    def addLatestValues(self, value, stack):
+        # print(stack)
+        if stack == 'pilao':
+            self.latestValue.append(value)
+        else:
+            self.latestOps.append(value)
+
+    # def popLatestValue(self):
+    #     # print(stack)
+    #     self.latestValue.pop()
+
+
+    def assignOperation(self):
+        print(self.latestId)
+        print(self.getLatestScope())
+        print('entro lv')
+        for item in self.latestValue:
+            print(item)
+        self.latestValue = []
+
+        print('entro lops')
+        for item in self.latestOps:
+            print(item)
+        self.latestOps = []
+
+        lsc = self.getLatestScope().getScopeVariables()[self.latestId].type
+        print(lsc)
+
+        SemanticCube.quad(self.latestOps, self.latestValue, self.latestId)
+
 
     # def printScopes(self):
     #         # self.allScopes['viendo'].__repr__()

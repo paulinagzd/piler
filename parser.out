@@ -97,26 +97,26 @@ Rule 86    llamada -> ID saw_id OPAREN CPAREN
 Rule 87    llamada1 -> COMMA exp llamada1
 Rule 88    llamada1 -> empty
 Rule 89    exp -> texp exp1
-Rule 90    exp1 -> OR texp exp1
+Rule 90    exp1 -> OR saw_op texp exp1
 Rule 91    exp1 -> empty
 Rule 92    texp -> gexp texp1
-Rule 93    texp1 -> AND gexp texp1
+Rule 93    texp1 -> AND saw_op gexp texp1
 Rule 94    texp1 -> empty
 Rule 95    gexp -> mexp gexp1
-Rule 96    gexp1 -> LT mexp
-Rule 97    gexp1 -> GT mexp
-Rule 98    gexp1 -> GTE mexp
-Rule 99    gexp1 -> LTE mexp
-Rule 100   gexp1 -> EQ mexp
-Rule 101   gexp1 -> NE mexp
+Rule 96    gexp1 -> LT saw_op mexp
+Rule 97    gexp1 -> GT saw_op mexp
+Rule 98    gexp1 -> GTE saw_op mexp
+Rule 99    gexp1 -> LTE saw_op mexp
+Rule 100   gexp1 -> EQ saw_op mexp
+Rule 101   gexp1 -> NE saw_op mexp
 Rule 102   gexp1 -> empty
 Rule 103   mexp -> termino mexp1
-Rule 104   mexp1 -> PLUS termino mexp1
-Rule 105   mexp1 -> MINUS termino mexp1
+Rule 104   mexp1 -> PLUS saw_op termino mexp1
+Rule 105   mexp1 -> MINUS saw_op termino mexp1
 Rule 106   mexp1 -> empty
 Rule 107   termino -> factor term1
-Rule 108   term1 -> MULT factor term1
-Rule 109   term1 -> DIV factor term1
+Rule 108   term1 -> MULT saw_op factor term1
+Rule 109   term1 -> DIV saw_op factor term1
 Rule 110   term1 -> empty
 Rule 111   factor -> OPAREN exp CPAREN
 Rule 112   factor -> varcst
@@ -136,11 +136,13 @@ Rule 125   saw_id_param -> <empty>
 Rule 126   saw_variable -> <empty>
 Rule 127   saw_asig -> <empty>
 Rule 128   saw_end_value -> <empty>
-Rule 129   saw_function -> <empty>
-Rule 130   scope_start -> <empty>
-Rule 131   scope_end -> <empty>
-Rule 132   class_scope_start -> <empty>
-Rule 133   class_scope_end -> <empty>
+Rule 129   do_not_save -> <empty>
+Rule 130   saw_op -> <empty>
+Rule 131   saw_function -> <empty>
+Rule 132   scope_start -> <empty>
+Rule 133   scope_end -> <empty>
+Rule 134   class_scope_start -> <empty>
+Rule 135   class_scope_end -> <empty>
 
 Terminals, with rules where they appear
 
@@ -229,6 +231,7 @@ cond2                : 18 68 70
 condicion            : 52
 dec                  : 2 14 23 61
 dec1                 : 22
+do_not_save          : 
 e1                   : 74 75 77
 empty                : 7 9 15 17 24 29 31 33 49 71 76 82 84 88 91 94 102 106 110
 escritura            : 53 64
@@ -257,6 +260,7 @@ saw_end_value        : 115 116 117 118 119
 saw_function         : 3
 saw_id               : 1 2 3 12 25 26 27 28 30 80 83 85 86
 saw_id_param         : 10 11
+saw_op               : 90 93 96 97 98 99 100 101 104 105 108 109
 saw_program          : 1 2
 saw_type             : 5 34 35 36 37 38 39 40 41 42 43 44 45 46
 saw_variable         : 25 26 27 28
@@ -1076,7 +1080,7 @@ state 37
 state 38
 
     (89) exp -> texp . exp1
-    (90) exp1 -> . OR texp exp1
+    (90) exp1 -> . OR saw_op texp exp1
     (91) exp1 -> . empty
     (120) empty -> .
 
@@ -1112,7 +1116,7 @@ state 38
 state 39
 
     (92) texp -> gexp . texp1
-    (93) texp1 -> . AND gexp texp1
+    (93) texp1 -> . AND saw_op gexp texp1
     (94) texp1 -> . empty
     (120) empty -> .
 
@@ -1149,12 +1153,12 @@ state 39
 state 40
 
     (95) gexp -> mexp . gexp1
-    (96) gexp1 -> . LT mexp
-    (97) gexp1 -> . GT mexp
-    (98) gexp1 -> . GTE mexp
-    (99) gexp1 -> . LTE mexp
-    (100) gexp1 -> . EQ mexp
-    (101) gexp1 -> . NE mexp
+    (96) gexp1 -> . LT saw_op mexp
+    (97) gexp1 -> . GT saw_op mexp
+    (98) gexp1 -> . GTE saw_op mexp
+    (99) gexp1 -> . LTE saw_op mexp
+    (100) gexp1 -> . EQ saw_op mexp
+    (101) gexp1 -> . NE saw_op mexp
     (102) gexp1 -> . empty
     (120) empty -> .
 
@@ -1197,8 +1201,8 @@ state 40
 state 41
 
     (103) mexp -> termino . mexp1
-    (104) mexp1 -> . PLUS termino mexp1
-    (105) mexp1 -> . MINUS termino mexp1
+    (104) mexp1 -> . PLUS saw_op termino mexp1
+    (105) mexp1 -> . MINUS saw_op termino mexp1
     (106) mexp1 -> . empty
     (120) empty -> .
 
@@ -1243,8 +1247,8 @@ state 41
 state 42
 
     (107) termino -> factor . term1
-    (108) term1 -> . MULT factor term1
-    (109) term1 -> . DIV factor term1
+    (108) term1 -> . MULT saw_op factor term1
+    (109) term1 -> . DIV saw_op factor term1
     (110) term1 -> . empty
     (120) empty -> .
 
@@ -1782,29 +1786,29 @@ state 67
 state 68
 
     (47) bloque -> OCURLY b1 CCURLY . scope_end
-    (131) scope_end -> .
+    (133) scope_end -> .
 
-    $end            reduce using rule 131 (scope_end -> .)
-    ID              reduce using rule 131 (scope_end -> .)
-    IF              reduce using rule 131 (scope_end -> .)
-    PRINT           reduce using rule 131 (scope_end -> .)
-    READ            reduce using rule 131 (scope_end -> .)
-    WHILE           reduce using rule 131 (scope_end -> .)
-    FOR             reduce using rule 131 (scope_end -> .)
-    OCURLY          reduce using rule 131 (scope_end -> .)
-    FUNCTION        reduce using rule 131 (scope_end -> .)
-    CLASS           reduce using rule 131 (scope_end -> .)
-    VAR             reduce using rule 131 (scope_end -> .)
-    OPAREN          reduce using rule 131 (scope_end -> .)
-    CSTINT          reduce using rule 131 (scope_end -> .)
-    CSTFLT          reduce using rule 131 (scope_end -> .)
-    CSTCHAR         reduce using rule 131 (scope_end -> .)
-    CSTSTRING       reduce using rule 131 (scope_end -> .)
-    TRUE            reduce using rule 131 (scope_end -> .)
-    FALSE           reduce using rule 131 (scope_end -> .)
-    CCURLY          reduce using rule 131 (scope_end -> .)
-    ELSE            reduce using rule 131 (scope_end -> .)
-    SEMICOLON       reduce using rule 131 (scope_end -> .)
+    $end            reduce using rule 133 (scope_end -> .)
+    ID              reduce using rule 133 (scope_end -> .)
+    IF              reduce using rule 133 (scope_end -> .)
+    PRINT           reduce using rule 133 (scope_end -> .)
+    READ            reduce using rule 133 (scope_end -> .)
+    WHILE           reduce using rule 133 (scope_end -> .)
+    FOR             reduce using rule 133 (scope_end -> .)
+    OCURLY          reduce using rule 133 (scope_end -> .)
+    FUNCTION        reduce using rule 133 (scope_end -> .)
+    CLASS           reduce using rule 133 (scope_end -> .)
+    VAR             reduce using rule 133 (scope_end -> .)
+    OPAREN          reduce using rule 133 (scope_end -> .)
+    CSTINT          reduce using rule 133 (scope_end -> .)
+    CSTFLT          reduce using rule 133 (scope_end -> .)
+    CSTCHAR         reduce using rule 133 (scope_end -> .)
+    CSTSTRING       reduce using rule 133 (scope_end -> .)
+    TRUE            reduce using rule 133 (scope_end -> .)
+    FALSE           reduce using rule 133 (scope_end -> .)
+    CCURLY          reduce using rule 133 (scope_end -> .)
+    ELSE            reduce using rule 133 (scope_end -> .)
+    SEMICOLON       reduce using rule 133 (scope_end -> .)
 
     scope_end                      shift and go to state 131
 
@@ -1995,8 +1999,8 @@ state 74
     COLON           reduce using rule 113 (factor -> variable .)
     SEMICOLON       reduce using rule 113 (factor -> variable .)
     COMMA           reduce using rule 113 (factor -> variable .)
-    QUESTION        reduce using rule 113 (factor -> variable .)
     CBRACKET        reduce using rule 113 (factor -> variable .)
+    QUESTION        reduce using rule 113 (factor -> variable .)
 
 
 state 75
@@ -2037,8 +2041,8 @@ state 75
     COLON           reduce using rule 114 (factor -> llamada .)
     SEMICOLON       reduce using rule 114 (factor -> llamada .)
     COMMA           reduce using rule 114 (factor -> llamada .)
-    QUESTION        reduce using rule 114 (factor -> llamada .)
     CBRACKET        reduce using rule 114 (factor -> llamada .)
+    QUESTION        reduce using rule 114 (factor -> llamada .)
 
 
 state 76
@@ -2084,8 +2088,8 @@ state 76
     COLON           reduce using rule 124 (saw_id -> .)
     SEMICOLON       reduce using rule 124 (saw_id -> .)
     COMMA           reduce using rule 124 (saw_id -> .)
-    QUESTION        reduce using rule 124 (saw_id -> .)
     CBRACKET        reduce using rule 124 (saw_id -> .)
+    QUESTION        reduce using rule 124 (saw_id -> .)
 
     saw_id                         shift and go to state 144
 
@@ -2305,44 +2309,19 @@ state 87
 
 state 88
 
-    (90) exp1 -> OR . texp exp1
-    (92) texp -> . gexp texp1
-    (95) gexp -> . mexp gexp1
-    (103) mexp -> . termino mexp1
-    (107) termino -> . factor term1
-    (111) factor -> . OPAREN exp CPAREN
-    (112) factor -> . varcst
-    (113) factor -> . variable
-    (114) factor -> . llamada
-    (115) varcst -> . CSTINT saw_end_value
-    (116) varcst -> . CSTFLT saw_end_value
-    (117) varcst -> . CSTCHAR saw_end_value
-    (118) varcst -> . CSTSTRING saw_end_value
-    (119) varcst -> . boolean saw_end_value
-    (80) variable -> . ID saw_id variable1 variable1 variable2
-    (85) llamada -> . ID saw_id OPAREN exp llamada1 CPAREN
-    (86) llamada -> . ID saw_id OPAREN CPAREN
-    (78) boolean -> . TRUE
-    (79) boolean -> . FALSE
+    (90) exp1 -> OR . saw_op texp exp1
+    (130) saw_op -> .
 
-    OPAREN          shift and go to state 30
-    CSTINT          shift and go to state 44
-    CSTFLT          shift and go to state 45
-    CSTCHAR         shift and go to state 46
-    CSTSTRING       shift and go to state 47
-    ID              shift and go to state 76
-    TRUE            shift and go to state 49
-    FALSE           shift and go to state 50
+    OPAREN          reduce using rule 130 (saw_op -> .)
+    CSTINT          reduce using rule 130 (saw_op -> .)
+    CSTFLT          reduce using rule 130 (saw_op -> .)
+    CSTCHAR         reduce using rule 130 (saw_op -> .)
+    CSTSTRING       reduce using rule 130 (saw_op -> .)
+    ID              reduce using rule 130 (saw_op -> .)
+    TRUE            reduce using rule 130 (saw_op -> .)
+    FALSE           reduce using rule 130 (saw_op -> .)
 
-    texp                           shift and go to state 155
-    gexp                           shift and go to state 39
-    mexp                           shift and go to state 40
-    termino                        shift and go to state 41
-    factor                         shift and go to state 42
-    varcst                         shift and go to state 43
-    variable                       shift and go to state 74
-    llamada                        shift and go to state 75
-    boolean                        shift and go to state 48
+    saw_op                         shift and go to state 155
 
 state 89
 
@@ -2407,42 +2386,19 @@ state 90
 
 state 91
 
-    (93) texp1 -> AND . gexp texp1
-    (95) gexp -> . mexp gexp1
-    (103) mexp -> . termino mexp1
-    (107) termino -> . factor term1
-    (111) factor -> . OPAREN exp CPAREN
-    (112) factor -> . varcst
-    (113) factor -> . variable
-    (114) factor -> . llamada
-    (115) varcst -> . CSTINT saw_end_value
-    (116) varcst -> . CSTFLT saw_end_value
-    (117) varcst -> . CSTCHAR saw_end_value
-    (118) varcst -> . CSTSTRING saw_end_value
-    (119) varcst -> . boolean saw_end_value
-    (80) variable -> . ID saw_id variable1 variable1 variable2
-    (85) llamada -> . ID saw_id OPAREN exp llamada1 CPAREN
-    (86) llamada -> . ID saw_id OPAREN CPAREN
-    (78) boolean -> . TRUE
-    (79) boolean -> . FALSE
+    (93) texp1 -> AND . saw_op gexp texp1
+    (130) saw_op -> .
 
-    OPAREN          shift and go to state 30
-    CSTINT          shift and go to state 44
-    CSTFLT          shift and go to state 45
-    CSTCHAR         shift and go to state 46
-    CSTSTRING       shift and go to state 47
-    ID              shift and go to state 76
-    TRUE            shift and go to state 49
-    FALSE           shift and go to state 50
+    OPAREN          reduce using rule 130 (saw_op -> .)
+    CSTINT          reduce using rule 130 (saw_op -> .)
+    CSTFLT          reduce using rule 130 (saw_op -> .)
+    CSTCHAR         reduce using rule 130 (saw_op -> .)
+    CSTSTRING       reduce using rule 130 (saw_op -> .)
+    ID              reduce using rule 130 (saw_op -> .)
+    TRUE            reduce using rule 130 (saw_op -> .)
+    FALSE           reduce using rule 130 (saw_op -> .)
 
-    gexp                           shift and go to state 156
-    mexp                           shift and go to state 40
-    termino                        shift and go to state 41
-    factor                         shift and go to state 42
-    varcst                         shift and go to state 43
-    variable                       shift and go to state 74
-    llamada                        shift and go to state 75
-    boolean                        shift and go to state 48
+    saw_op                         shift and go to state 156
 
 state 92
 
@@ -2509,225 +2465,99 @@ state 93
 
 state 94
 
-    (96) gexp1 -> LT . mexp
-    (103) mexp -> . termino mexp1
-    (107) termino -> . factor term1
-    (111) factor -> . OPAREN exp CPAREN
-    (112) factor -> . varcst
-    (113) factor -> . variable
-    (114) factor -> . llamada
-    (115) varcst -> . CSTINT saw_end_value
-    (116) varcst -> . CSTFLT saw_end_value
-    (117) varcst -> . CSTCHAR saw_end_value
-    (118) varcst -> . CSTSTRING saw_end_value
-    (119) varcst -> . boolean saw_end_value
-    (80) variable -> . ID saw_id variable1 variable1 variable2
-    (85) llamada -> . ID saw_id OPAREN exp llamada1 CPAREN
-    (86) llamada -> . ID saw_id OPAREN CPAREN
-    (78) boolean -> . TRUE
-    (79) boolean -> . FALSE
+    (96) gexp1 -> LT . saw_op mexp
+    (130) saw_op -> .
 
-    OPAREN          shift and go to state 30
-    CSTINT          shift and go to state 44
-    CSTFLT          shift and go to state 45
-    CSTCHAR         shift and go to state 46
-    CSTSTRING       shift and go to state 47
-    ID              shift and go to state 76
-    TRUE            shift and go to state 49
-    FALSE           shift and go to state 50
+    OPAREN          reduce using rule 130 (saw_op -> .)
+    CSTINT          reduce using rule 130 (saw_op -> .)
+    CSTFLT          reduce using rule 130 (saw_op -> .)
+    CSTCHAR         reduce using rule 130 (saw_op -> .)
+    CSTSTRING       reduce using rule 130 (saw_op -> .)
+    ID              reduce using rule 130 (saw_op -> .)
+    TRUE            reduce using rule 130 (saw_op -> .)
+    FALSE           reduce using rule 130 (saw_op -> .)
 
-    mexp                           shift and go to state 157
-    termino                        shift and go to state 41
-    factor                         shift and go to state 42
-    varcst                         shift and go to state 43
-    variable                       shift and go to state 74
-    llamada                        shift and go to state 75
-    boolean                        shift and go to state 48
+    saw_op                         shift and go to state 157
 
 state 95
 
-    (97) gexp1 -> GT . mexp
-    (103) mexp -> . termino mexp1
-    (107) termino -> . factor term1
-    (111) factor -> . OPAREN exp CPAREN
-    (112) factor -> . varcst
-    (113) factor -> . variable
-    (114) factor -> . llamada
-    (115) varcst -> . CSTINT saw_end_value
-    (116) varcst -> . CSTFLT saw_end_value
-    (117) varcst -> . CSTCHAR saw_end_value
-    (118) varcst -> . CSTSTRING saw_end_value
-    (119) varcst -> . boolean saw_end_value
-    (80) variable -> . ID saw_id variable1 variable1 variable2
-    (85) llamada -> . ID saw_id OPAREN exp llamada1 CPAREN
-    (86) llamada -> . ID saw_id OPAREN CPAREN
-    (78) boolean -> . TRUE
-    (79) boolean -> . FALSE
+    (97) gexp1 -> GT . saw_op mexp
+    (130) saw_op -> .
 
-    OPAREN          shift and go to state 30
-    CSTINT          shift and go to state 44
-    CSTFLT          shift and go to state 45
-    CSTCHAR         shift and go to state 46
-    CSTSTRING       shift and go to state 47
-    ID              shift and go to state 76
-    TRUE            shift and go to state 49
-    FALSE           shift and go to state 50
+    OPAREN          reduce using rule 130 (saw_op -> .)
+    CSTINT          reduce using rule 130 (saw_op -> .)
+    CSTFLT          reduce using rule 130 (saw_op -> .)
+    CSTCHAR         reduce using rule 130 (saw_op -> .)
+    CSTSTRING       reduce using rule 130 (saw_op -> .)
+    ID              reduce using rule 130 (saw_op -> .)
+    TRUE            reduce using rule 130 (saw_op -> .)
+    FALSE           reduce using rule 130 (saw_op -> .)
 
-    mexp                           shift and go to state 158
-    termino                        shift and go to state 41
-    factor                         shift and go to state 42
-    varcst                         shift and go to state 43
-    variable                       shift and go to state 74
-    llamada                        shift and go to state 75
-    boolean                        shift and go to state 48
+    saw_op                         shift and go to state 158
 
 state 96
 
-    (98) gexp1 -> GTE . mexp
-    (103) mexp -> . termino mexp1
-    (107) termino -> . factor term1
-    (111) factor -> . OPAREN exp CPAREN
-    (112) factor -> . varcst
-    (113) factor -> . variable
-    (114) factor -> . llamada
-    (115) varcst -> . CSTINT saw_end_value
-    (116) varcst -> . CSTFLT saw_end_value
-    (117) varcst -> . CSTCHAR saw_end_value
-    (118) varcst -> . CSTSTRING saw_end_value
-    (119) varcst -> . boolean saw_end_value
-    (80) variable -> . ID saw_id variable1 variable1 variable2
-    (85) llamada -> . ID saw_id OPAREN exp llamada1 CPAREN
-    (86) llamada -> . ID saw_id OPAREN CPAREN
-    (78) boolean -> . TRUE
-    (79) boolean -> . FALSE
+    (98) gexp1 -> GTE . saw_op mexp
+    (130) saw_op -> .
 
-    OPAREN          shift and go to state 30
-    CSTINT          shift and go to state 44
-    CSTFLT          shift and go to state 45
-    CSTCHAR         shift and go to state 46
-    CSTSTRING       shift and go to state 47
-    ID              shift and go to state 76
-    TRUE            shift and go to state 49
-    FALSE           shift and go to state 50
+    OPAREN          reduce using rule 130 (saw_op -> .)
+    CSTINT          reduce using rule 130 (saw_op -> .)
+    CSTFLT          reduce using rule 130 (saw_op -> .)
+    CSTCHAR         reduce using rule 130 (saw_op -> .)
+    CSTSTRING       reduce using rule 130 (saw_op -> .)
+    ID              reduce using rule 130 (saw_op -> .)
+    TRUE            reduce using rule 130 (saw_op -> .)
+    FALSE           reduce using rule 130 (saw_op -> .)
 
-    mexp                           shift and go to state 159
-    termino                        shift and go to state 41
-    factor                         shift and go to state 42
-    varcst                         shift and go to state 43
-    variable                       shift and go to state 74
-    llamada                        shift and go to state 75
-    boolean                        shift and go to state 48
+    saw_op                         shift and go to state 159
 
 state 97
 
-    (99) gexp1 -> LTE . mexp
-    (103) mexp -> . termino mexp1
-    (107) termino -> . factor term1
-    (111) factor -> . OPAREN exp CPAREN
-    (112) factor -> . varcst
-    (113) factor -> . variable
-    (114) factor -> . llamada
-    (115) varcst -> . CSTINT saw_end_value
-    (116) varcst -> . CSTFLT saw_end_value
-    (117) varcst -> . CSTCHAR saw_end_value
-    (118) varcst -> . CSTSTRING saw_end_value
-    (119) varcst -> . boolean saw_end_value
-    (80) variable -> . ID saw_id variable1 variable1 variable2
-    (85) llamada -> . ID saw_id OPAREN exp llamada1 CPAREN
-    (86) llamada -> . ID saw_id OPAREN CPAREN
-    (78) boolean -> . TRUE
-    (79) boolean -> . FALSE
+    (99) gexp1 -> LTE . saw_op mexp
+    (130) saw_op -> .
 
-    OPAREN          shift and go to state 30
-    CSTINT          shift and go to state 44
-    CSTFLT          shift and go to state 45
-    CSTCHAR         shift and go to state 46
-    CSTSTRING       shift and go to state 47
-    ID              shift and go to state 76
-    TRUE            shift and go to state 49
-    FALSE           shift and go to state 50
+    OPAREN          reduce using rule 130 (saw_op -> .)
+    CSTINT          reduce using rule 130 (saw_op -> .)
+    CSTFLT          reduce using rule 130 (saw_op -> .)
+    CSTCHAR         reduce using rule 130 (saw_op -> .)
+    CSTSTRING       reduce using rule 130 (saw_op -> .)
+    ID              reduce using rule 130 (saw_op -> .)
+    TRUE            reduce using rule 130 (saw_op -> .)
+    FALSE           reduce using rule 130 (saw_op -> .)
 
-    mexp                           shift and go to state 160
-    termino                        shift and go to state 41
-    factor                         shift and go to state 42
-    varcst                         shift and go to state 43
-    variable                       shift and go to state 74
-    llamada                        shift and go to state 75
-    boolean                        shift and go to state 48
+    saw_op                         shift and go to state 160
 
 state 98
 
-    (100) gexp1 -> EQ . mexp
-    (103) mexp -> . termino mexp1
-    (107) termino -> . factor term1
-    (111) factor -> . OPAREN exp CPAREN
-    (112) factor -> . varcst
-    (113) factor -> . variable
-    (114) factor -> . llamada
-    (115) varcst -> . CSTINT saw_end_value
-    (116) varcst -> . CSTFLT saw_end_value
-    (117) varcst -> . CSTCHAR saw_end_value
-    (118) varcst -> . CSTSTRING saw_end_value
-    (119) varcst -> . boolean saw_end_value
-    (80) variable -> . ID saw_id variable1 variable1 variable2
-    (85) llamada -> . ID saw_id OPAREN exp llamada1 CPAREN
-    (86) llamada -> . ID saw_id OPAREN CPAREN
-    (78) boolean -> . TRUE
-    (79) boolean -> . FALSE
+    (100) gexp1 -> EQ . saw_op mexp
+    (130) saw_op -> .
 
-    OPAREN          shift and go to state 30
-    CSTINT          shift and go to state 44
-    CSTFLT          shift and go to state 45
-    CSTCHAR         shift and go to state 46
-    CSTSTRING       shift and go to state 47
-    ID              shift and go to state 76
-    TRUE            shift and go to state 49
-    FALSE           shift and go to state 50
+    OPAREN          reduce using rule 130 (saw_op -> .)
+    CSTINT          reduce using rule 130 (saw_op -> .)
+    CSTFLT          reduce using rule 130 (saw_op -> .)
+    CSTCHAR         reduce using rule 130 (saw_op -> .)
+    CSTSTRING       reduce using rule 130 (saw_op -> .)
+    ID              reduce using rule 130 (saw_op -> .)
+    TRUE            reduce using rule 130 (saw_op -> .)
+    FALSE           reduce using rule 130 (saw_op -> .)
 
-    mexp                           shift and go to state 161
-    termino                        shift and go to state 41
-    factor                         shift and go to state 42
-    varcst                         shift and go to state 43
-    variable                       shift and go to state 74
-    llamada                        shift and go to state 75
-    boolean                        shift and go to state 48
+    saw_op                         shift and go to state 161
 
 state 99
 
-    (101) gexp1 -> NE . mexp
-    (103) mexp -> . termino mexp1
-    (107) termino -> . factor term1
-    (111) factor -> . OPAREN exp CPAREN
-    (112) factor -> . varcst
-    (113) factor -> . variable
-    (114) factor -> . llamada
-    (115) varcst -> . CSTINT saw_end_value
-    (116) varcst -> . CSTFLT saw_end_value
-    (117) varcst -> . CSTCHAR saw_end_value
-    (118) varcst -> . CSTSTRING saw_end_value
-    (119) varcst -> . boolean saw_end_value
-    (80) variable -> . ID saw_id variable1 variable1 variable2
-    (85) llamada -> . ID saw_id OPAREN exp llamada1 CPAREN
-    (86) llamada -> . ID saw_id OPAREN CPAREN
-    (78) boolean -> . TRUE
-    (79) boolean -> . FALSE
+    (101) gexp1 -> NE . saw_op mexp
+    (130) saw_op -> .
 
-    OPAREN          shift and go to state 30
-    CSTINT          shift and go to state 44
-    CSTFLT          shift and go to state 45
-    CSTCHAR         shift and go to state 46
-    CSTSTRING       shift and go to state 47
-    ID              shift and go to state 76
-    TRUE            shift and go to state 49
-    FALSE           shift and go to state 50
+    OPAREN          reduce using rule 130 (saw_op -> .)
+    CSTINT          reduce using rule 130 (saw_op -> .)
+    CSTFLT          reduce using rule 130 (saw_op -> .)
+    CSTCHAR         reduce using rule 130 (saw_op -> .)
+    CSTSTRING       reduce using rule 130 (saw_op -> .)
+    ID              reduce using rule 130 (saw_op -> .)
+    TRUE            reduce using rule 130 (saw_op -> .)
+    FALSE           reduce using rule 130 (saw_op -> .)
 
-    mexp                           shift and go to state 162
-    termino                        shift and go to state 41
-    factor                         shift and go to state 42
-    varcst                         shift and go to state 43
-    variable                       shift and go to state 74
-    llamada                        shift and go to state 75
-    boolean                        shift and go to state 48
+    saw_op                         shift and go to state 162
 
 state 100
 
@@ -2801,73 +2631,35 @@ state 101
 
 state 102
 
-    (104) mexp1 -> PLUS . termino mexp1
-    (107) termino -> . factor term1
-    (111) factor -> . OPAREN exp CPAREN
-    (112) factor -> . varcst
-    (113) factor -> . variable
-    (114) factor -> . llamada
-    (115) varcst -> . CSTINT saw_end_value
-    (116) varcst -> . CSTFLT saw_end_value
-    (117) varcst -> . CSTCHAR saw_end_value
-    (118) varcst -> . CSTSTRING saw_end_value
-    (119) varcst -> . boolean saw_end_value
-    (80) variable -> . ID saw_id variable1 variable1 variable2
-    (85) llamada -> . ID saw_id OPAREN exp llamada1 CPAREN
-    (86) llamada -> . ID saw_id OPAREN CPAREN
-    (78) boolean -> . TRUE
-    (79) boolean -> . FALSE
+    (104) mexp1 -> PLUS . saw_op termino mexp1
+    (130) saw_op -> .
 
-    OPAREN          shift and go to state 30
-    CSTINT          shift and go to state 44
-    CSTFLT          shift and go to state 45
-    CSTCHAR         shift and go to state 46
-    CSTSTRING       shift and go to state 47
-    ID              shift and go to state 76
-    TRUE            shift and go to state 49
-    FALSE           shift and go to state 50
+    OPAREN          reduce using rule 130 (saw_op -> .)
+    CSTINT          reduce using rule 130 (saw_op -> .)
+    CSTFLT          reduce using rule 130 (saw_op -> .)
+    CSTCHAR         reduce using rule 130 (saw_op -> .)
+    CSTSTRING       reduce using rule 130 (saw_op -> .)
+    ID              reduce using rule 130 (saw_op -> .)
+    TRUE            reduce using rule 130 (saw_op -> .)
+    FALSE           reduce using rule 130 (saw_op -> .)
 
-    termino                        shift and go to state 163
-    factor                         shift and go to state 42
-    varcst                         shift and go to state 43
-    variable                       shift and go to state 74
-    llamada                        shift and go to state 75
-    boolean                        shift and go to state 48
+    saw_op                         shift and go to state 163
 
 state 103
 
-    (105) mexp1 -> MINUS . termino mexp1
-    (107) termino -> . factor term1
-    (111) factor -> . OPAREN exp CPAREN
-    (112) factor -> . varcst
-    (113) factor -> . variable
-    (114) factor -> . llamada
-    (115) varcst -> . CSTINT saw_end_value
-    (116) varcst -> . CSTFLT saw_end_value
-    (117) varcst -> . CSTCHAR saw_end_value
-    (118) varcst -> . CSTSTRING saw_end_value
-    (119) varcst -> . boolean saw_end_value
-    (80) variable -> . ID saw_id variable1 variable1 variable2
-    (85) llamada -> . ID saw_id OPAREN exp llamada1 CPAREN
-    (86) llamada -> . ID saw_id OPAREN CPAREN
-    (78) boolean -> . TRUE
-    (79) boolean -> . FALSE
+    (105) mexp1 -> MINUS . saw_op termino mexp1
+    (130) saw_op -> .
 
-    OPAREN          shift and go to state 30
-    CSTINT          shift and go to state 44
-    CSTFLT          shift and go to state 45
-    CSTCHAR         shift and go to state 46
-    CSTSTRING       shift and go to state 47
-    ID              shift and go to state 76
-    TRUE            shift and go to state 49
-    FALSE           shift and go to state 50
+    OPAREN          reduce using rule 130 (saw_op -> .)
+    CSTINT          reduce using rule 130 (saw_op -> .)
+    CSTFLT          reduce using rule 130 (saw_op -> .)
+    CSTCHAR         reduce using rule 130 (saw_op -> .)
+    CSTSTRING       reduce using rule 130 (saw_op -> .)
+    ID              reduce using rule 130 (saw_op -> .)
+    TRUE            reduce using rule 130 (saw_op -> .)
+    FALSE           reduce using rule 130 (saw_op -> .)
 
-    termino                        shift and go to state 164
-    factor                         shift and go to state 42
-    varcst                         shift and go to state 43
-    variable                       shift and go to state 74
-    llamada                        shift and go to state 75
-    boolean                        shift and go to state 48
+    saw_op                         shift and go to state 164
 
 state 104
 
@@ -2949,69 +2741,35 @@ state 105
 
 state 106
 
-    (108) term1 -> MULT . factor term1
-    (111) factor -> . OPAREN exp CPAREN
-    (112) factor -> . varcst
-    (113) factor -> . variable
-    (114) factor -> . llamada
-    (115) varcst -> . CSTINT saw_end_value
-    (116) varcst -> . CSTFLT saw_end_value
-    (117) varcst -> . CSTCHAR saw_end_value
-    (118) varcst -> . CSTSTRING saw_end_value
-    (119) varcst -> . boolean saw_end_value
-    (80) variable -> . ID saw_id variable1 variable1 variable2
-    (85) llamada -> . ID saw_id OPAREN exp llamada1 CPAREN
-    (86) llamada -> . ID saw_id OPAREN CPAREN
-    (78) boolean -> . TRUE
-    (79) boolean -> . FALSE
+    (108) term1 -> MULT . saw_op factor term1
+    (130) saw_op -> .
 
-    OPAREN          shift and go to state 30
-    CSTINT          shift and go to state 44
-    CSTFLT          shift and go to state 45
-    CSTCHAR         shift and go to state 46
-    CSTSTRING       shift and go to state 47
-    ID              shift and go to state 76
-    TRUE            shift and go to state 49
-    FALSE           shift and go to state 50
+    OPAREN          reduce using rule 130 (saw_op -> .)
+    CSTINT          reduce using rule 130 (saw_op -> .)
+    CSTFLT          reduce using rule 130 (saw_op -> .)
+    CSTCHAR         reduce using rule 130 (saw_op -> .)
+    CSTSTRING       reduce using rule 130 (saw_op -> .)
+    ID              reduce using rule 130 (saw_op -> .)
+    TRUE            reduce using rule 130 (saw_op -> .)
+    FALSE           reduce using rule 130 (saw_op -> .)
 
-    factor                         shift and go to state 165
-    varcst                         shift and go to state 43
-    variable                       shift and go to state 74
-    llamada                        shift and go to state 75
-    boolean                        shift and go to state 48
+    saw_op                         shift and go to state 165
 
 state 107
 
-    (109) term1 -> DIV . factor term1
-    (111) factor -> . OPAREN exp CPAREN
-    (112) factor -> . varcst
-    (113) factor -> . variable
-    (114) factor -> . llamada
-    (115) varcst -> . CSTINT saw_end_value
-    (116) varcst -> . CSTFLT saw_end_value
-    (117) varcst -> . CSTCHAR saw_end_value
-    (118) varcst -> . CSTSTRING saw_end_value
-    (119) varcst -> . boolean saw_end_value
-    (80) variable -> . ID saw_id variable1 variable1 variable2
-    (85) llamada -> . ID saw_id OPAREN exp llamada1 CPAREN
-    (86) llamada -> . ID saw_id OPAREN CPAREN
-    (78) boolean -> . TRUE
-    (79) boolean -> . FALSE
+    (109) term1 -> DIV . saw_op factor term1
+    (130) saw_op -> .
 
-    OPAREN          shift and go to state 30
-    CSTINT          shift and go to state 44
-    CSTFLT          shift and go to state 45
-    CSTCHAR         shift and go to state 46
-    CSTSTRING       shift and go to state 47
-    ID              shift and go to state 76
-    TRUE            shift and go to state 49
-    FALSE           shift and go to state 50
+    OPAREN          reduce using rule 130 (saw_op -> .)
+    CSTINT          reduce using rule 130 (saw_op -> .)
+    CSTFLT          reduce using rule 130 (saw_op -> .)
+    CSTCHAR         reduce using rule 130 (saw_op -> .)
+    CSTSTRING       reduce using rule 130 (saw_op -> .)
+    ID              reduce using rule 130 (saw_op -> .)
+    TRUE            reduce using rule 130 (saw_op -> .)
+    FALSE           reduce using rule 130 (saw_op -> .)
 
-    factor                         shift and go to state 166
-    varcst                         shift and go to state 43
-    variable                       shift and go to state 74
-    llamada                        shift and go to state 75
-    boolean                        shift and go to state 48
+    saw_op                         shift and go to state 166
 
 state 108
 
@@ -3812,8 +3570,8 @@ state 144
     COLON           reduce using rule 120 (empty -> .)
     SEMICOLON       reduce using rule 120 (empty -> .)
     COMMA           reduce using rule 120 (empty -> .)
-    QUESTION        reduce using rule 120 (empty -> .)
     CBRACKET        reduce using rule 120 (empty -> .)
+    QUESTION        reduce using rule 120 (empty -> .)
 
   ! OBRACKET        [ reduce using rule 120 (empty -> .) ]
   ! OPAREN          [ reduce using rule 120 (empty -> .) ]
@@ -3920,456 +3678,441 @@ state 154
 
 state 155
 
-    (90) exp1 -> OR texp . exp1
-    (90) exp1 -> . OR texp exp1
-    (91) exp1 -> . empty
-    (120) empty -> .
+    (90) exp1 -> OR saw_op . texp exp1
+    (92) texp -> . gexp texp1
+    (95) gexp -> . mexp gexp1
+    (103) mexp -> . termino mexp1
+    (107) termino -> . factor term1
+    (111) factor -> . OPAREN exp CPAREN
+    (112) factor -> . varcst
+    (113) factor -> . variable
+    (114) factor -> . llamada
+    (115) varcst -> . CSTINT saw_end_value
+    (116) varcst -> . CSTFLT saw_end_value
+    (117) varcst -> . CSTCHAR saw_end_value
+    (118) varcst -> . CSTSTRING saw_end_value
+    (119) varcst -> . boolean saw_end_value
+    (80) variable -> . ID saw_id variable1 variable1 variable2
+    (85) llamada -> . ID saw_id OPAREN exp llamada1 CPAREN
+    (86) llamada -> . ID saw_id OPAREN CPAREN
+    (78) boolean -> . TRUE
+    (79) boolean -> . FALSE
 
-    OR              shift and go to state 88
-    QUESTION        reduce using rule 120 (empty -> .)
-    CPAREN          reduce using rule 120 (empty -> .)
-    ID              reduce using rule 120 (empty -> .)
-    IF              reduce using rule 120 (empty -> .)
-    PRINT           reduce using rule 120 (empty -> .)
-    READ            reduce using rule 120 (empty -> .)
-    WHILE           reduce using rule 120 (empty -> .)
-    FOR             reduce using rule 120 (empty -> .)
-    OCURLY          reduce using rule 120 (empty -> .)
-    FUNCTION        reduce using rule 120 (empty -> .)
-    CLASS           reduce using rule 120 (empty -> .)
-    VAR             reduce using rule 120 (empty -> .)
-    OPAREN          reduce using rule 120 (empty -> .)
-    CSTINT          reduce using rule 120 (empty -> .)
-    CSTFLT          reduce using rule 120 (empty -> .)
-    CSTCHAR         reduce using rule 120 (empty -> .)
-    CSTSTRING       reduce using rule 120 (empty -> .)
-    TRUE            reduce using rule 120 (empty -> .)
-    FALSE           reduce using rule 120 (empty -> .)
-    CCURLY          reduce using rule 120 (empty -> .)
-    COLON           reduce using rule 120 (empty -> .)
-    SEMICOLON       reduce using rule 120 (empty -> .)
-    COMMA           reduce using rule 120 (empty -> .)
-    CBRACKET        reduce using rule 120 (empty -> .)
+    OPAREN          shift and go to state 30
+    CSTINT          shift and go to state 44
+    CSTFLT          shift and go to state 45
+    CSTCHAR         shift and go to state 46
+    CSTSTRING       shift and go to state 47
+    ID              shift and go to state 76
+    TRUE            shift and go to state 49
+    FALSE           shift and go to state 50
 
-    exp1                           shift and go to state 190
-    empty                          shift and go to state 89
+    texp                           shift and go to state 190
+    gexp                           shift and go to state 39
+    mexp                           shift and go to state 40
+    termino                        shift and go to state 41
+    factor                         shift and go to state 42
+    varcst                         shift and go to state 43
+    variable                       shift and go to state 74
+    llamada                        shift and go to state 75
+    boolean                        shift and go to state 48
 
 state 156
 
-    (93) texp1 -> AND gexp . texp1
-    (93) texp1 -> . AND gexp texp1
-    (94) texp1 -> . empty
-    (120) empty -> .
+    (93) texp1 -> AND saw_op . gexp texp1
+    (95) gexp -> . mexp gexp1
+    (103) mexp -> . termino mexp1
+    (107) termino -> . factor term1
+    (111) factor -> . OPAREN exp CPAREN
+    (112) factor -> . varcst
+    (113) factor -> . variable
+    (114) factor -> . llamada
+    (115) varcst -> . CSTINT saw_end_value
+    (116) varcst -> . CSTFLT saw_end_value
+    (117) varcst -> . CSTCHAR saw_end_value
+    (118) varcst -> . CSTSTRING saw_end_value
+    (119) varcst -> . boolean saw_end_value
+    (80) variable -> . ID saw_id variable1 variable1 variable2
+    (85) llamada -> . ID saw_id OPAREN exp llamada1 CPAREN
+    (86) llamada -> . ID saw_id OPAREN CPAREN
+    (78) boolean -> . TRUE
+    (79) boolean -> . FALSE
 
-    AND             shift and go to state 91
-    OR              reduce using rule 120 (empty -> .)
-    QUESTION        reduce using rule 120 (empty -> .)
-    CPAREN          reduce using rule 120 (empty -> .)
-    ID              reduce using rule 120 (empty -> .)
-    IF              reduce using rule 120 (empty -> .)
-    PRINT           reduce using rule 120 (empty -> .)
-    READ            reduce using rule 120 (empty -> .)
-    WHILE           reduce using rule 120 (empty -> .)
-    FOR             reduce using rule 120 (empty -> .)
-    OCURLY          reduce using rule 120 (empty -> .)
-    FUNCTION        reduce using rule 120 (empty -> .)
-    CLASS           reduce using rule 120 (empty -> .)
-    VAR             reduce using rule 120 (empty -> .)
-    OPAREN          reduce using rule 120 (empty -> .)
-    CSTINT          reduce using rule 120 (empty -> .)
-    CSTFLT          reduce using rule 120 (empty -> .)
-    CSTCHAR         reduce using rule 120 (empty -> .)
-    CSTSTRING       reduce using rule 120 (empty -> .)
-    TRUE            reduce using rule 120 (empty -> .)
-    FALSE           reduce using rule 120 (empty -> .)
-    CCURLY          reduce using rule 120 (empty -> .)
-    COLON           reduce using rule 120 (empty -> .)
-    SEMICOLON       reduce using rule 120 (empty -> .)
-    COMMA           reduce using rule 120 (empty -> .)
-    CBRACKET        reduce using rule 120 (empty -> .)
+    OPAREN          shift and go to state 30
+    CSTINT          shift and go to state 44
+    CSTFLT          shift and go to state 45
+    CSTCHAR         shift and go to state 46
+    CSTSTRING       shift and go to state 47
+    ID              shift and go to state 76
+    TRUE            shift and go to state 49
+    FALSE           shift and go to state 50
 
-    texp1                          shift and go to state 191
-    empty                          shift and go to state 92
+    gexp                           shift and go to state 191
+    mexp                           shift and go to state 40
+    termino                        shift and go to state 41
+    factor                         shift and go to state 42
+    varcst                         shift and go to state 43
+    variable                       shift and go to state 74
+    llamada                        shift and go to state 75
+    boolean                        shift and go to state 48
 
 state 157
 
-    (96) gexp1 -> LT mexp .
+    (96) gexp1 -> LT saw_op . mexp
+    (103) mexp -> . termino mexp1
+    (107) termino -> . factor term1
+    (111) factor -> . OPAREN exp CPAREN
+    (112) factor -> . varcst
+    (113) factor -> . variable
+    (114) factor -> . llamada
+    (115) varcst -> . CSTINT saw_end_value
+    (116) varcst -> . CSTFLT saw_end_value
+    (117) varcst -> . CSTCHAR saw_end_value
+    (118) varcst -> . CSTSTRING saw_end_value
+    (119) varcst -> . boolean saw_end_value
+    (80) variable -> . ID saw_id variable1 variable1 variable2
+    (85) llamada -> . ID saw_id OPAREN exp llamada1 CPAREN
+    (86) llamada -> . ID saw_id OPAREN CPAREN
+    (78) boolean -> . TRUE
+    (79) boolean -> . FALSE
 
-    AND             reduce using rule 96 (gexp1 -> LT mexp .)
-    OR              reduce using rule 96 (gexp1 -> LT mexp .)
-    QUESTION        reduce using rule 96 (gexp1 -> LT mexp .)
-    CPAREN          reduce using rule 96 (gexp1 -> LT mexp .)
-    ID              reduce using rule 96 (gexp1 -> LT mexp .)
-    IF              reduce using rule 96 (gexp1 -> LT mexp .)
-    PRINT           reduce using rule 96 (gexp1 -> LT mexp .)
-    READ            reduce using rule 96 (gexp1 -> LT mexp .)
-    WHILE           reduce using rule 96 (gexp1 -> LT mexp .)
-    FOR             reduce using rule 96 (gexp1 -> LT mexp .)
-    OCURLY          reduce using rule 96 (gexp1 -> LT mexp .)
-    FUNCTION        reduce using rule 96 (gexp1 -> LT mexp .)
-    CLASS           reduce using rule 96 (gexp1 -> LT mexp .)
-    VAR             reduce using rule 96 (gexp1 -> LT mexp .)
-    OPAREN          reduce using rule 96 (gexp1 -> LT mexp .)
-    CSTINT          reduce using rule 96 (gexp1 -> LT mexp .)
-    CSTFLT          reduce using rule 96 (gexp1 -> LT mexp .)
-    CSTCHAR         reduce using rule 96 (gexp1 -> LT mexp .)
-    CSTSTRING       reduce using rule 96 (gexp1 -> LT mexp .)
-    TRUE            reduce using rule 96 (gexp1 -> LT mexp .)
-    FALSE           reduce using rule 96 (gexp1 -> LT mexp .)
-    CCURLY          reduce using rule 96 (gexp1 -> LT mexp .)
-    COLON           reduce using rule 96 (gexp1 -> LT mexp .)
-    SEMICOLON       reduce using rule 96 (gexp1 -> LT mexp .)
-    COMMA           reduce using rule 96 (gexp1 -> LT mexp .)
-    CBRACKET        reduce using rule 96 (gexp1 -> LT mexp .)
+    OPAREN          shift and go to state 30
+    CSTINT          shift and go to state 44
+    CSTFLT          shift and go to state 45
+    CSTCHAR         shift and go to state 46
+    CSTSTRING       shift and go to state 47
+    ID              shift and go to state 76
+    TRUE            shift and go to state 49
+    FALSE           shift and go to state 50
 
+    mexp                           shift and go to state 192
+    termino                        shift and go to state 41
+    factor                         shift and go to state 42
+    varcst                         shift and go to state 43
+    variable                       shift and go to state 74
+    llamada                        shift and go to state 75
+    boolean                        shift and go to state 48
 
 state 158
 
-    (97) gexp1 -> GT mexp .
+    (97) gexp1 -> GT saw_op . mexp
+    (103) mexp -> . termino mexp1
+    (107) termino -> . factor term1
+    (111) factor -> . OPAREN exp CPAREN
+    (112) factor -> . varcst
+    (113) factor -> . variable
+    (114) factor -> . llamada
+    (115) varcst -> . CSTINT saw_end_value
+    (116) varcst -> . CSTFLT saw_end_value
+    (117) varcst -> . CSTCHAR saw_end_value
+    (118) varcst -> . CSTSTRING saw_end_value
+    (119) varcst -> . boolean saw_end_value
+    (80) variable -> . ID saw_id variable1 variable1 variable2
+    (85) llamada -> . ID saw_id OPAREN exp llamada1 CPAREN
+    (86) llamada -> . ID saw_id OPAREN CPAREN
+    (78) boolean -> . TRUE
+    (79) boolean -> . FALSE
 
-    AND             reduce using rule 97 (gexp1 -> GT mexp .)
-    OR              reduce using rule 97 (gexp1 -> GT mexp .)
-    QUESTION        reduce using rule 97 (gexp1 -> GT mexp .)
-    CPAREN          reduce using rule 97 (gexp1 -> GT mexp .)
-    ID              reduce using rule 97 (gexp1 -> GT mexp .)
-    IF              reduce using rule 97 (gexp1 -> GT mexp .)
-    PRINT           reduce using rule 97 (gexp1 -> GT mexp .)
-    READ            reduce using rule 97 (gexp1 -> GT mexp .)
-    WHILE           reduce using rule 97 (gexp1 -> GT mexp .)
-    FOR             reduce using rule 97 (gexp1 -> GT mexp .)
-    OCURLY          reduce using rule 97 (gexp1 -> GT mexp .)
-    FUNCTION        reduce using rule 97 (gexp1 -> GT mexp .)
-    CLASS           reduce using rule 97 (gexp1 -> GT mexp .)
-    VAR             reduce using rule 97 (gexp1 -> GT mexp .)
-    OPAREN          reduce using rule 97 (gexp1 -> GT mexp .)
-    CSTINT          reduce using rule 97 (gexp1 -> GT mexp .)
-    CSTFLT          reduce using rule 97 (gexp1 -> GT mexp .)
-    CSTCHAR         reduce using rule 97 (gexp1 -> GT mexp .)
-    CSTSTRING       reduce using rule 97 (gexp1 -> GT mexp .)
-    TRUE            reduce using rule 97 (gexp1 -> GT mexp .)
-    FALSE           reduce using rule 97 (gexp1 -> GT mexp .)
-    CCURLY          reduce using rule 97 (gexp1 -> GT mexp .)
-    COLON           reduce using rule 97 (gexp1 -> GT mexp .)
-    SEMICOLON       reduce using rule 97 (gexp1 -> GT mexp .)
-    COMMA           reduce using rule 97 (gexp1 -> GT mexp .)
-    CBRACKET        reduce using rule 97 (gexp1 -> GT mexp .)
+    OPAREN          shift and go to state 30
+    CSTINT          shift and go to state 44
+    CSTFLT          shift and go to state 45
+    CSTCHAR         shift and go to state 46
+    CSTSTRING       shift and go to state 47
+    ID              shift and go to state 76
+    TRUE            shift and go to state 49
+    FALSE           shift and go to state 50
 
+    mexp                           shift and go to state 193
+    termino                        shift and go to state 41
+    factor                         shift and go to state 42
+    varcst                         shift and go to state 43
+    variable                       shift and go to state 74
+    llamada                        shift and go to state 75
+    boolean                        shift and go to state 48
 
 state 159
 
-    (98) gexp1 -> GTE mexp .
+    (98) gexp1 -> GTE saw_op . mexp
+    (103) mexp -> . termino mexp1
+    (107) termino -> . factor term1
+    (111) factor -> . OPAREN exp CPAREN
+    (112) factor -> . varcst
+    (113) factor -> . variable
+    (114) factor -> . llamada
+    (115) varcst -> . CSTINT saw_end_value
+    (116) varcst -> . CSTFLT saw_end_value
+    (117) varcst -> . CSTCHAR saw_end_value
+    (118) varcst -> . CSTSTRING saw_end_value
+    (119) varcst -> . boolean saw_end_value
+    (80) variable -> . ID saw_id variable1 variable1 variable2
+    (85) llamada -> . ID saw_id OPAREN exp llamada1 CPAREN
+    (86) llamada -> . ID saw_id OPAREN CPAREN
+    (78) boolean -> . TRUE
+    (79) boolean -> . FALSE
 
-    AND             reduce using rule 98 (gexp1 -> GTE mexp .)
-    OR              reduce using rule 98 (gexp1 -> GTE mexp .)
-    QUESTION        reduce using rule 98 (gexp1 -> GTE mexp .)
-    CPAREN          reduce using rule 98 (gexp1 -> GTE mexp .)
-    ID              reduce using rule 98 (gexp1 -> GTE mexp .)
-    IF              reduce using rule 98 (gexp1 -> GTE mexp .)
-    PRINT           reduce using rule 98 (gexp1 -> GTE mexp .)
-    READ            reduce using rule 98 (gexp1 -> GTE mexp .)
-    WHILE           reduce using rule 98 (gexp1 -> GTE mexp .)
-    FOR             reduce using rule 98 (gexp1 -> GTE mexp .)
-    OCURLY          reduce using rule 98 (gexp1 -> GTE mexp .)
-    FUNCTION        reduce using rule 98 (gexp1 -> GTE mexp .)
-    CLASS           reduce using rule 98 (gexp1 -> GTE mexp .)
-    VAR             reduce using rule 98 (gexp1 -> GTE mexp .)
-    OPAREN          reduce using rule 98 (gexp1 -> GTE mexp .)
-    CSTINT          reduce using rule 98 (gexp1 -> GTE mexp .)
-    CSTFLT          reduce using rule 98 (gexp1 -> GTE mexp .)
-    CSTCHAR         reduce using rule 98 (gexp1 -> GTE mexp .)
-    CSTSTRING       reduce using rule 98 (gexp1 -> GTE mexp .)
-    TRUE            reduce using rule 98 (gexp1 -> GTE mexp .)
-    FALSE           reduce using rule 98 (gexp1 -> GTE mexp .)
-    CCURLY          reduce using rule 98 (gexp1 -> GTE mexp .)
-    COLON           reduce using rule 98 (gexp1 -> GTE mexp .)
-    SEMICOLON       reduce using rule 98 (gexp1 -> GTE mexp .)
-    COMMA           reduce using rule 98 (gexp1 -> GTE mexp .)
-    CBRACKET        reduce using rule 98 (gexp1 -> GTE mexp .)
+    OPAREN          shift and go to state 30
+    CSTINT          shift and go to state 44
+    CSTFLT          shift and go to state 45
+    CSTCHAR         shift and go to state 46
+    CSTSTRING       shift and go to state 47
+    ID              shift and go to state 76
+    TRUE            shift and go to state 49
+    FALSE           shift and go to state 50
 
+    mexp                           shift and go to state 194
+    termino                        shift and go to state 41
+    factor                         shift and go to state 42
+    varcst                         shift and go to state 43
+    variable                       shift and go to state 74
+    llamada                        shift and go to state 75
+    boolean                        shift and go to state 48
 
 state 160
 
-    (99) gexp1 -> LTE mexp .
+    (99) gexp1 -> LTE saw_op . mexp
+    (103) mexp -> . termino mexp1
+    (107) termino -> . factor term1
+    (111) factor -> . OPAREN exp CPAREN
+    (112) factor -> . varcst
+    (113) factor -> . variable
+    (114) factor -> . llamada
+    (115) varcst -> . CSTINT saw_end_value
+    (116) varcst -> . CSTFLT saw_end_value
+    (117) varcst -> . CSTCHAR saw_end_value
+    (118) varcst -> . CSTSTRING saw_end_value
+    (119) varcst -> . boolean saw_end_value
+    (80) variable -> . ID saw_id variable1 variable1 variable2
+    (85) llamada -> . ID saw_id OPAREN exp llamada1 CPAREN
+    (86) llamada -> . ID saw_id OPAREN CPAREN
+    (78) boolean -> . TRUE
+    (79) boolean -> . FALSE
 
-    AND             reduce using rule 99 (gexp1 -> LTE mexp .)
-    OR              reduce using rule 99 (gexp1 -> LTE mexp .)
-    QUESTION        reduce using rule 99 (gexp1 -> LTE mexp .)
-    CPAREN          reduce using rule 99 (gexp1 -> LTE mexp .)
-    ID              reduce using rule 99 (gexp1 -> LTE mexp .)
-    IF              reduce using rule 99 (gexp1 -> LTE mexp .)
-    PRINT           reduce using rule 99 (gexp1 -> LTE mexp .)
-    READ            reduce using rule 99 (gexp1 -> LTE mexp .)
-    WHILE           reduce using rule 99 (gexp1 -> LTE mexp .)
-    FOR             reduce using rule 99 (gexp1 -> LTE mexp .)
-    OCURLY          reduce using rule 99 (gexp1 -> LTE mexp .)
-    FUNCTION        reduce using rule 99 (gexp1 -> LTE mexp .)
-    CLASS           reduce using rule 99 (gexp1 -> LTE mexp .)
-    VAR             reduce using rule 99 (gexp1 -> LTE mexp .)
-    OPAREN          reduce using rule 99 (gexp1 -> LTE mexp .)
-    CSTINT          reduce using rule 99 (gexp1 -> LTE mexp .)
-    CSTFLT          reduce using rule 99 (gexp1 -> LTE mexp .)
-    CSTCHAR         reduce using rule 99 (gexp1 -> LTE mexp .)
-    CSTSTRING       reduce using rule 99 (gexp1 -> LTE mexp .)
-    TRUE            reduce using rule 99 (gexp1 -> LTE mexp .)
-    FALSE           reduce using rule 99 (gexp1 -> LTE mexp .)
-    CCURLY          reduce using rule 99 (gexp1 -> LTE mexp .)
-    COLON           reduce using rule 99 (gexp1 -> LTE mexp .)
-    SEMICOLON       reduce using rule 99 (gexp1 -> LTE mexp .)
-    COMMA           reduce using rule 99 (gexp1 -> LTE mexp .)
-    CBRACKET        reduce using rule 99 (gexp1 -> LTE mexp .)
+    OPAREN          shift and go to state 30
+    CSTINT          shift and go to state 44
+    CSTFLT          shift and go to state 45
+    CSTCHAR         shift and go to state 46
+    CSTSTRING       shift and go to state 47
+    ID              shift and go to state 76
+    TRUE            shift and go to state 49
+    FALSE           shift and go to state 50
 
+    mexp                           shift and go to state 195
+    termino                        shift and go to state 41
+    factor                         shift and go to state 42
+    varcst                         shift and go to state 43
+    variable                       shift and go to state 74
+    llamada                        shift and go to state 75
+    boolean                        shift and go to state 48
 
 state 161
 
-    (100) gexp1 -> EQ mexp .
+    (100) gexp1 -> EQ saw_op . mexp
+    (103) mexp -> . termino mexp1
+    (107) termino -> . factor term1
+    (111) factor -> . OPAREN exp CPAREN
+    (112) factor -> . varcst
+    (113) factor -> . variable
+    (114) factor -> . llamada
+    (115) varcst -> . CSTINT saw_end_value
+    (116) varcst -> . CSTFLT saw_end_value
+    (117) varcst -> . CSTCHAR saw_end_value
+    (118) varcst -> . CSTSTRING saw_end_value
+    (119) varcst -> . boolean saw_end_value
+    (80) variable -> . ID saw_id variable1 variable1 variable2
+    (85) llamada -> . ID saw_id OPAREN exp llamada1 CPAREN
+    (86) llamada -> . ID saw_id OPAREN CPAREN
+    (78) boolean -> . TRUE
+    (79) boolean -> . FALSE
 
-    AND             reduce using rule 100 (gexp1 -> EQ mexp .)
-    OR              reduce using rule 100 (gexp1 -> EQ mexp .)
-    QUESTION        reduce using rule 100 (gexp1 -> EQ mexp .)
-    CPAREN          reduce using rule 100 (gexp1 -> EQ mexp .)
-    ID              reduce using rule 100 (gexp1 -> EQ mexp .)
-    IF              reduce using rule 100 (gexp1 -> EQ mexp .)
-    PRINT           reduce using rule 100 (gexp1 -> EQ mexp .)
-    READ            reduce using rule 100 (gexp1 -> EQ mexp .)
-    WHILE           reduce using rule 100 (gexp1 -> EQ mexp .)
-    FOR             reduce using rule 100 (gexp1 -> EQ mexp .)
-    OCURLY          reduce using rule 100 (gexp1 -> EQ mexp .)
-    FUNCTION        reduce using rule 100 (gexp1 -> EQ mexp .)
-    CLASS           reduce using rule 100 (gexp1 -> EQ mexp .)
-    VAR             reduce using rule 100 (gexp1 -> EQ mexp .)
-    OPAREN          reduce using rule 100 (gexp1 -> EQ mexp .)
-    CSTINT          reduce using rule 100 (gexp1 -> EQ mexp .)
-    CSTFLT          reduce using rule 100 (gexp1 -> EQ mexp .)
-    CSTCHAR         reduce using rule 100 (gexp1 -> EQ mexp .)
-    CSTSTRING       reduce using rule 100 (gexp1 -> EQ mexp .)
-    TRUE            reduce using rule 100 (gexp1 -> EQ mexp .)
-    FALSE           reduce using rule 100 (gexp1 -> EQ mexp .)
-    CCURLY          reduce using rule 100 (gexp1 -> EQ mexp .)
-    COLON           reduce using rule 100 (gexp1 -> EQ mexp .)
-    SEMICOLON       reduce using rule 100 (gexp1 -> EQ mexp .)
-    COMMA           reduce using rule 100 (gexp1 -> EQ mexp .)
-    CBRACKET        reduce using rule 100 (gexp1 -> EQ mexp .)
+    OPAREN          shift and go to state 30
+    CSTINT          shift and go to state 44
+    CSTFLT          shift and go to state 45
+    CSTCHAR         shift and go to state 46
+    CSTSTRING       shift and go to state 47
+    ID              shift and go to state 76
+    TRUE            shift and go to state 49
+    FALSE           shift and go to state 50
 
+    mexp                           shift and go to state 196
+    termino                        shift and go to state 41
+    factor                         shift and go to state 42
+    varcst                         shift and go to state 43
+    variable                       shift and go to state 74
+    llamada                        shift and go to state 75
+    boolean                        shift and go to state 48
 
 state 162
 
-    (101) gexp1 -> NE mexp .
+    (101) gexp1 -> NE saw_op . mexp
+    (103) mexp -> . termino mexp1
+    (107) termino -> . factor term1
+    (111) factor -> . OPAREN exp CPAREN
+    (112) factor -> . varcst
+    (113) factor -> . variable
+    (114) factor -> . llamada
+    (115) varcst -> . CSTINT saw_end_value
+    (116) varcst -> . CSTFLT saw_end_value
+    (117) varcst -> . CSTCHAR saw_end_value
+    (118) varcst -> . CSTSTRING saw_end_value
+    (119) varcst -> . boolean saw_end_value
+    (80) variable -> . ID saw_id variable1 variable1 variable2
+    (85) llamada -> . ID saw_id OPAREN exp llamada1 CPAREN
+    (86) llamada -> . ID saw_id OPAREN CPAREN
+    (78) boolean -> . TRUE
+    (79) boolean -> . FALSE
 
-    AND             reduce using rule 101 (gexp1 -> NE mexp .)
-    OR              reduce using rule 101 (gexp1 -> NE mexp .)
-    QUESTION        reduce using rule 101 (gexp1 -> NE mexp .)
-    CPAREN          reduce using rule 101 (gexp1 -> NE mexp .)
-    ID              reduce using rule 101 (gexp1 -> NE mexp .)
-    IF              reduce using rule 101 (gexp1 -> NE mexp .)
-    PRINT           reduce using rule 101 (gexp1 -> NE mexp .)
-    READ            reduce using rule 101 (gexp1 -> NE mexp .)
-    WHILE           reduce using rule 101 (gexp1 -> NE mexp .)
-    FOR             reduce using rule 101 (gexp1 -> NE mexp .)
-    OCURLY          reduce using rule 101 (gexp1 -> NE mexp .)
-    FUNCTION        reduce using rule 101 (gexp1 -> NE mexp .)
-    CLASS           reduce using rule 101 (gexp1 -> NE mexp .)
-    VAR             reduce using rule 101 (gexp1 -> NE mexp .)
-    OPAREN          reduce using rule 101 (gexp1 -> NE mexp .)
-    CSTINT          reduce using rule 101 (gexp1 -> NE mexp .)
-    CSTFLT          reduce using rule 101 (gexp1 -> NE mexp .)
-    CSTCHAR         reduce using rule 101 (gexp1 -> NE mexp .)
-    CSTSTRING       reduce using rule 101 (gexp1 -> NE mexp .)
-    TRUE            reduce using rule 101 (gexp1 -> NE mexp .)
-    FALSE           reduce using rule 101 (gexp1 -> NE mexp .)
-    CCURLY          reduce using rule 101 (gexp1 -> NE mexp .)
-    COLON           reduce using rule 101 (gexp1 -> NE mexp .)
-    SEMICOLON       reduce using rule 101 (gexp1 -> NE mexp .)
-    COMMA           reduce using rule 101 (gexp1 -> NE mexp .)
-    CBRACKET        reduce using rule 101 (gexp1 -> NE mexp .)
+    OPAREN          shift and go to state 30
+    CSTINT          shift and go to state 44
+    CSTFLT          shift and go to state 45
+    CSTCHAR         shift and go to state 46
+    CSTSTRING       shift and go to state 47
+    ID              shift and go to state 76
+    TRUE            shift and go to state 49
+    FALSE           shift and go to state 50
 
+    mexp                           shift and go to state 197
+    termino                        shift and go to state 41
+    factor                         shift and go to state 42
+    varcst                         shift and go to state 43
+    variable                       shift and go to state 74
+    llamada                        shift and go to state 75
+    boolean                        shift and go to state 48
 
 state 163
 
-    (104) mexp1 -> PLUS termino . mexp1
-    (104) mexp1 -> . PLUS termino mexp1
-    (105) mexp1 -> . MINUS termino mexp1
-    (106) mexp1 -> . empty
-    (120) empty -> .
+    (104) mexp1 -> PLUS saw_op . termino mexp1
+    (107) termino -> . factor term1
+    (111) factor -> . OPAREN exp CPAREN
+    (112) factor -> . varcst
+    (113) factor -> . variable
+    (114) factor -> . llamada
+    (115) varcst -> . CSTINT saw_end_value
+    (116) varcst -> . CSTFLT saw_end_value
+    (117) varcst -> . CSTCHAR saw_end_value
+    (118) varcst -> . CSTSTRING saw_end_value
+    (119) varcst -> . boolean saw_end_value
+    (80) variable -> . ID saw_id variable1 variable1 variable2
+    (85) llamada -> . ID saw_id OPAREN exp llamada1 CPAREN
+    (86) llamada -> . ID saw_id OPAREN CPAREN
+    (78) boolean -> . TRUE
+    (79) boolean -> . FALSE
 
-    PLUS            shift and go to state 102
-    MINUS           shift and go to state 103
-    LT              reduce using rule 120 (empty -> .)
-    GT              reduce using rule 120 (empty -> .)
-    GTE             reduce using rule 120 (empty -> .)
-    LTE             reduce using rule 120 (empty -> .)
-    EQ              reduce using rule 120 (empty -> .)
-    NE              reduce using rule 120 (empty -> .)
-    AND             reduce using rule 120 (empty -> .)
-    OR              reduce using rule 120 (empty -> .)
-    QUESTION        reduce using rule 120 (empty -> .)
-    CPAREN          reduce using rule 120 (empty -> .)
-    ID              reduce using rule 120 (empty -> .)
-    IF              reduce using rule 120 (empty -> .)
-    PRINT           reduce using rule 120 (empty -> .)
-    READ            reduce using rule 120 (empty -> .)
-    WHILE           reduce using rule 120 (empty -> .)
-    FOR             reduce using rule 120 (empty -> .)
-    OCURLY          reduce using rule 120 (empty -> .)
-    FUNCTION        reduce using rule 120 (empty -> .)
-    CLASS           reduce using rule 120 (empty -> .)
-    VAR             reduce using rule 120 (empty -> .)
-    OPAREN          reduce using rule 120 (empty -> .)
-    CSTINT          reduce using rule 120 (empty -> .)
-    CSTFLT          reduce using rule 120 (empty -> .)
-    CSTCHAR         reduce using rule 120 (empty -> .)
-    CSTSTRING       reduce using rule 120 (empty -> .)
-    TRUE            reduce using rule 120 (empty -> .)
-    FALSE           reduce using rule 120 (empty -> .)
-    CCURLY          reduce using rule 120 (empty -> .)
-    COLON           reduce using rule 120 (empty -> .)
-    SEMICOLON       reduce using rule 120 (empty -> .)
-    COMMA           reduce using rule 120 (empty -> .)
-    CBRACKET        reduce using rule 120 (empty -> .)
+    OPAREN          shift and go to state 30
+    CSTINT          shift and go to state 44
+    CSTFLT          shift and go to state 45
+    CSTCHAR         shift and go to state 46
+    CSTSTRING       shift and go to state 47
+    ID              shift and go to state 76
+    TRUE            shift and go to state 49
+    FALSE           shift and go to state 50
 
-    mexp1                          shift and go to state 192
-    empty                          shift and go to state 104
+    termino                        shift and go to state 198
+    factor                         shift and go to state 42
+    varcst                         shift and go to state 43
+    variable                       shift and go to state 74
+    llamada                        shift and go to state 75
+    boolean                        shift and go to state 48
 
 state 164
 
-    (105) mexp1 -> MINUS termino . mexp1
-    (104) mexp1 -> . PLUS termino mexp1
-    (105) mexp1 -> . MINUS termino mexp1
-    (106) mexp1 -> . empty
-    (120) empty -> .
+    (105) mexp1 -> MINUS saw_op . termino mexp1
+    (107) termino -> . factor term1
+    (111) factor -> . OPAREN exp CPAREN
+    (112) factor -> . varcst
+    (113) factor -> . variable
+    (114) factor -> . llamada
+    (115) varcst -> . CSTINT saw_end_value
+    (116) varcst -> . CSTFLT saw_end_value
+    (117) varcst -> . CSTCHAR saw_end_value
+    (118) varcst -> . CSTSTRING saw_end_value
+    (119) varcst -> . boolean saw_end_value
+    (80) variable -> . ID saw_id variable1 variable1 variable2
+    (85) llamada -> . ID saw_id OPAREN exp llamada1 CPAREN
+    (86) llamada -> . ID saw_id OPAREN CPAREN
+    (78) boolean -> . TRUE
+    (79) boolean -> . FALSE
 
-    PLUS            shift and go to state 102
-    MINUS           shift and go to state 103
-    LT              reduce using rule 120 (empty -> .)
-    GT              reduce using rule 120 (empty -> .)
-    GTE             reduce using rule 120 (empty -> .)
-    LTE             reduce using rule 120 (empty -> .)
-    EQ              reduce using rule 120 (empty -> .)
-    NE              reduce using rule 120 (empty -> .)
-    AND             reduce using rule 120 (empty -> .)
-    OR              reduce using rule 120 (empty -> .)
-    QUESTION        reduce using rule 120 (empty -> .)
-    CPAREN          reduce using rule 120 (empty -> .)
-    ID              reduce using rule 120 (empty -> .)
-    IF              reduce using rule 120 (empty -> .)
-    PRINT           reduce using rule 120 (empty -> .)
-    READ            reduce using rule 120 (empty -> .)
-    WHILE           reduce using rule 120 (empty -> .)
-    FOR             reduce using rule 120 (empty -> .)
-    OCURLY          reduce using rule 120 (empty -> .)
-    FUNCTION        reduce using rule 120 (empty -> .)
-    CLASS           reduce using rule 120 (empty -> .)
-    VAR             reduce using rule 120 (empty -> .)
-    OPAREN          reduce using rule 120 (empty -> .)
-    CSTINT          reduce using rule 120 (empty -> .)
-    CSTFLT          reduce using rule 120 (empty -> .)
-    CSTCHAR         reduce using rule 120 (empty -> .)
-    CSTSTRING       reduce using rule 120 (empty -> .)
-    TRUE            reduce using rule 120 (empty -> .)
-    FALSE           reduce using rule 120 (empty -> .)
-    CCURLY          reduce using rule 120 (empty -> .)
-    COLON           reduce using rule 120 (empty -> .)
-    SEMICOLON       reduce using rule 120 (empty -> .)
-    COMMA           reduce using rule 120 (empty -> .)
-    CBRACKET        reduce using rule 120 (empty -> .)
+    OPAREN          shift and go to state 30
+    CSTINT          shift and go to state 44
+    CSTFLT          shift and go to state 45
+    CSTCHAR         shift and go to state 46
+    CSTSTRING       shift and go to state 47
+    ID              shift and go to state 76
+    TRUE            shift and go to state 49
+    FALSE           shift and go to state 50
 
-    mexp1                          shift and go to state 193
-    empty                          shift and go to state 104
+    termino                        shift and go to state 199
+    factor                         shift and go to state 42
+    varcst                         shift and go to state 43
+    variable                       shift and go to state 74
+    llamada                        shift and go to state 75
+    boolean                        shift and go to state 48
 
 state 165
 
-    (108) term1 -> MULT factor . term1
-    (108) term1 -> . MULT factor term1
-    (109) term1 -> . DIV factor term1
-    (110) term1 -> . empty
-    (120) empty -> .
+    (108) term1 -> MULT saw_op . factor term1
+    (111) factor -> . OPAREN exp CPAREN
+    (112) factor -> . varcst
+    (113) factor -> . variable
+    (114) factor -> . llamada
+    (115) varcst -> . CSTINT saw_end_value
+    (116) varcst -> . CSTFLT saw_end_value
+    (117) varcst -> . CSTCHAR saw_end_value
+    (118) varcst -> . CSTSTRING saw_end_value
+    (119) varcst -> . boolean saw_end_value
+    (80) variable -> . ID saw_id variable1 variable1 variable2
+    (85) llamada -> . ID saw_id OPAREN exp llamada1 CPAREN
+    (86) llamada -> . ID saw_id OPAREN CPAREN
+    (78) boolean -> . TRUE
+    (79) boolean -> . FALSE
 
-    MULT            shift and go to state 106
-    DIV             shift and go to state 107
-    PLUS            reduce using rule 120 (empty -> .)
-    MINUS           reduce using rule 120 (empty -> .)
-    LT              reduce using rule 120 (empty -> .)
-    GT              reduce using rule 120 (empty -> .)
-    GTE             reduce using rule 120 (empty -> .)
-    LTE             reduce using rule 120 (empty -> .)
-    EQ              reduce using rule 120 (empty -> .)
-    NE              reduce using rule 120 (empty -> .)
-    AND             reduce using rule 120 (empty -> .)
-    OR              reduce using rule 120 (empty -> .)
-    QUESTION        reduce using rule 120 (empty -> .)
-    CPAREN          reduce using rule 120 (empty -> .)
-    ID              reduce using rule 120 (empty -> .)
-    IF              reduce using rule 120 (empty -> .)
-    PRINT           reduce using rule 120 (empty -> .)
-    READ            reduce using rule 120 (empty -> .)
-    WHILE           reduce using rule 120 (empty -> .)
-    FOR             reduce using rule 120 (empty -> .)
-    OCURLY          reduce using rule 120 (empty -> .)
-    FUNCTION        reduce using rule 120 (empty -> .)
-    CLASS           reduce using rule 120 (empty -> .)
-    VAR             reduce using rule 120 (empty -> .)
-    OPAREN          reduce using rule 120 (empty -> .)
-    CSTINT          reduce using rule 120 (empty -> .)
-    CSTFLT          reduce using rule 120 (empty -> .)
-    CSTCHAR         reduce using rule 120 (empty -> .)
-    CSTSTRING       reduce using rule 120 (empty -> .)
-    TRUE            reduce using rule 120 (empty -> .)
-    FALSE           reduce using rule 120 (empty -> .)
-    CCURLY          reduce using rule 120 (empty -> .)
-    COLON           reduce using rule 120 (empty -> .)
-    SEMICOLON       reduce using rule 120 (empty -> .)
-    COMMA           reduce using rule 120 (empty -> .)
-    CBRACKET        reduce using rule 120 (empty -> .)
+    OPAREN          shift and go to state 30
+    CSTINT          shift and go to state 44
+    CSTFLT          shift and go to state 45
+    CSTCHAR         shift and go to state 46
+    CSTSTRING       shift and go to state 47
+    ID              shift and go to state 76
+    TRUE            shift and go to state 49
+    FALSE           shift and go to state 50
 
-    term1                          shift and go to state 194
-    empty                          shift and go to state 108
+    factor                         shift and go to state 200
+    varcst                         shift and go to state 43
+    variable                       shift and go to state 74
+    llamada                        shift and go to state 75
+    boolean                        shift and go to state 48
 
 state 166
 
-    (109) term1 -> DIV factor . term1
-    (108) term1 -> . MULT factor term1
-    (109) term1 -> . DIV factor term1
-    (110) term1 -> . empty
-    (120) empty -> .
+    (109) term1 -> DIV saw_op . factor term1
+    (111) factor -> . OPAREN exp CPAREN
+    (112) factor -> . varcst
+    (113) factor -> . variable
+    (114) factor -> . llamada
+    (115) varcst -> . CSTINT saw_end_value
+    (116) varcst -> . CSTFLT saw_end_value
+    (117) varcst -> . CSTCHAR saw_end_value
+    (118) varcst -> . CSTSTRING saw_end_value
+    (119) varcst -> . boolean saw_end_value
+    (80) variable -> . ID saw_id variable1 variable1 variable2
+    (85) llamada -> . ID saw_id OPAREN exp llamada1 CPAREN
+    (86) llamada -> . ID saw_id OPAREN CPAREN
+    (78) boolean -> . TRUE
+    (79) boolean -> . FALSE
 
-    MULT            shift and go to state 106
-    DIV             shift and go to state 107
-    PLUS            reduce using rule 120 (empty -> .)
-    MINUS           reduce using rule 120 (empty -> .)
-    LT              reduce using rule 120 (empty -> .)
-    GT              reduce using rule 120 (empty -> .)
-    GTE             reduce using rule 120 (empty -> .)
-    LTE             reduce using rule 120 (empty -> .)
-    EQ              reduce using rule 120 (empty -> .)
-    NE              reduce using rule 120 (empty -> .)
-    AND             reduce using rule 120 (empty -> .)
-    OR              reduce using rule 120 (empty -> .)
-    QUESTION        reduce using rule 120 (empty -> .)
-    CPAREN          reduce using rule 120 (empty -> .)
-    ID              reduce using rule 120 (empty -> .)
-    IF              reduce using rule 120 (empty -> .)
-    PRINT           reduce using rule 120 (empty -> .)
-    READ            reduce using rule 120 (empty -> .)
-    WHILE           reduce using rule 120 (empty -> .)
-    FOR             reduce using rule 120 (empty -> .)
-    OCURLY          reduce using rule 120 (empty -> .)
-    FUNCTION        reduce using rule 120 (empty -> .)
-    CLASS           reduce using rule 120 (empty -> .)
-    VAR             reduce using rule 120 (empty -> .)
-    OPAREN          reduce using rule 120 (empty -> .)
-    CSTINT          reduce using rule 120 (empty -> .)
-    CSTFLT          reduce using rule 120 (empty -> .)
-    CSTCHAR         reduce using rule 120 (empty -> .)
-    CSTSTRING       reduce using rule 120 (empty -> .)
-    TRUE            reduce using rule 120 (empty -> .)
-    FALSE           reduce using rule 120 (empty -> .)
-    CCURLY          reduce using rule 120 (empty -> .)
-    COLON           reduce using rule 120 (empty -> .)
-    SEMICOLON       reduce using rule 120 (empty -> .)
-    COMMA           reduce using rule 120 (empty -> .)
-    CBRACKET        reduce using rule 120 (empty -> .)
+    OPAREN          shift and go to state 30
+    CSTINT          shift and go to state 44
+    CSTFLT          shift and go to state 45
+    CSTCHAR         shift and go to state 46
+    CSTSTRING       shift and go to state 47
+    ID              shift and go to state 76
+    TRUE            shift and go to state 49
+    FALSE           shift and go to state 50
 
-    term1                          shift and go to state 195
-    empty                          shift and go to state 108
+    factor                         shift and go to state 201
+    varcst                         shift and go to state 43
+    variable                       shift and go to state 74
+    llamada                        shift and go to state 75
+    boolean                        shift and go to state 48
 
 state 167
 
@@ -4454,7 +4197,7 @@ state 170
     COMMA           reduce using rule 126 (saw_variable -> .)
     SEMICOLON       reduce using rule 126 (saw_variable -> .)
 
-    saw_variable                   shift and go to state 196
+    saw_variable                   shift and go to state 202
 
 state 171
 
@@ -4464,7 +4207,7 @@ state 171
     COMMA           reduce using rule 126 (saw_variable -> .)
     SEMICOLON       reduce using rule 126 (saw_variable -> .)
 
-    saw_variable                   shift and go to state 197
+    saw_variable                   shift and go to state 203
 
 state 172
 
@@ -4473,7 +4216,7 @@ state 172
 
     OBRACKET        reduce using rule 126 (saw_variable -> .)
 
-    saw_variable                   shift and go to state 198
+    saw_variable                   shift and go to state 204
 
 state 173
 
@@ -4545,7 +4288,7 @@ state 174
     FALSE           shift and go to state 50
 
     exp                            shift and go to state 28
-    estatuto_redux                 shift and go to state 199
+    estatuto_redux                 shift and go to state 205
     asignacion                     shift and go to state 134
     llamada                        shift and go to state 135
     escritura                      shift and go to state 136
@@ -4567,11 +4310,11 @@ state 175
     (88) llamada1 -> . empty
     (120) empty -> .
 
-    COMMA           shift and go to state 201
+    COMMA           shift and go to state 207
     CPAREN          reduce using rule 120 (empty -> .)
 
-    llamada1                       shift and go to state 200
-    empty                          shift and go to state 202
+    llamada1                       shift and go to state 206
+    empty                          shift and go to state 208
 
 state 176
 
@@ -4622,7 +4365,7 @@ state 177
     (84) variable2 -> . empty
     (120) empty -> .
 
-    PERIOD          shift and go to state 204
+    PERIOD          shift and go to state 210
     AS              reduce using rule 120 (empty -> .)
     MULT            reduce using rule 120 (empty -> .)
     DIV             reduce using rule 120 (empty -> .)
@@ -4664,14 +4407,14 @@ state 177
     TO              reduce using rule 120 (empty -> .)
     BY              reduce using rule 120 (empty -> .)
 
-    variable2                      shift and go to state 203
-    empty                          shift and go to state 205
+    variable2                      shift and go to state 209
+    empty                          shift and go to state 211
 
 state 178
 
     (81) variable1 -> OBRACKET exp . CBRACKET
 
-    CBRACKET        shift and go to state 206
+    CBRACKET        shift and go to state 212
 
 
 state 179
@@ -4682,11 +4425,11 @@ state 179
     (71) cond1 -> . empty
     (120) empty -> .
 
-    ELSE            shift and go to state 208
+    ELSE            shift and go to state 214
     SEMICOLON       reduce using rule 120 (empty -> .)
 
-    cond1                          shift and go to state 207
-    empty                          shift and go to state 209
+    cond1                          shift and go to state 213
+    empty                          shift and go to state 215
 
 state 180
 
@@ -4699,7 +4442,7 @@ state 181
 
     (74) escritura -> PRINT OPAREN exp e1 . CPAREN
 
-    CPAREN          shift and go to state 210
+    CPAREN          shift and go to state 216
 
 
 state 182
@@ -4734,7 +4477,7 @@ state 182
     TRUE            shift and go to state 49
     FALSE           shift and go to state 50
 
-    exp                            shift and go to state 211
+    exp                            shift and go to state 217
     texp                           shift and go to state 38
     gexp                           shift and go to state 39
     mexp                           shift and go to state 40
@@ -4756,14 +4499,14 @@ state 184
 
     (77) leer -> READ OPAREN exp e1 . CPAREN
 
-    CPAREN          shift and go to state 212
+    CPAREN          shift and go to state 218
 
 
 state 185
 
     (18) ciclo_while -> WHILE cond2 THEN bloque . SEMICOLON
 
-    SEMICOLON       shift and go to state 213
+    SEMICOLON       shift and go to state 219
 
 
 state 186
@@ -4773,11 +4516,11 @@ state 186
     (21) ciclo_for1 -> . variable
     (80) variable -> . ID saw_id variable1 variable1 variable2
 
-    CSTINT          shift and go to state 216
+    CSTINT          shift and go to state 222
     ID              shift and go to state 151
 
-    variable                       shift and go to state 214
-    ciclo_for1                     shift and go to state 215
+    variable                       shift and go to state 220
+    ciclo_for1                     shift and go to state 221
 
 state 187
 
@@ -4802,284 +4545,520 @@ state 187
 state 188
 
     (3) funcion -> FUNCTION func1 ID saw_id . saw_function OPAREN param CPAREN bloque
-    (129) saw_function -> .
+    (131) saw_function -> .
 
-    OPAREN          reduce using rule 129 (saw_function -> .)
+    OPAREN          reduce using rule 131 (saw_function -> .)
 
-    saw_function                   shift and go to state 217
+    saw_function                   shift and go to state 223
 
 state 189
 
     (12) clase -> CLASS ID saw_id saw_class . COLON clase_bloque SEMICOLON
 
-    COLON           shift and go to state 218
+    COLON           shift and go to state 224
 
 
 state 190
 
-    (90) exp1 -> OR texp exp1 .
+    (90) exp1 -> OR saw_op texp . exp1
+    (90) exp1 -> . OR saw_op texp exp1
+    (91) exp1 -> . empty
+    (120) empty -> .
 
-    QUESTION        reduce using rule 90 (exp1 -> OR texp exp1 .)
-    CPAREN          reduce using rule 90 (exp1 -> OR texp exp1 .)
-    ID              reduce using rule 90 (exp1 -> OR texp exp1 .)
-    IF              reduce using rule 90 (exp1 -> OR texp exp1 .)
-    PRINT           reduce using rule 90 (exp1 -> OR texp exp1 .)
-    READ            reduce using rule 90 (exp1 -> OR texp exp1 .)
-    WHILE           reduce using rule 90 (exp1 -> OR texp exp1 .)
-    FOR             reduce using rule 90 (exp1 -> OR texp exp1 .)
-    OCURLY          reduce using rule 90 (exp1 -> OR texp exp1 .)
-    FUNCTION        reduce using rule 90 (exp1 -> OR texp exp1 .)
-    CLASS           reduce using rule 90 (exp1 -> OR texp exp1 .)
-    VAR             reduce using rule 90 (exp1 -> OR texp exp1 .)
-    OPAREN          reduce using rule 90 (exp1 -> OR texp exp1 .)
-    CSTINT          reduce using rule 90 (exp1 -> OR texp exp1 .)
-    CSTFLT          reduce using rule 90 (exp1 -> OR texp exp1 .)
-    CSTCHAR         reduce using rule 90 (exp1 -> OR texp exp1 .)
-    CSTSTRING       reduce using rule 90 (exp1 -> OR texp exp1 .)
-    TRUE            reduce using rule 90 (exp1 -> OR texp exp1 .)
-    FALSE           reduce using rule 90 (exp1 -> OR texp exp1 .)
-    CCURLY          reduce using rule 90 (exp1 -> OR texp exp1 .)
-    COLON           reduce using rule 90 (exp1 -> OR texp exp1 .)
-    SEMICOLON       reduce using rule 90 (exp1 -> OR texp exp1 .)
-    COMMA           reduce using rule 90 (exp1 -> OR texp exp1 .)
-    CBRACKET        reduce using rule 90 (exp1 -> OR texp exp1 .)
+    OR              shift and go to state 88
+    QUESTION        reduce using rule 120 (empty -> .)
+    CPAREN          reduce using rule 120 (empty -> .)
+    ID              reduce using rule 120 (empty -> .)
+    IF              reduce using rule 120 (empty -> .)
+    PRINT           reduce using rule 120 (empty -> .)
+    READ            reduce using rule 120 (empty -> .)
+    WHILE           reduce using rule 120 (empty -> .)
+    FOR             reduce using rule 120 (empty -> .)
+    OCURLY          reduce using rule 120 (empty -> .)
+    FUNCTION        reduce using rule 120 (empty -> .)
+    CLASS           reduce using rule 120 (empty -> .)
+    VAR             reduce using rule 120 (empty -> .)
+    OPAREN          reduce using rule 120 (empty -> .)
+    CSTINT          reduce using rule 120 (empty -> .)
+    CSTFLT          reduce using rule 120 (empty -> .)
+    CSTCHAR         reduce using rule 120 (empty -> .)
+    CSTSTRING       reduce using rule 120 (empty -> .)
+    TRUE            reduce using rule 120 (empty -> .)
+    FALSE           reduce using rule 120 (empty -> .)
+    CCURLY          reduce using rule 120 (empty -> .)
+    COLON           reduce using rule 120 (empty -> .)
+    SEMICOLON       reduce using rule 120 (empty -> .)
+    COMMA           reduce using rule 120 (empty -> .)
+    CBRACKET        reduce using rule 120 (empty -> .)
 
+    exp1                           shift and go to state 225
+    empty                          shift and go to state 89
 
 state 191
 
-    (93) texp1 -> AND gexp texp1 .
+    (93) texp1 -> AND saw_op gexp . texp1
+    (93) texp1 -> . AND saw_op gexp texp1
+    (94) texp1 -> . empty
+    (120) empty -> .
 
-    OR              reduce using rule 93 (texp1 -> AND gexp texp1 .)
-    QUESTION        reduce using rule 93 (texp1 -> AND gexp texp1 .)
-    CPAREN          reduce using rule 93 (texp1 -> AND gexp texp1 .)
-    ID              reduce using rule 93 (texp1 -> AND gexp texp1 .)
-    IF              reduce using rule 93 (texp1 -> AND gexp texp1 .)
-    PRINT           reduce using rule 93 (texp1 -> AND gexp texp1 .)
-    READ            reduce using rule 93 (texp1 -> AND gexp texp1 .)
-    WHILE           reduce using rule 93 (texp1 -> AND gexp texp1 .)
-    FOR             reduce using rule 93 (texp1 -> AND gexp texp1 .)
-    OCURLY          reduce using rule 93 (texp1 -> AND gexp texp1 .)
-    FUNCTION        reduce using rule 93 (texp1 -> AND gexp texp1 .)
-    CLASS           reduce using rule 93 (texp1 -> AND gexp texp1 .)
-    VAR             reduce using rule 93 (texp1 -> AND gexp texp1 .)
-    OPAREN          reduce using rule 93 (texp1 -> AND gexp texp1 .)
-    CSTINT          reduce using rule 93 (texp1 -> AND gexp texp1 .)
-    CSTFLT          reduce using rule 93 (texp1 -> AND gexp texp1 .)
-    CSTCHAR         reduce using rule 93 (texp1 -> AND gexp texp1 .)
-    CSTSTRING       reduce using rule 93 (texp1 -> AND gexp texp1 .)
-    TRUE            reduce using rule 93 (texp1 -> AND gexp texp1 .)
-    FALSE           reduce using rule 93 (texp1 -> AND gexp texp1 .)
-    CCURLY          reduce using rule 93 (texp1 -> AND gexp texp1 .)
-    COLON           reduce using rule 93 (texp1 -> AND gexp texp1 .)
-    SEMICOLON       reduce using rule 93 (texp1 -> AND gexp texp1 .)
-    COMMA           reduce using rule 93 (texp1 -> AND gexp texp1 .)
-    CBRACKET        reduce using rule 93 (texp1 -> AND gexp texp1 .)
+    AND             shift and go to state 91
+    OR              reduce using rule 120 (empty -> .)
+    QUESTION        reduce using rule 120 (empty -> .)
+    CPAREN          reduce using rule 120 (empty -> .)
+    ID              reduce using rule 120 (empty -> .)
+    IF              reduce using rule 120 (empty -> .)
+    PRINT           reduce using rule 120 (empty -> .)
+    READ            reduce using rule 120 (empty -> .)
+    WHILE           reduce using rule 120 (empty -> .)
+    FOR             reduce using rule 120 (empty -> .)
+    OCURLY          reduce using rule 120 (empty -> .)
+    FUNCTION        reduce using rule 120 (empty -> .)
+    CLASS           reduce using rule 120 (empty -> .)
+    VAR             reduce using rule 120 (empty -> .)
+    OPAREN          reduce using rule 120 (empty -> .)
+    CSTINT          reduce using rule 120 (empty -> .)
+    CSTFLT          reduce using rule 120 (empty -> .)
+    CSTCHAR         reduce using rule 120 (empty -> .)
+    CSTSTRING       reduce using rule 120 (empty -> .)
+    TRUE            reduce using rule 120 (empty -> .)
+    FALSE           reduce using rule 120 (empty -> .)
+    CCURLY          reduce using rule 120 (empty -> .)
+    COLON           reduce using rule 120 (empty -> .)
+    SEMICOLON       reduce using rule 120 (empty -> .)
+    COMMA           reduce using rule 120 (empty -> .)
+    CBRACKET        reduce using rule 120 (empty -> .)
 
+    texp1                          shift and go to state 226
+    empty                          shift and go to state 92
 
 state 192
 
-    (104) mexp1 -> PLUS termino mexp1 .
+    (96) gexp1 -> LT saw_op mexp .
 
-    LT              reduce using rule 104 (mexp1 -> PLUS termino mexp1 .)
-    GT              reduce using rule 104 (mexp1 -> PLUS termino mexp1 .)
-    GTE             reduce using rule 104 (mexp1 -> PLUS termino mexp1 .)
-    LTE             reduce using rule 104 (mexp1 -> PLUS termino mexp1 .)
-    EQ              reduce using rule 104 (mexp1 -> PLUS termino mexp1 .)
-    NE              reduce using rule 104 (mexp1 -> PLUS termino mexp1 .)
-    AND             reduce using rule 104 (mexp1 -> PLUS termino mexp1 .)
-    OR              reduce using rule 104 (mexp1 -> PLUS termino mexp1 .)
-    QUESTION        reduce using rule 104 (mexp1 -> PLUS termino mexp1 .)
-    CPAREN          reduce using rule 104 (mexp1 -> PLUS termino mexp1 .)
-    ID              reduce using rule 104 (mexp1 -> PLUS termino mexp1 .)
-    IF              reduce using rule 104 (mexp1 -> PLUS termino mexp1 .)
-    PRINT           reduce using rule 104 (mexp1 -> PLUS termino mexp1 .)
-    READ            reduce using rule 104 (mexp1 -> PLUS termino mexp1 .)
-    WHILE           reduce using rule 104 (mexp1 -> PLUS termino mexp1 .)
-    FOR             reduce using rule 104 (mexp1 -> PLUS termino mexp1 .)
-    OCURLY          reduce using rule 104 (mexp1 -> PLUS termino mexp1 .)
-    FUNCTION        reduce using rule 104 (mexp1 -> PLUS termino mexp1 .)
-    CLASS           reduce using rule 104 (mexp1 -> PLUS termino mexp1 .)
-    VAR             reduce using rule 104 (mexp1 -> PLUS termino mexp1 .)
-    OPAREN          reduce using rule 104 (mexp1 -> PLUS termino mexp1 .)
-    CSTINT          reduce using rule 104 (mexp1 -> PLUS termino mexp1 .)
-    CSTFLT          reduce using rule 104 (mexp1 -> PLUS termino mexp1 .)
-    CSTCHAR         reduce using rule 104 (mexp1 -> PLUS termino mexp1 .)
-    CSTSTRING       reduce using rule 104 (mexp1 -> PLUS termino mexp1 .)
-    TRUE            reduce using rule 104 (mexp1 -> PLUS termino mexp1 .)
-    FALSE           reduce using rule 104 (mexp1 -> PLUS termino mexp1 .)
-    CCURLY          reduce using rule 104 (mexp1 -> PLUS termino mexp1 .)
-    COLON           reduce using rule 104 (mexp1 -> PLUS termino mexp1 .)
-    SEMICOLON       reduce using rule 104 (mexp1 -> PLUS termino mexp1 .)
-    COMMA           reduce using rule 104 (mexp1 -> PLUS termino mexp1 .)
-    CBRACKET        reduce using rule 104 (mexp1 -> PLUS termino mexp1 .)
+    AND             reduce using rule 96 (gexp1 -> LT saw_op mexp .)
+    OR              reduce using rule 96 (gexp1 -> LT saw_op mexp .)
+    QUESTION        reduce using rule 96 (gexp1 -> LT saw_op mexp .)
+    CPAREN          reduce using rule 96 (gexp1 -> LT saw_op mexp .)
+    ID              reduce using rule 96 (gexp1 -> LT saw_op mexp .)
+    IF              reduce using rule 96 (gexp1 -> LT saw_op mexp .)
+    PRINT           reduce using rule 96 (gexp1 -> LT saw_op mexp .)
+    READ            reduce using rule 96 (gexp1 -> LT saw_op mexp .)
+    WHILE           reduce using rule 96 (gexp1 -> LT saw_op mexp .)
+    FOR             reduce using rule 96 (gexp1 -> LT saw_op mexp .)
+    OCURLY          reduce using rule 96 (gexp1 -> LT saw_op mexp .)
+    FUNCTION        reduce using rule 96 (gexp1 -> LT saw_op mexp .)
+    CLASS           reduce using rule 96 (gexp1 -> LT saw_op mexp .)
+    VAR             reduce using rule 96 (gexp1 -> LT saw_op mexp .)
+    OPAREN          reduce using rule 96 (gexp1 -> LT saw_op mexp .)
+    CSTINT          reduce using rule 96 (gexp1 -> LT saw_op mexp .)
+    CSTFLT          reduce using rule 96 (gexp1 -> LT saw_op mexp .)
+    CSTCHAR         reduce using rule 96 (gexp1 -> LT saw_op mexp .)
+    CSTSTRING       reduce using rule 96 (gexp1 -> LT saw_op mexp .)
+    TRUE            reduce using rule 96 (gexp1 -> LT saw_op mexp .)
+    FALSE           reduce using rule 96 (gexp1 -> LT saw_op mexp .)
+    CCURLY          reduce using rule 96 (gexp1 -> LT saw_op mexp .)
+    COLON           reduce using rule 96 (gexp1 -> LT saw_op mexp .)
+    SEMICOLON       reduce using rule 96 (gexp1 -> LT saw_op mexp .)
+    COMMA           reduce using rule 96 (gexp1 -> LT saw_op mexp .)
+    CBRACKET        reduce using rule 96 (gexp1 -> LT saw_op mexp .)
 
 
 state 193
 
-    (105) mexp1 -> MINUS termino mexp1 .
+    (97) gexp1 -> GT saw_op mexp .
 
-    LT              reduce using rule 105 (mexp1 -> MINUS termino mexp1 .)
-    GT              reduce using rule 105 (mexp1 -> MINUS termino mexp1 .)
-    GTE             reduce using rule 105 (mexp1 -> MINUS termino mexp1 .)
-    LTE             reduce using rule 105 (mexp1 -> MINUS termino mexp1 .)
-    EQ              reduce using rule 105 (mexp1 -> MINUS termino mexp1 .)
-    NE              reduce using rule 105 (mexp1 -> MINUS termino mexp1 .)
-    AND             reduce using rule 105 (mexp1 -> MINUS termino mexp1 .)
-    OR              reduce using rule 105 (mexp1 -> MINUS termino mexp1 .)
-    QUESTION        reduce using rule 105 (mexp1 -> MINUS termino mexp1 .)
-    CPAREN          reduce using rule 105 (mexp1 -> MINUS termino mexp1 .)
-    ID              reduce using rule 105 (mexp1 -> MINUS termino mexp1 .)
-    IF              reduce using rule 105 (mexp1 -> MINUS termino mexp1 .)
-    PRINT           reduce using rule 105 (mexp1 -> MINUS termino mexp1 .)
-    READ            reduce using rule 105 (mexp1 -> MINUS termino mexp1 .)
-    WHILE           reduce using rule 105 (mexp1 -> MINUS termino mexp1 .)
-    FOR             reduce using rule 105 (mexp1 -> MINUS termino mexp1 .)
-    OCURLY          reduce using rule 105 (mexp1 -> MINUS termino mexp1 .)
-    FUNCTION        reduce using rule 105 (mexp1 -> MINUS termino mexp1 .)
-    CLASS           reduce using rule 105 (mexp1 -> MINUS termino mexp1 .)
-    VAR             reduce using rule 105 (mexp1 -> MINUS termino mexp1 .)
-    OPAREN          reduce using rule 105 (mexp1 -> MINUS termino mexp1 .)
-    CSTINT          reduce using rule 105 (mexp1 -> MINUS termino mexp1 .)
-    CSTFLT          reduce using rule 105 (mexp1 -> MINUS termino mexp1 .)
-    CSTCHAR         reduce using rule 105 (mexp1 -> MINUS termino mexp1 .)
-    CSTSTRING       reduce using rule 105 (mexp1 -> MINUS termino mexp1 .)
-    TRUE            reduce using rule 105 (mexp1 -> MINUS termino mexp1 .)
-    FALSE           reduce using rule 105 (mexp1 -> MINUS termino mexp1 .)
-    CCURLY          reduce using rule 105 (mexp1 -> MINUS termino mexp1 .)
-    COLON           reduce using rule 105 (mexp1 -> MINUS termino mexp1 .)
-    SEMICOLON       reduce using rule 105 (mexp1 -> MINUS termino mexp1 .)
-    COMMA           reduce using rule 105 (mexp1 -> MINUS termino mexp1 .)
-    CBRACKET        reduce using rule 105 (mexp1 -> MINUS termino mexp1 .)
+    AND             reduce using rule 97 (gexp1 -> GT saw_op mexp .)
+    OR              reduce using rule 97 (gexp1 -> GT saw_op mexp .)
+    QUESTION        reduce using rule 97 (gexp1 -> GT saw_op mexp .)
+    CPAREN          reduce using rule 97 (gexp1 -> GT saw_op mexp .)
+    ID              reduce using rule 97 (gexp1 -> GT saw_op mexp .)
+    IF              reduce using rule 97 (gexp1 -> GT saw_op mexp .)
+    PRINT           reduce using rule 97 (gexp1 -> GT saw_op mexp .)
+    READ            reduce using rule 97 (gexp1 -> GT saw_op mexp .)
+    WHILE           reduce using rule 97 (gexp1 -> GT saw_op mexp .)
+    FOR             reduce using rule 97 (gexp1 -> GT saw_op mexp .)
+    OCURLY          reduce using rule 97 (gexp1 -> GT saw_op mexp .)
+    FUNCTION        reduce using rule 97 (gexp1 -> GT saw_op mexp .)
+    CLASS           reduce using rule 97 (gexp1 -> GT saw_op mexp .)
+    VAR             reduce using rule 97 (gexp1 -> GT saw_op mexp .)
+    OPAREN          reduce using rule 97 (gexp1 -> GT saw_op mexp .)
+    CSTINT          reduce using rule 97 (gexp1 -> GT saw_op mexp .)
+    CSTFLT          reduce using rule 97 (gexp1 -> GT saw_op mexp .)
+    CSTCHAR         reduce using rule 97 (gexp1 -> GT saw_op mexp .)
+    CSTSTRING       reduce using rule 97 (gexp1 -> GT saw_op mexp .)
+    TRUE            reduce using rule 97 (gexp1 -> GT saw_op mexp .)
+    FALSE           reduce using rule 97 (gexp1 -> GT saw_op mexp .)
+    CCURLY          reduce using rule 97 (gexp1 -> GT saw_op mexp .)
+    COLON           reduce using rule 97 (gexp1 -> GT saw_op mexp .)
+    SEMICOLON       reduce using rule 97 (gexp1 -> GT saw_op mexp .)
+    COMMA           reduce using rule 97 (gexp1 -> GT saw_op mexp .)
+    CBRACKET        reduce using rule 97 (gexp1 -> GT saw_op mexp .)
 
 
 state 194
 
-    (108) term1 -> MULT factor term1 .
+    (98) gexp1 -> GTE saw_op mexp .
 
-    PLUS            reduce using rule 108 (term1 -> MULT factor term1 .)
-    MINUS           reduce using rule 108 (term1 -> MULT factor term1 .)
-    LT              reduce using rule 108 (term1 -> MULT factor term1 .)
-    GT              reduce using rule 108 (term1 -> MULT factor term1 .)
-    GTE             reduce using rule 108 (term1 -> MULT factor term1 .)
-    LTE             reduce using rule 108 (term1 -> MULT factor term1 .)
-    EQ              reduce using rule 108 (term1 -> MULT factor term1 .)
-    NE              reduce using rule 108 (term1 -> MULT factor term1 .)
-    AND             reduce using rule 108 (term1 -> MULT factor term1 .)
-    OR              reduce using rule 108 (term1 -> MULT factor term1 .)
-    QUESTION        reduce using rule 108 (term1 -> MULT factor term1 .)
-    CPAREN          reduce using rule 108 (term1 -> MULT factor term1 .)
-    ID              reduce using rule 108 (term1 -> MULT factor term1 .)
-    IF              reduce using rule 108 (term1 -> MULT factor term1 .)
-    PRINT           reduce using rule 108 (term1 -> MULT factor term1 .)
-    READ            reduce using rule 108 (term1 -> MULT factor term1 .)
-    WHILE           reduce using rule 108 (term1 -> MULT factor term1 .)
-    FOR             reduce using rule 108 (term1 -> MULT factor term1 .)
-    OCURLY          reduce using rule 108 (term1 -> MULT factor term1 .)
-    FUNCTION        reduce using rule 108 (term1 -> MULT factor term1 .)
-    CLASS           reduce using rule 108 (term1 -> MULT factor term1 .)
-    VAR             reduce using rule 108 (term1 -> MULT factor term1 .)
-    OPAREN          reduce using rule 108 (term1 -> MULT factor term1 .)
-    CSTINT          reduce using rule 108 (term1 -> MULT factor term1 .)
-    CSTFLT          reduce using rule 108 (term1 -> MULT factor term1 .)
-    CSTCHAR         reduce using rule 108 (term1 -> MULT factor term1 .)
-    CSTSTRING       reduce using rule 108 (term1 -> MULT factor term1 .)
-    TRUE            reduce using rule 108 (term1 -> MULT factor term1 .)
-    FALSE           reduce using rule 108 (term1 -> MULT factor term1 .)
-    CCURLY          reduce using rule 108 (term1 -> MULT factor term1 .)
-    COLON           reduce using rule 108 (term1 -> MULT factor term1 .)
-    SEMICOLON       reduce using rule 108 (term1 -> MULT factor term1 .)
-    COMMA           reduce using rule 108 (term1 -> MULT factor term1 .)
-    CBRACKET        reduce using rule 108 (term1 -> MULT factor term1 .)
+    AND             reduce using rule 98 (gexp1 -> GTE saw_op mexp .)
+    OR              reduce using rule 98 (gexp1 -> GTE saw_op mexp .)
+    QUESTION        reduce using rule 98 (gexp1 -> GTE saw_op mexp .)
+    CPAREN          reduce using rule 98 (gexp1 -> GTE saw_op mexp .)
+    ID              reduce using rule 98 (gexp1 -> GTE saw_op mexp .)
+    IF              reduce using rule 98 (gexp1 -> GTE saw_op mexp .)
+    PRINT           reduce using rule 98 (gexp1 -> GTE saw_op mexp .)
+    READ            reduce using rule 98 (gexp1 -> GTE saw_op mexp .)
+    WHILE           reduce using rule 98 (gexp1 -> GTE saw_op mexp .)
+    FOR             reduce using rule 98 (gexp1 -> GTE saw_op mexp .)
+    OCURLY          reduce using rule 98 (gexp1 -> GTE saw_op mexp .)
+    FUNCTION        reduce using rule 98 (gexp1 -> GTE saw_op mexp .)
+    CLASS           reduce using rule 98 (gexp1 -> GTE saw_op mexp .)
+    VAR             reduce using rule 98 (gexp1 -> GTE saw_op mexp .)
+    OPAREN          reduce using rule 98 (gexp1 -> GTE saw_op mexp .)
+    CSTINT          reduce using rule 98 (gexp1 -> GTE saw_op mexp .)
+    CSTFLT          reduce using rule 98 (gexp1 -> GTE saw_op mexp .)
+    CSTCHAR         reduce using rule 98 (gexp1 -> GTE saw_op mexp .)
+    CSTSTRING       reduce using rule 98 (gexp1 -> GTE saw_op mexp .)
+    TRUE            reduce using rule 98 (gexp1 -> GTE saw_op mexp .)
+    FALSE           reduce using rule 98 (gexp1 -> GTE saw_op mexp .)
+    CCURLY          reduce using rule 98 (gexp1 -> GTE saw_op mexp .)
+    COLON           reduce using rule 98 (gexp1 -> GTE saw_op mexp .)
+    SEMICOLON       reduce using rule 98 (gexp1 -> GTE saw_op mexp .)
+    COMMA           reduce using rule 98 (gexp1 -> GTE saw_op mexp .)
+    CBRACKET        reduce using rule 98 (gexp1 -> GTE saw_op mexp .)
 
 
 state 195
 
-    (109) term1 -> DIV factor term1 .
+    (99) gexp1 -> LTE saw_op mexp .
 
-    PLUS            reduce using rule 109 (term1 -> DIV factor term1 .)
-    MINUS           reduce using rule 109 (term1 -> DIV factor term1 .)
-    LT              reduce using rule 109 (term1 -> DIV factor term1 .)
-    GT              reduce using rule 109 (term1 -> DIV factor term1 .)
-    GTE             reduce using rule 109 (term1 -> DIV factor term1 .)
-    LTE             reduce using rule 109 (term1 -> DIV factor term1 .)
-    EQ              reduce using rule 109 (term1 -> DIV factor term1 .)
-    NE              reduce using rule 109 (term1 -> DIV factor term1 .)
-    AND             reduce using rule 109 (term1 -> DIV factor term1 .)
-    OR              reduce using rule 109 (term1 -> DIV factor term1 .)
-    QUESTION        reduce using rule 109 (term1 -> DIV factor term1 .)
-    CPAREN          reduce using rule 109 (term1 -> DIV factor term1 .)
-    ID              reduce using rule 109 (term1 -> DIV factor term1 .)
-    IF              reduce using rule 109 (term1 -> DIV factor term1 .)
-    PRINT           reduce using rule 109 (term1 -> DIV factor term1 .)
-    READ            reduce using rule 109 (term1 -> DIV factor term1 .)
-    WHILE           reduce using rule 109 (term1 -> DIV factor term1 .)
-    FOR             reduce using rule 109 (term1 -> DIV factor term1 .)
-    OCURLY          reduce using rule 109 (term1 -> DIV factor term1 .)
-    FUNCTION        reduce using rule 109 (term1 -> DIV factor term1 .)
-    CLASS           reduce using rule 109 (term1 -> DIV factor term1 .)
-    VAR             reduce using rule 109 (term1 -> DIV factor term1 .)
-    OPAREN          reduce using rule 109 (term1 -> DIV factor term1 .)
-    CSTINT          reduce using rule 109 (term1 -> DIV factor term1 .)
-    CSTFLT          reduce using rule 109 (term1 -> DIV factor term1 .)
-    CSTCHAR         reduce using rule 109 (term1 -> DIV factor term1 .)
-    CSTSTRING       reduce using rule 109 (term1 -> DIV factor term1 .)
-    TRUE            reduce using rule 109 (term1 -> DIV factor term1 .)
-    FALSE           reduce using rule 109 (term1 -> DIV factor term1 .)
-    CCURLY          reduce using rule 109 (term1 -> DIV factor term1 .)
-    COLON           reduce using rule 109 (term1 -> DIV factor term1 .)
-    SEMICOLON       reduce using rule 109 (term1 -> DIV factor term1 .)
-    COMMA           reduce using rule 109 (term1 -> DIV factor term1 .)
-    CBRACKET        reduce using rule 109 (term1 -> DIV factor term1 .)
+    AND             reduce using rule 99 (gexp1 -> LTE saw_op mexp .)
+    OR              reduce using rule 99 (gexp1 -> LTE saw_op mexp .)
+    QUESTION        reduce using rule 99 (gexp1 -> LTE saw_op mexp .)
+    CPAREN          reduce using rule 99 (gexp1 -> LTE saw_op mexp .)
+    ID              reduce using rule 99 (gexp1 -> LTE saw_op mexp .)
+    IF              reduce using rule 99 (gexp1 -> LTE saw_op mexp .)
+    PRINT           reduce using rule 99 (gexp1 -> LTE saw_op mexp .)
+    READ            reduce using rule 99 (gexp1 -> LTE saw_op mexp .)
+    WHILE           reduce using rule 99 (gexp1 -> LTE saw_op mexp .)
+    FOR             reduce using rule 99 (gexp1 -> LTE saw_op mexp .)
+    OCURLY          reduce using rule 99 (gexp1 -> LTE saw_op mexp .)
+    FUNCTION        reduce using rule 99 (gexp1 -> LTE saw_op mexp .)
+    CLASS           reduce using rule 99 (gexp1 -> LTE saw_op mexp .)
+    VAR             reduce using rule 99 (gexp1 -> LTE saw_op mexp .)
+    OPAREN          reduce using rule 99 (gexp1 -> LTE saw_op mexp .)
+    CSTINT          reduce using rule 99 (gexp1 -> LTE saw_op mexp .)
+    CSTFLT          reduce using rule 99 (gexp1 -> LTE saw_op mexp .)
+    CSTCHAR         reduce using rule 99 (gexp1 -> LTE saw_op mexp .)
+    CSTSTRING       reduce using rule 99 (gexp1 -> LTE saw_op mexp .)
+    TRUE            reduce using rule 99 (gexp1 -> LTE saw_op mexp .)
+    FALSE           reduce using rule 99 (gexp1 -> LTE saw_op mexp .)
+    CCURLY          reduce using rule 99 (gexp1 -> LTE saw_op mexp .)
+    COLON           reduce using rule 99 (gexp1 -> LTE saw_op mexp .)
+    SEMICOLON       reduce using rule 99 (gexp1 -> LTE saw_op mexp .)
+    COMMA           reduce using rule 99 (gexp1 -> LTE saw_op mexp .)
+    CBRACKET        reduce using rule 99 (gexp1 -> LTE saw_op mexp .)
 
 
 state 196
+
+    (100) gexp1 -> EQ saw_op mexp .
+
+    AND             reduce using rule 100 (gexp1 -> EQ saw_op mexp .)
+    OR              reduce using rule 100 (gexp1 -> EQ saw_op mexp .)
+    QUESTION        reduce using rule 100 (gexp1 -> EQ saw_op mexp .)
+    CPAREN          reduce using rule 100 (gexp1 -> EQ saw_op mexp .)
+    ID              reduce using rule 100 (gexp1 -> EQ saw_op mexp .)
+    IF              reduce using rule 100 (gexp1 -> EQ saw_op mexp .)
+    PRINT           reduce using rule 100 (gexp1 -> EQ saw_op mexp .)
+    READ            reduce using rule 100 (gexp1 -> EQ saw_op mexp .)
+    WHILE           reduce using rule 100 (gexp1 -> EQ saw_op mexp .)
+    FOR             reduce using rule 100 (gexp1 -> EQ saw_op mexp .)
+    OCURLY          reduce using rule 100 (gexp1 -> EQ saw_op mexp .)
+    FUNCTION        reduce using rule 100 (gexp1 -> EQ saw_op mexp .)
+    CLASS           reduce using rule 100 (gexp1 -> EQ saw_op mexp .)
+    VAR             reduce using rule 100 (gexp1 -> EQ saw_op mexp .)
+    OPAREN          reduce using rule 100 (gexp1 -> EQ saw_op mexp .)
+    CSTINT          reduce using rule 100 (gexp1 -> EQ saw_op mexp .)
+    CSTFLT          reduce using rule 100 (gexp1 -> EQ saw_op mexp .)
+    CSTCHAR         reduce using rule 100 (gexp1 -> EQ saw_op mexp .)
+    CSTSTRING       reduce using rule 100 (gexp1 -> EQ saw_op mexp .)
+    TRUE            reduce using rule 100 (gexp1 -> EQ saw_op mexp .)
+    FALSE           reduce using rule 100 (gexp1 -> EQ saw_op mexp .)
+    CCURLY          reduce using rule 100 (gexp1 -> EQ saw_op mexp .)
+    COLON           reduce using rule 100 (gexp1 -> EQ saw_op mexp .)
+    SEMICOLON       reduce using rule 100 (gexp1 -> EQ saw_op mexp .)
+    COMMA           reduce using rule 100 (gexp1 -> EQ saw_op mexp .)
+    CBRACKET        reduce using rule 100 (gexp1 -> EQ saw_op mexp .)
+
+
+state 197
+
+    (101) gexp1 -> NE saw_op mexp .
+
+    AND             reduce using rule 101 (gexp1 -> NE saw_op mexp .)
+    OR              reduce using rule 101 (gexp1 -> NE saw_op mexp .)
+    QUESTION        reduce using rule 101 (gexp1 -> NE saw_op mexp .)
+    CPAREN          reduce using rule 101 (gexp1 -> NE saw_op mexp .)
+    ID              reduce using rule 101 (gexp1 -> NE saw_op mexp .)
+    IF              reduce using rule 101 (gexp1 -> NE saw_op mexp .)
+    PRINT           reduce using rule 101 (gexp1 -> NE saw_op mexp .)
+    READ            reduce using rule 101 (gexp1 -> NE saw_op mexp .)
+    WHILE           reduce using rule 101 (gexp1 -> NE saw_op mexp .)
+    FOR             reduce using rule 101 (gexp1 -> NE saw_op mexp .)
+    OCURLY          reduce using rule 101 (gexp1 -> NE saw_op mexp .)
+    FUNCTION        reduce using rule 101 (gexp1 -> NE saw_op mexp .)
+    CLASS           reduce using rule 101 (gexp1 -> NE saw_op mexp .)
+    VAR             reduce using rule 101 (gexp1 -> NE saw_op mexp .)
+    OPAREN          reduce using rule 101 (gexp1 -> NE saw_op mexp .)
+    CSTINT          reduce using rule 101 (gexp1 -> NE saw_op mexp .)
+    CSTFLT          reduce using rule 101 (gexp1 -> NE saw_op mexp .)
+    CSTCHAR         reduce using rule 101 (gexp1 -> NE saw_op mexp .)
+    CSTSTRING       reduce using rule 101 (gexp1 -> NE saw_op mexp .)
+    TRUE            reduce using rule 101 (gexp1 -> NE saw_op mexp .)
+    FALSE           reduce using rule 101 (gexp1 -> NE saw_op mexp .)
+    CCURLY          reduce using rule 101 (gexp1 -> NE saw_op mexp .)
+    COLON           reduce using rule 101 (gexp1 -> NE saw_op mexp .)
+    SEMICOLON       reduce using rule 101 (gexp1 -> NE saw_op mexp .)
+    COMMA           reduce using rule 101 (gexp1 -> NE saw_op mexp .)
+    CBRACKET        reduce using rule 101 (gexp1 -> NE saw_op mexp .)
+
+
+state 198
+
+    (104) mexp1 -> PLUS saw_op termino . mexp1
+    (104) mexp1 -> . PLUS saw_op termino mexp1
+    (105) mexp1 -> . MINUS saw_op termino mexp1
+    (106) mexp1 -> . empty
+    (120) empty -> .
+
+    PLUS            shift and go to state 102
+    MINUS           shift and go to state 103
+    LT              reduce using rule 120 (empty -> .)
+    GT              reduce using rule 120 (empty -> .)
+    GTE             reduce using rule 120 (empty -> .)
+    LTE             reduce using rule 120 (empty -> .)
+    EQ              reduce using rule 120 (empty -> .)
+    NE              reduce using rule 120 (empty -> .)
+    AND             reduce using rule 120 (empty -> .)
+    OR              reduce using rule 120 (empty -> .)
+    QUESTION        reduce using rule 120 (empty -> .)
+    CPAREN          reduce using rule 120 (empty -> .)
+    ID              reduce using rule 120 (empty -> .)
+    IF              reduce using rule 120 (empty -> .)
+    PRINT           reduce using rule 120 (empty -> .)
+    READ            reduce using rule 120 (empty -> .)
+    WHILE           reduce using rule 120 (empty -> .)
+    FOR             reduce using rule 120 (empty -> .)
+    OCURLY          reduce using rule 120 (empty -> .)
+    FUNCTION        reduce using rule 120 (empty -> .)
+    CLASS           reduce using rule 120 (empty -> .)
+    VAR             reduce using rule 120 (empty -> .)
+    OPAREN          reduce using rule 120 (empty -> .)
+    CSTINT          reduce using rule 120 (empty -> .)
+    CSTFLT          reduce using rule 120 (empty -> .)
+    CSTCHAR         reduce using rule 120 (empty -> .)
+    CSTSTRING       reduce using rule 120 (empty -> .)
+    TRUE            reduce using rule 120 (empty -> .)
+    FALSE           reduce using rule 120 (empty -> .)
+    CCURLY          reduce using rule 120 (empty -> .)
+    COLON           reduce using rule 120 (empty -> .)
+    SEMICOLON       reduce using rule 120 (empty -> .)
+    COMMA           reduce using rule 120 (empty -> .)
+    CBRACKET        reduce using rule 120 (empty -> .)
+
+    mexp1                          shift and go to state 227
+    empty                          shift and go to state 104
+
+state 199
+
+    (105) mexp1 -> MINUS saw_op termino . mexp1
+    (104) mexp1 -> . PLUS saw_op termino mexp1
+    (105) mexp1 -> . MINUS saw_op termino mexp1
+    (106) mexp1 -> . empty
+    (120) empty -> .
+
+    PLUS            shift and go to state 102
+    MINUS           shift and go to state 103
+    LT              reduce using rule 120 (empty -> .)
+    GT              reduce using rule 120 (empty -> .)
+    GTE             reduce using rule 120 (empty -> .)
+    LTE             reduce using rule 120 (empty -> .)
+    EQ              reduce using rule 120 (empty -> .)
+    NE              reduce using rule 120 (empty -> .)
+    AND             reduce using rule 120 (empty -> .)
+    OR              reduce using rule 120 (empty -> .)
+    QUESTION        reduce using rule 120 (empty -> .)
+    CPAREN          reduce using rule 120 (empty -> .)
+    ID              reduce using rule 120 (empty -> .)
+    IF              reduce using rule 120 (empty -> .)
+    PRINT           reduce using rule 120 (empty -> .)
+    READ            reduce using rule 120 (empty -> .)
+    WHILE           reduce using rule 120 (empty -> .)
+    FOR             reduce using rule 120 (empty -> .)
+    OCURLY          reduce using rule 120 (empty -> .)
+    FUNCTION        reduce using rule 120 (empty -> .)
+    CLASS           reduce using rule 120 (empty -> .)
+    VAR             reduce using rule 120 (empty -> .)
+    OPAREN          reduce using rule 120 (empty -> .)
+    CSTINT          reduce using rule 120 (empty -> .)
+    CSTFLT          reduce using rule 120 (empty -> .)
+    CSTCHAR         reduce using rule 120 (empty -> .)
+    CSTSTRING       reduce using rule 120 (empty -> .)
+    TRUE            reduce using rule 120 (empty -> .)
+    FALSE           reduce using rule 120 (empty -> .)
+    CCURLY          reduce using rule 120 (empty -> .)
+    COLON           reduce using rule 120 (empty -> .)
+    SEMICOLON       reduce using rule 120 (empty -> .)
+    COMMA           reduce using rule 120 (empty -> .)
+    CBRACKET        reduce using rule 120 (empty -> .)
+
+    mexp1                          shift and go to state 228
+    empty                          shift and go to state 104
+
+state 200
+
+    (108) term1 -> MULT saw_op factor . term1
+    (108) term1 -> . MULT saw_op factor term1
+    (109) term1 -> . DIV saw_op factor term1
+    (110) term1 -> . empty
+    (120) empty -> .
+
+    MULT            shift and go to state 106
+    DIV             shift and go to state 107
+    PLUS            reduce using rule 120 (empty -> .)
+    MINUS           reduce using rule 120 (empty -> .)
+    LT              reduce using rule 120 (empty -> .)
+    GT              reduce using rule 120 (empty -> .)
+    GTE             reduce using rule 120 (empty -> .)
+    LTE             reduce using rule 120 (empty -> .)
+    EQ              reduce using rule 120 (empty -> .)
+    NE              reduce using rule 120 (empty -> .)
+    AND             reduce using rule 120 (empty -> .)
+    OR              reduce using rule 120 (empty -> .)
+    QUESTION        reduce using rule 120 (empty -> .)
+    CPAREN          reduce using rule 120 (empty -> .)
+    ID              reduce using rule 120 (empty -> .)
+    IF              reduce using rule 120 (empty -> .)
+    PRINT           reduce using rule 120 (empty -> .)
+    READ            reduce using rule 120 (empty -> .)
+    WHILE           reduce using rule 120 (empty -> .)
+    FOR             reduce using rule 120 (empty -> .)
+    OCURLY          reduce using rule 120 (empty -> .)
+    FUNCTION        reduce using rule 120 (empty -> .)
+    CLASS           reduce using rule 120 (empty -> .)
+    VAR             reduce using rule 120 (empty -> .)
+    OPAREN          reduce using rule 120 (empty -> .)
+    CSTINT          reduce using rule 120 (empty -> .)
+    CSTFLT          reduce using rule 120 (empty -> .)
+    CSTCHAR         reduce using rule 120 (empty -> .)
+    CSTSTRING       reduce using rule 120 (empty -> .)
+    TRUE            reduce using rule 120 (empty -> .)
+    FALSE           reduce using rule 120 (empty -> .)
+    CCURLY          reduce using rule 120 (empty -> .)
+    COLON           reduce using rule 120 (empty -> .)
+    SEMICOLON       reduce using rule 120 (empty -> .)
+    COMMA           reduce using rule 120 (empty -> .)
+    CBRACKET        reduce using rule 120 (empty -> .)
+
+    term1                          shift and go to state 229
+    empty                          shift and go to state 108
+
+state 201
+
+    (109) term1 -> DIV saw_op factor . term1
+    (108) term1 -> . MULT saw_op factor term1
+    (109) term1 -> . DIV saw_op factor term1
+    (110) term1 -> . empty
+    (120) empty -> .
+
+    MULT            shift and go to state 106
+    DIV             shift and go to state 107
+    PLUS            reduce using rule 120 (empty -> .)
+    MINUS           reduce using rule 120 (empty -> .)
+    LT              reduce using rule 120 (empty -> .)
+    GT              reduce using rule 120 (empty -> .)
+    GTE             reduce using rule 120 (empty -> .)
+    LTE             reduce using rule 120 (empty -> .)
+    EQ              reduce using rule 120 (empty -> .)
+    NE              reduce using rule 120 (empty -> .)
+    AND             reduce using rule 120 (empty -> .)
+    OR              reduce using rule 120 (empty -> .)
+    QUESTION        reduce using rule 120 (empty -> .)
+    CPAREN          reduce using rule 120 (empty -> .)
+    ID              reduce using rule 120 (empty -> .)
+    IF              reduce using rule 120 (empty -> .)
+    PRINT           reduce using rule 120 (empty -> .)
+    READ            reduce using rule 120 (empty -> .)
+    WHILE           reduce using rule 120 (empty -> .)
+    FOR             reduce using rule 120 (empty -> .)
+    OCURLY          reduce using rule 120 (empty -> .)
+    FUNCTION        reduce using rule 120 (empty -> .)
+    CLASS           reduce using rule 120 (empty -> .)
+    VAR             reduce using rule 120 (empty -> .)
+    OPAREN          reduce using rule 120 (empty -> .)
+    CSTINT          reduce using rule 120 (empty -> .)
+    CSTFLT          reduce using rule 120 (empty -> .)
+    CSTCHAR         reduce using rule 120 (empty -> .)
+    CSTSTRING       reduce using rule 120 (empty -> .)
+    TRUE            reduce using rule 120 (empty -> .)
+    FALSE           reduce using rule 120 (empty -> .)
+    CCURLY          reduce using rule 120 (empty -> .)
+    COLON           reduce using rule 120 (empty -> .)
+    SEMICOLON       reduce using rule 120 (empty -> .)
+    COMMA           reduce using rule 120 (empty -> .)
+    CBRACKET        reduce using rule 120 (empty -> .)
+
+    term1                          shift and go to state 230
+    empty                          shift and go to state 108
+
+state 202
 
     (25) tipo -> compuesto ID saw_id saw_variable . tipo1
     (28) tipo1 -> . COMMA ID saw_id saw_variable tipo1
     (29) tipo1 -> . empty
     (120) empty -> .
 
-    COMMA           shift and go to state 220
+    COMMA           shift and go to state 232
     SEMICOLON       reduce using rule 120 (empty -> .)
 
-    tipo1                          shift and go to state 219
-    empty                          shift and go to state 221
+    tipo1                          shift and go to state 231
+    empty                          shift and go to state 233
 
-state 197
+state 203
 
     (26) tipo -> simple ID saw_id saw_variable . tipo1
     (28) tipo1 -> . COMMA ID saw_id saw_variable tipo1
     (29) tipo1 -> . empty
     (120) empty -> .
 
-    COMMA           shift and go to state 220
+    COMMA           shift and go to state 232
     SEMICOLON       reduce using rule 120 (empty -> .)
 
-    tipo1                          shift and go to state 222
-    empty                          shift and go to state 221
+    tipo1                          shift and go to state 234
+    empty                          shift and go to state 233
 
-state 198
+state 204
 
     (27) tipo -> multiple ID saw_id saw_variable . OBRACKET CSTINT CBRACKET tipo3 tipo2
 
-    OBRACKET        shift and go to state 223
+    OBRACKET        shift and go to state 235
 
 
-state 199
+state 205
 
     (73) ternaria -> exp QUESTION estatuto_redux COLON estatuto_redux . SEMICOLON
 
-    SEMICOLON       shift and go to state 224
+    SEMICOLON       shift and go to state 236
 
 
-state 200
+state 206
 
     (85) llamada -> ID saw_id OPAREN exp llamada1 . CPAREN
 
-    CPAREN          shift and go to state 225
+    CPAREN          shift and go to state 237
 
 
-state 201
+state 207
 
     (87) llamada1 -> COMMA . exp llamada1
     (89) exp -> . texp exp1
@@ -5111,7 +5090,7 @@ state 201
     TRUE            shift and go to state 49
     FALSE           shift and go to state 50
 
-    exp                            shift and go to state 226
+    exp                            shift and go to state 238
     texp                           shift and go to state 38
     gexp                           shift and go to state 39
     mexp                           shift and go to state 40
@@ -5122,14 +5101,14 @@ state 201
     llamada                        shift and go to state 75
     boolean                        shift and go to state 48
 
-state 202
+state 208
 
     (88) llamada1 -> empty .
 
     CPAREN          reduce using rule 88 (llamada1 -> empty .)
 
 
-state 203
+state 209
 
     (80) variable -> ID saw_id variable1 variable1 variable2 .
 
@@ -5175,14 +5154,14 @@ state 203
     BY              reduce using rule 80 (variable -> ID saw_id variable1 variable1 variable2 .)
 
 
-state 204
+state 210
 
     (83) variable2 -> PERIOD . ID saw_id variable1 variable1 variable2
 
-    ID              shift and go to state 227
+    ID              shift and go to state 239
 
 
-state 205
+state 211
 
     (84) variable2 -> empty .
 
@@ -5228,7 +5207,7 @@ state 205
     BY              reduce using rule 84 (variable2 -> empty .)
 
 
-state 206
+state 212
 
     (81) variable1 -> OBRACKET exp CBRACKET .
 
@@ -5276,32 +5255,32 @@ state 206
     BY              reduce using rule 81 (variable1 -> OBRACKET exp CBRACKET .)
 
 
-state 207
+state 213
 
     (68) condicion -> IF cond2 THEN bloque cond1 . SEMICOLON
 
-    SEMICOLON       shift and go to state 228
+    SEMICOLON       shift and go to state 240
 
 
-state 208
+state 214
 
     (69) cond1 -> ELSE . bloque
     (70) cond1 -> ELSE . IF cond2 THEN bloque cond1
     (47) bloque -> . OCURLY b1 CCURLY scope_end
 
-    IF              shift and go to state 230
+    IF              shift and go to state 242
     OCURLY          shift and go to state 9
 
-    bloque                         shift and go to state 229
+    bloque                         shift and go to state 241
 
-state 209
+state 215
 
     (71) cond1 -> empty .
 
     SEMICOLON       reduce using rule 71 (cond1 -> empty .)
 
 
-state 210
+state 216
 
     (74) escritura -> PRINT OPAREN exp e1 CPAREN .
 
@@ -5327,7 +5306,7 @@ state 210
     SEMICOLON       reduce using rule 74 (escritura -> PRINT OPAREN exp e1 CPAREN .)
 
 
-state 211
+state 217
 
     (75) e1 -> COMMA exp . e1
     (75) e1 -> . COMMA exp e1
@@ -5337,10 +5316,10 @@ state 211
     COMMA           shift and go to state 182
     CPAREN          reduce using rule 120 (empty -> .)
 
-    e1                             shift and go to state 231
+    e1                             shift and go to state 243
     empty                          shift and go to state 183
 
-state 212
+state 218
 
     (77) leer -> READ OPAREN exp e1 CPAREN .
 
@@ -5366,7 +5345,7 @@ state 212
     SEMICOLON       reduce using rule 77 (leer -> READ OPAREN exp e1 CPAREN .)
 
 
-state 213
+state 219
 
     (18) ciclo_while -> WHILE cond2 THEN bloque SEMICOLON .
 
@@ -5390,7 +5369,7 @@ state 213
     CCURLY          reduce using rule 18 (ciclo_while -> WHILE cond2 THEN bloque SEMICOLON .)
 
 
-state 214
+state 220
 
     (21) ciclo_for1 -> variable .
 
@@ -5399,14 +5378,14 @@ state 214
     CPAREN          reduce using rule 21 (ciclo_for1 -> variable .)
 
 
-state 215
+state 221
 
     (19) ciclo_for -> FOR OPAREN variable FROM ciclo_for1 . TO ciclo_for1 BY ciclo_for1 CPAREN THEN bloque SEMICOLON
 
-    TO              shift and go to state 232
+    TO              shift and go to state 244
 
 
-state 216
+state 222
 
     (20) ciclo_for1 -> CSTINT .
 
@@ -5415,58 +5394,275 @@ state 216
     CPAREN          reduce using rule 20 (ciclo_for1 -> CSTINT .)
 
 
-state 217
+state 223
 
     (3) funcion -> FUNCTION func1 ID saw_id saw_function . OPAREN param CPAREN bloque
 
-    OPAREN          shift and go to state 233
+    OPAREN          shift and go to state 245
 
 
-state 218
+state 224
 
     (12) clase -> CLASS ID saw_id saw_class COLON . clase_bloque SEMICOLON
     (13) clase_bloque -> . OCURLY ATTRIBUTES COLON clase_bloque1 METHODS COLON clase_metodos_bloque class_scope_end CCURLY
 
-    OCURLY          shift and go to state 235
+    OCURLY          shift and go to state 247
 
-    clase_bloque                   shift and go to state 234
+    clase_bloque                   shift and go to state 246
 
-state 219
+state 225
+
+    (90) exp1 -> OR saw_op texp exp1 .
+
+    QUESTION        reduce using rule 90 (exp1 -> OR saw_op texp exp1 .)
+    CPAREN          reduce using rule 90 (exp1 -> OR saw_op texp exp1 .)
+    ID              reduce using rule 90 (exp1 -> OR saw_op texp exp1 .)
+    IF              reduce using rule 90 (exp1 -> OR saw_op texp exp1 .)
+    PRINT           reduce using rule 90 (exp1 -> OR saw_op texp exp1 .)
+    READ            reduce using rule 90 (exp1 -> OR saw_op texp exp1 .)
+    WHILE           reduce using rule 90 (exp1 -> OR saw_op texp exp1 .)
+    FOR             reduce using rule 90 (exp1 -> OR saw_op texp exp1 .)
+    OCURLY          reduce using rule 90 (exp1 -> OR saw_op texp exp1 .)
+    FUNCTION        reduce using rule 90 (exp1 -> OR saw_op texp exp1 .)
+    CLASS           reduce using rule 90 (exp1 -> OR saw_op texp exp1 .)
+    VAR             reduce using rule 90 (exp1 -> OR saw_op texp exp1 .)
+    OPAREN          reduce using rule 90 (exp1 -> OR saw_op texp exp1 .)
+    CSTINT          reduce using rule 90 (exp1 -> OR saw_op texp exp1 .)
+    CSTFLT          reduce using rule 90 (exp1 -> OR saw_op texp exp1 .)
+    CSTCHAR         reduce using rule 90 (exp1 -> OR saw_op texp exp1 .)
+    CSTSTRING       reduce using rule 90 (exp1 -> OR saw_op texp exp1 .)
+    TRUE            reduce using rule 90 (exp1 -> OR saw_op texp exp1 .)
+    FALSE           reduce using rule 90 (exp1 -> OR saw_op texp exp1 .)
+    CCURLY          reduce using rule 90 (exp1 -> OR saw_op texp exp1 .)
+    COLON           reduce using rule 90 (exp1 -> OR saw_op texp exp1 .)
+    SEMICOLON       reduce using rule 90 (exp1 -> OR saw_op texp exp1 .)
+    COMMA           reduce using rule 90 (exp1 -> OR saw_op texp exp1 .)
+    CBRACKET        reduce using rule 90 (exp1 -> OR saw_op texp exp1 .)
+
+
+state 226
+
+    (93) texp1 -> AND saw_op gexp texp1 .
+
+    OR              reduce using rule 93 (texp1 -> AND saw_op gexp texp1 .)
+    QUESTION        reduce using rule 93 (texp1 -> AND saw_op gexp texp1 .)
+    CPAREN          reduce using rule 93 (texp1 -> AND saw_op gexp texp1 .)
+    ID              reduce using rule 93 (texp1 -> AND saw_op gexp texp1 .)
+    IF              reduce using rule 93 (texp1 -> AND saw_op gexp texp1 .)
+    PRINT           reduce using rule 93 (texp1 -> AND saw_op gexp texp1 .)
+    READ            reduce using rule 93 (texp1 -> AND saw_op gexp texp1 .)
+    WHILE           reduce using rule 93 (texp1 -> AND saw_op gexp texp1 .)
+    FOR             reduce using rule 93 (texp1 -> AND saw_op gexp texp1 .)
+    OCURLY          reduce using rule 93 (texp1 -> AND saw_op gexp texp1 .)
+    FUNCTION        reduce using rule 93 (texp1 -> AND saw_op gexp texp1 .)
+    CLASS           reduce using rule 93 (texp1 -> AND saw_op gexp texp1 .)
+    VAR             reduce using rule 93 (texp1 -> AND saw_op gexp texp1 .)
+    OPAREN          reduce using rule 93 (texp1 -> AND saw_op gexp texp1 .)
+    CSTINT          reduce using rule 93 (texp1 -> AND saw_op gexp texp1 .)
+    CSTFLT          reduce using rule 93 (texp1 -> AND saw_op gexp texp1 .)
+    CSTCHAR         reduce using rule 93 (texp1 -> AND saw_op gexp texp1 .)
+    CSTSTRING       reduce using rule 93 (texp1 -> AND saw_op gexp texp1 .)
+    TRUE            reduce using rule 93 (texp1 -> AND saw_op gexp texp1 .)
+    FALSE           reduce using rule 93 (texp1 -> AND saw_op gexp texp1 .)
+    CCURLY          reduce using rule 93 (texp1 -> AND saw_op gexp texp1 .)
+    COLON           reduce using rule 93 (texp1 -> AND saw_op gexp texp1 .)
+    SEMICOLON       reduce using rule 93 (texp1 -> AND saw_op gexp texp1 .)
+    COMMA           reduce using rule 93 (texp1 -> AND saw_op gexp texp1 .)
+    CBRACKET        reduce using rule 93 (texp1 -> AND saw_op gexp texp1 .)
+
+
+state 227
+
+    (104) mexp1 -> PLUS saw_op termino mexp1 .
+
+    LT              reduce using rule 104 (mexp1 -> PLUS saw_op termino mexp1 .)
+    GT              reduce using rule 104 (mexp1 -> PLUS saw_op termino mexp1 .)
+    GTE             reduce using rule 104 (mexp1 -> PLUS saw_op termino mexp1 .)
+    LTE             reduce using rule 104 (mexp1 -> PLUS saw_op termino mexp1 .)
+    EQ              reduce using rule 104 (mexp1 -> PLUS saw_op termino mexp1 .)
+    NE              reduce using rule 104 (mexp1 -> PLUS saw_op termino mexp1 .)
+    AND             reduce using rule 104 (mexp1 -> PLUS saw_op termino mexp1 .)
+    OR              reduce using rule 104 (mexp1 -> PLUS saw_op termino mexp1 .)
+    QUESTION        reduce using rule 104 (mexp1 -> PLUS saw_op termino mexp1 .)
+    CPAREN          reduce using rule 104 (mexp1 -> PLUS saw_op termino mexp1 .)
+    ID              reduce using rule 104 (mexp1 -> PLUS saw_op termino mexp1 .)
+    IF              reduce using rule 104 (mexp1 -> PLUS saw_op termino mexp1 .)
+    PRINT           reduce using rule 104 (mexp1 -> PLUS saw_op termino mexp1 .)
+    READ            reduce using rule 104 (mexp1 -> PLUS saw_op termino mexp1 .)
+    WHILE           reduce using rule 104 (mexp1 -> PLUS saw_op termino mexp1 .)
+    FOR             reduce using rule 104 (mexp1 -> PLUS saw_op termino mexp1 .)
+    OCURLY          reduce using rule 104 (mexp1 -> PLUS saw_op termino mexp1 .)
+    FUNCTION        reduce using rule 104 (mexp1 -> PLUS saw_op termino mexp1 .)
+    CLASS           reduce using rule 104 (mexp1 -> PLUS saw_op termino mexp1 .)
+    VAR             reduce using rule 104 (mexp1 -> PLUS saw_op termino mexp1 .)
+    OPAREN          reduce using rule 104 (mexp1 -> PLUS saw_op termino mexp1 .)
+    CSTINT          reduce using rule 104 (mexp1 -> PLUS saw_op termino mexp1 .)
+    CSTFLT          reduce using rule 104 (mexp1 -> PLUS saw_op termino mexp1 .)
+    CSTCHAR         reduce using rule 104 (mexp1 -> PLUS saw_op termino mexp1 .)
+    CSTSTRING       reduce using rule 104 (mexp1 -> PLUS saw_op termino mexp1 .)
+    TRUE            reduce using rule 104 (mexp1 -> PLUS saw_op termino mexp1 .)
+    FALSE           reduce using rule 104 (mexp1 -> PLUS saw_op termino mexp1 .)
+    CCURLY          reduce using rule 104 (mexp1 -> PLUS saw_op termino mexp1 .)
+    COLON           reduce using rule 104 (mexp1 -> PLUS saw_op termino mexp1 .)
+    SEMICOLON       reduce using rule 104 (mexp1 -> PLUS saw_op termino mexp1 .)
+    COMMA           reduce using rule 104 (mexp1 -> PLUS saw_op termino mexp1 .)
+    CBRACKET        reduce using rule 104 (mexp1 -> PLUS saw_op termino mexp1 .)
+
+
+state 228
+
+    (105) mexp1 -> MINUS saw_op termino mexp1 .
+
+    LT              reduce using rule 105 (mexp1 -> MINUS saw_op termino mexp1 .)
+    GT              reduce using rule 105 (mexp1 -> MINUS saw_op termino mexp1 .)
+    GTE             reduce using rule 105 (mexp1 -> MINUS saw_op termino mexp1 .)
+    LTE             reduce using rule 105 (mexp1 -> MINUS saw_op termino mexp1 .)
+    EQ              reduce using rule 105 (mexp1 -> MINUS saw_op termino mexp1 .)
+    NE              reduce using rule 105 (mexp1 -> MINUS saw_op termino mexp1 .)
+    AND             reduce using rule 105 (mexp1 -> MINUS saw_op termino mexp1 .)
+    OR              reduce using rule 105 (mexp1 -> MINUS saw_op termino mexp1 .)
+    QUESTION        reduce using rule 105 (mexp1 -> MINUS saw_op termino mexp1 .)
+    CPAREN          reduce using rule 105 (mexp1 -> MINUS saw_op termino mexp1 .)
+    ID              reduce using rule 105 (mexp1 -> MINUS saw_op termino mexp1 .)
+    IF              reduce using rule 105 (mexp1 -> MINUS saw_op termino mexp1 .)
+    PRINT           reduce using rule 105 (mexp1 -> MINUS saw_op termino mexp1 .)
+    READ            reduce using rule 105 (mexp1 -> MINUS saw_op termino mexp1 .)
+    WHILE           reduce using rule 105 (mexp1 -> MINUS saw_op termino mexp1 .)
+    FOR             reduce using rule 105 (mexp1 -> MINUS saw_op termino mexp1 .)
+    OCURLY          reduce using rule 105 (mexp1 -> MINUS saw_op termino mexp1 .)
+    FUNCTION        reduce using rule 105 (mexp1 -> MINUS saw_op termino mexp1 .)
+    CLASS           reduce using rule 105 (mexp1 -> MINUS saw_op termino mexp1 .)
+    VAR             reduce using rule 105 (mexp1 -> MINUS saw_op termino mexp1 .)
+    OPAREN          reduce using rule 105 (mexp1 -> MINUS saw_op termino mexp1 .)
+    CSTINT          reduce using rule 105 (mexp1 -> MINUS saw_op termino mexp1 .)
+    CSTFLT          reduce using rule 105 (mexp1 -> MINUS saw_op termino mexp1 .)
+    CSTCHAR         reduce using rule 105 (mexp1 -> MINUS saw_op termino mexp1 .)
+    CSTSTRING       reduce using rule 105 (mexp1 -> MINUS saw_op termino mexp1 .)
+    TRUE            reduce using rule 105 (mexp1 -> MINUS saw_op termino mexp1 .)
+    FALSE           reduce using rule 105 (mexp1 -> MINUS saw_op termino mexp1 .)
+    CCURLY          reduce using rule 105 (mexp1 -> MINUS saw_op termino mexp1 .)
+    COLON           reduce using rule 105 (mexp1 -> MINUS saw_op termino mexp1 .)
+    SEMICOLON       reduce using rule 105 (mexp1 -> MINUS saw_op termino mexp1 .)
+    COMMA           reduce using rule 105 (mexp1 -> MINUS saw_op termino mexp1 .)
+    CBRACKET        reduce using rule 105 (mexp1 -> MINUS saw_op termino mexp1 .)
+
+
+state 229
+
+    (108) term1 -> MULT saw_op factor term1 .
+
+    PLUS            reduce using rule 108 (term1 -> MULT saw_op factor term1 .)
+    MINUS           reduce using rule 108 (term1 -> MULT saw_op factor term1 .)
+    LT              reduce using rule 108 (term1 -> MULT saw_op factor term1 .)
+    GT              reduce using rule 108 (term1 -> MULT saw_op factor term1 .)
+    GTE             reduce using rule 108 (term1 -> MULT saw_op factor term1 .)
+    LTE             reduce using rule 108 (term1 -> MULT saw_op factor term1 .)
+    EQ              reduce using rule 108 (term1 -> MULT saw_op factor term1 .)
+    NE              reduce using rule 108 (term1 -> MULT saw_op factor term1 .)
+    AND             reduce using rule 108 (term1 -> MULT saw_op factor term1 .)
+    OR              reduce using rule 108 (term1 -> MULT saw_op factor term1 .)
+    QUESTION        reduce using rule 108 (term1 -> MULT saw_op factor term1 .)
+    CPAREN          reduce using rule 108 (term1 -> MULT saw_op factor term1 .)
+    ID              reduce using rule 108 (term1 -> MULT saw_op factor term1 .)
+    IF              reduce using rule 108 (term1 -> MULT saw_op factor term1 .)
+    PRINT           reduce using rule 108 (term1 -> MULT saw_op factor term1 .)
+    READ            reduce using rule 108 (term1 -> MULT saw_op factor term1 .)
+    WHILE           reduce using rule 108 (term1 -> MULT saw_op factor term1 .)
+    FOR             reduce using rule 108 (term1 -> MULT saw_op factor term1 .)
+    OCURLY          reduce using rule 108 (term1 -> MULT saw_op factor term1 .)
+    FUNCTION        reduce using rule 108 (term1 -> MULT saw_op factor term1 .)
+    CLASS           reduce using rule 108 (term1 -> MULT saw_op factor term1 .)
+    VAR             reduce using rule 108 (term1 -> MULT saw_op factor term1 .)
+    OPAREN          reduce using rule 108 (term1 -> MULT saw_op factor term1 .)
+    CSTINT          reduce using rule 108 (term1 -> MULT saw_op factor term1 .)
+    CSTFLT          reduce using rule 108 (term1 -> MULT saw_op factor term1 .)
+    CSTCHAR         reduce using rule 108 (term1 -> MULT saw_op factor term1 .)
+    CSTSTRING       reduce using rule 108 (term1 -> MULT saw_op factor term1 .)
+    TRUE            reduce using rule 108 (term1 -> MULT saw_op factor term1 .)
+    FALSE           reduce using rule 108 (term1 -> MULT saw_op factor term1 .)
+    CCURLY          reduce using rule 108 (term1 -> MULT saw_op factor term1 .)
+    COLON           reduce using rule 108 (term1 -> MULT saw_op factor term1 .)
+    SEMICOLON       reduce using rule 108 (term1 -> MULT saw_op factor term1 .)
+    COMMA           reduce using rule 108 (term1 -> MULT saw_op factor term1 .)
+    CBRACKET        reduce using rule 108 (term1 -> MULT saw_op factor term1 .)
+
+
+state 230
+
+    (109) term1 -> DIV saw_op factor term1 .
+
+    PLUS            reduce using rule 109 (term1 -> DIV saw_op factor term1 .)
+    MINUS           reduce using rule 109 (term1 -> DIV saw_op factor term1 .)
+    LT              reduce using rule 109 (term1 -> DIV saw_op factor term1 .)
+    GT              reduce using rule 109 (term1 -> DIV saw_op factor term1 .)
+    GTE             reduce using rule 109 (term1 -> DIV saw_op factor term1 .)
+    LTE             reduce using rule 109 (term1 -> DIV saw_op factor term1 .)
+    EQ              reduce using rule 109 (term1 -> DIV saw_op factor term1 .)
+    NE              reduce using rule 109 (term1 -> DIV saw_op factor term1 .)
+    AND             reduce using rule 109 (term1 -> DIV saw_op factor term1 .)
+    OR              reduce using rule 109 (term1 -> DIV saw_op factor term1 .)
+    QUESTION        reduce using rule 109 (term1 -> DIV saw_op factor term1 .)
+    CPAREN          reduce using rule 109 (term1 -> DIV saw_op factor term1 .)
+    ID              reduce using rule 109 (term1 -> DIV saw_op factor term1 .)
+    IF              reduce using rule 109 (term1 -> DIV saw_op factor term1 .)
+    PRINT           reduce using rule 109 (term1 -> DIV saw_op factor term1 .)
+    READ            reduce using rule 109 (term1 -> DIV saw_op factor term1 .)
+    WHILE           reduce using rule 109 (term1 -> DIV saw_op factor term1 .)
+    FOR             reduce using rule 109 (term1 -> DIV saw_op factor term1 .)
+    OCURLY          reduce using rule 109 (term1 -> DIV saw_op factor term1 .)
+    FUNCTION        reduce using rule 109 (term1 -> DIV saw_op factor term1 .)
+    CLASS           reduce using rule 109 (term1 -> DIV saw_op factor term1 .)
+    VAR             reduce using rule 109 (term1 -> DIV saw_op factor term1 .)
+    OPAREN          reduce using rule 109 (term1 -> DIV saw_op factor term1 .)
+    CSTINT          reduce using rule 109 (term1 -> DIV saw_op factor term1 .)
+    CSTFLT          reduce using rule 109 (term1 -> DIV saw_op factor term1 .)
+    CSTCHAR         reduce using rule 109 (term1 -> DIV saw_op factor term1 .)
+    CSTSTRING       reduce using rule 109 (term1 -> DIV saw_op factor term1 .)
+    TRUE            reduce using rule 109 (term1 -> DIV saw_op factor term1 .)
+    FALSE           reduce using rule 109 (term1 -> DIV saw_op factor term1 .)
+    CCURLY          reduce using rule 109 (term1 -> DIV saw_op factor term1 .)
+    COLON           reduce using rule 109 (term1 -> DIV saw_op factor term1 .)
+    SEMICOLON       reduce using rule 109 (term1 -> DIV saw_op factor term1 .)
+    COMMA           reduce using rule 109 (term1 -> DIV saw_op factor term1 .)
+    CBRACKET        reduce using rule 109 (term1 -> DIV saw_op factor term1 .)
+
+
+state 231
 
     (25) tipo -> compuesto ID saw_id saw_variable tipo1 .
 
     SEMICOLON       reduce using rule 25 (tipo -> compuesto ID saw_id saw_variable tipo1 .)
 
 
-state 220
+state 232
 
     (28) tipo1 -> COMMA . ID saw_id saw_variable tipo1
 
-    ID              shift and go to state 236
+    ID              shift and go to state 248
 
 
-state 221
+state 233
 
     (29) tipo1 -> empty .
 
     SEMICOLON       reduce using rule 29 (tipo1 -> empty .)
 
 
-state 222
+state 234
 
     (26) tipo -> simple ID saw_id saw_variable tipo1 .
 
     SEMICOLON       reduce using rule 26 (tipo -> simple ID saw_id saw_variable tipo1 .)
 
 
-state 223
+state 235
 
     (27) tipo -> multiple ID saw_id saw_variable OBRACKET . CSTINT CBRACKET tipo3 tipo2
 
-    CSTINT          shift and go to state 237
+    CSTINT          shift and go to state 249
 
 
-state 224
+state 236
 
     (73) ternaria -> exp QUESTION estatuto_redux COLON estatuto_redux SEMICOLON .
 
@@ -5492,7 +5688,7 @@ state 224
     SEMICOLON       reduce using rule 73 (ternaria -> exp QUESTION estatuto_redux COLON estatuto_redux SEMICOLON .)
 
 
-state 225
+state 237
 
     (85) llamada -> ID saw_id OPAREN exp llamada1 CPAREN .
 
@@ -5534,20 +5730,20 @@ state 225
     CBRACKET        reduce using rule 85 (llamada -> ID saw_id OPAREN exp llamada1 CPAREN .)
 
 
-state 226
+state 238
 
     (87) llamada1 -> COMMA exp . llamada1
     (87) llamada1 -> . COMMA exp llamada1
     (88) llamada1 -> . empty
     (120) empty -> .
 
-    COMMA           shift and go to state 201
+    COMMA           shift and go to state 207
     CPAREN          reduce using rule 120 (empty -> .)
 
-    llamada1                       shift and go to state 238
-    empty                          shift and go to state 202
+    llamada1                       shift and go to state 250
+    empty                          shift and go to state 208
 
-state 227
+state 239
 
     (83) variable2 -> PERIOD ID . saw_id variable1 variable1 variable2
     (124) saw_id -> .
@@ -5595,9 +5791,9 @@ state 227
     TO              reduce using rule 124 (saw_id -> .)
     BY              reduce using rule 124 (saw_id -> .)
 
-    saw_id                         shift and go to state 239
+    saw_id                         shift and go to state 251
 
-state 228
+state 240
 
     (68) condicion -> IF cond2 THEN bloque cond1 SEMICOLON .
 
@@ -5621,43 +5817,43 @@ state 228
     CCURLY          reduce using rule 68 (condicion -> IF cond2 THEN bloque cond1 SEMICOLON .)
 
 
-state 229
+state 241
 
     (69) cond1 -> ELSE bloque .
 
     SEMICOLON       reduce using rule 69 (cond1 -> ELSE bloque .)
 
 
-state 230
+state 242
 
     (70) cond1 -> ELSE IF . cond2 THEN bloque cond1
     (72) cond2 -> . OPAREN exp CPAREN
 
     OPAREN          shift and go to state 78
 
-    cond2                          shift and go to state 240
+    cond2                          shift and go to state 252
 
-state 231
+state 243
 
     (75) e1 -> COMMA exp e1 .
 
     CPAREN          reduce using rule 75 (e1 -> COMMA exp e1 .)
 
 
-state 232
+state 244
 
     (19) ciclo_for -> FOR OPAREN variable FROM ciclo_for1 TO . ciclo_for1 BY ciclo_for1 CPAREN THEN bloque SEMICOLON
     (20) ciclo_for1 -> . CSTINT
     (21) ciclo_for1 -> . variable
     (80) variable -> . ID saw_id variable1 variable1 variable2
 
-    CSTINT          shift and go to state 216
+    CSTINT          shift and go to state 222
     ID              shift and go to state 151
 
-    variable                       shift and go to state 214
-    ciclo_for1                     shift and go to state 241
+    variable                       shift and go to state 220
+    ciclo_for1                     shift and go to state 253
 
-state 233
+state 245
 
     (3) funcion -> FUNCTION func1 ID saw_id saw_function OPAREN . param CPAREN bloque
     (6) param -> . param2 param1
@@ -5688,27 +5884,27 @@ state 233
     STRINGS         shift and go to state 66
     CHARS           shift and go to state 67
 
-    param                          shift and go to state 242
-    param2                         shift and go to state 243
-    empty                          shift and go to state 244
-    simple                         shift and go to state 245
-    multiple                       shift and go to state 246
+    param                          shift and go to state 254
+    param2                         shift and go to state 255
+    empty                          shift and go to state 256
+    simple                         shift and go to state 257
+    multiple                       shift and go to state 258
 
-state 234
+state 246
 
     (12) clase -> CLASS ID saw_id saw_class COLON clase_bloque . SEMICOLON
 
-    SEMICOLON       shift and go to state 247
+    SEMICOLON       shift and go to state 259
 
 
-state 235
+state 247
 
     (13) clase_bloque -> OCURLY . ATTRIBUTES COLON clase_bloque1 METHODS COLON clase_metodos_bloque class_scope_end CCURLY
 
-    ATTRIBUTES      shift and go to state 248
+    ATTRIBUTES      shift and go to state 260
 
 
-state 236
+state 248
 
     (28) tipo1 -> COMMA ID . saw_id saw_variable tipo1
     (124) saw_id -> .
@@ -5716,23 +5912,23 @@ state 236
     COMMA           reduce using rule 124 (saw_id -> .)
     SEMICOLON       reduce using rule 124 (saw_id -> .)
 
-    saw_id                         shift and go to state 249
+    saw_id                         shift and go to state 261
 
-state 237
+state 249
 
     (27) tipo -> multiple ID saw_id saw_variable OBRACKET CSTINT . CBRACKET tipo3 tipo2
 
-    CBRACKET        shift and go to state 250
+    CBRACKET        shift and go to state 262
 
 
-state 238
+state 250
 
     (87) llamada1 -> COMMA exp llamada1 .
 
     CPAREN          reduce using rule 87 (llamada1 -> COMMA exp llamada1 .)
 
 
-state 239
+state 251
 
     (83) variable2 -> PERIOD ID saw_id . variable1 variable1 variable2
     (81) variable1 -> . OBRACKET exp CBRACKET
@@ -5785,65 +5981,65 @@ state 239
 
   ! OBRACKET        [ reduce using rule 120 (empty -> .) ]
 
-    variable1                      shift and go to state 251
+    variable1                      shift and go to state 263
     empty                          shift and go to state 142
 
-state 240
+state 252
 
     (70) cond1 -> ELSE IF cond2 . THEN bloque cond1
 
-    THEN            shift and go to state 252
+    THEN            shift and go to state 264
 
 
-state 241
+state 253
 
     (19) ciclo_for -> FOR OPAREN variable FROM ciclo_for1 TO ciclo_for1 . BY ciclo_for1 CPAREN THEN bloque SEMICOLON
 
-    BY              shift and go to state 253
+    BY              shift and go to state 265
 
 
-state 242
+state 254
 
     (3) funcion -> FUNCTION func1 ID saw_id saw_function OPAREN param . CPAREN bloque
 
-    CPAREN          shift and go to state 254
+    CPAREN          shift and go to state 266
 
 
-state 243
+state 255
 
     (6) param -> param2 . param1
     (8) param1 -> . COMMA param2 param1
     (9) param1 -> . empty
     (120) empty -> .
 
-    COMMA           shift and go to state 256
+    COMMA           shift and go to state 268
     CPAREN          reduce using rule 120 (empty -> .)
 
-    param1                         shift and go to state 255
-    empty                          shift and go to state 257
+    param1                         shift and go to state 267
+    empty                          shift and go to state 269
 
-state 244
+state 256
 
     (7) param -> empty .
 
     CPAREN          reduce using rule 7 (param -> empty .)
 
 
-state 245
+state 257
 
     (10) param2 -> simple . ID saw_id_param
 
-    ID              shift and go to state 258
+    ID              shift and go to state 270
 
 
-state 246
+state 258
 
     (11) param2 -> multiple . ID saw_id_param variable1 variable1
 
-    ID              shift and go to state 259
+    ID              shift and go to state 271
 
 
-state 247
+state 259
 
     (12) clase -> CLASS ID saw_id saw_class COLON clase_bloque SEMICOLON .
 
@@ -5867,14 +6063,14 @@ state 247
     CCURLY          reduce using rule 12 (clase -> CLASS ID saw_id saw_class COLON clase_bloque SEMICOLON .)
 
 
-state 248
+state 260
 
     (13) clase_bloque -> OCURLY ATTRIBUTES . COLON clase_bloque1 METHODS COLON clase_metodos_bloque class_scope_end CCURLY
 
-    COLON           shift and go to state 260
+    COLON           shift and go to state 272
 
 
-state 249
+state 261
 
     (28) tipo1 -> COMMA ID saw_id . saw_variable tipo1
     (126) saw_variable -> .
@@ -5882,23 +6078,23 @@ state 249
     COMMA           reduce using rule 126 (saw_variable -> .)
     SEMICOLON       reduce using rule 126 (saw_variable -> .)
 
-    saw_variable                   shift and go to state 261
+    saw_variable                   shift and go to state 273
 
-state 250
+state 262
 
     (27) tipo -> multiple ID saw_id saw_variable OBRACKET CSTINT CBRACKET . tipo3 tipo2
     (32) tipo3 -> . OBRACKET CSTINT CBRACKET
     (33) tipo3 -> . empty
     (120) empty -> .
 
-    OBRACKET        shift and go to state 262
+    OBRACKET        shift and go to state 274
     COMMA           reduce using rule 120 (empty -> .)
     SEMICOLON       reduce using rule 120 (empty -> .)
 
-    tipo3                          shift and go to state 263
-    empty                          shift and go to state 264
+    tipo3                          shift and go to state 275
+    empty                          shift and go to state 276
 
-state 251
+state 263
 
     (83) variable2 -> PERIOD ID saw_id variable1 . variable1 variable2
     (81) variable1 -> . OBRACKET exp CBRACKET
@@ -5948,48 +6144,48 @@ state 251
     TO              reduce using rule 120 (empty -> .)
     BY              reduce using rule 120 (empty -> .)
 
-    variable1                      shift and go to state 265
+    variable1                      shift and go to state 277
     empty                          shift and go to state 142
 
-state 252
+state 264
 
     (70) cond1 -> ELSE IF cond2 THEN . bloque cond1
     (47) bloque -> . OCURLY b1 CCURLY scope_end
 
     OCURLY          shift and go to state 9
 
-    bloque                         shift and go to state 266
+    bloque                         shift and go to state 278
 
-state 253
+state 265
 
     (19) ciclo_for -> FOR OPAREN variable FROM ciclo_for1 TO ciclo_for1 BY . ciclo_for1 CPAREN THEN bloque SEMICOLON
     (20) ciclo_for1 -> . CSTINT
     (21) ciclo_for1 -> . variable
     (80) variable -> . ID saw_id variable1 variable1 variable2
 
-    CSTINT          shift and go to state 216
+    CSTINT          shift and go to state 222
     ID              shift and go to state 151
 
-    variable                       shift and go to state 214
-    ciclo_for1                     shift and go to state 267
+    variable                       shift and go to state 220
+    ciclo_for1                     shift and go to state 279
 
-state 254
+state 266
 
     (3) funcion -> FUNCTION func1 ID saw_id saw_function OPAREN param CPAREN . bloque
     (47) bloque -> . OCURLY b1 CCURLY scope_end
 
     OCURLY          shift and go to state 9
 
-    bloque                         shift and go to state 268
+    bloque                         shift and go to state 280
 
-state 255
+state 267
 
     (6) param -> param2 param1 .
 
     CPAREN          reduce using rule 6 (param -> param2 param1 .)
 
 
-state 256
+state 268
 
     (8) param1 -> COMMA . param2 param1
     (10) param2 -> . simple ID saw_id_param
@@ -6016,18 +6212,18 @@ state 256
     STRINGS         shift and go to state 66
     CHARS           shift and go to state 67
 
-    param2                         shift and go to state 269
-    simple                         shift and go to state 245
-    multiple                       shift and go to state 246
+    param2                         shift and go to state 281
+    simple                         shift and go to state 257
+    multiple                       shift and go to state 258
 
-state 257
+state 269
 
     (9) param1 -> empty .
 
     CPAREN          reduce using rule 9 (param1 -> empty .)
 
 
-state 258
+state 270
 
     (10) param2 -> simple ID . saw_id_param
     (125) saw_id_param -> .
@@ -6035,9 +6231,9 @@ state 258
     COMMA           reduce using rule 125 (saw_id_param -> .)
     CPAREN          reduce using rule 125 (saw_id_param -> .)
 
-    saw_id_param                   shift and go to state 270
+    saw_id_param                   shift and go to state 282
 
-state 259
+state 271
 
     (11) param2 -> multiple ID . saw_id_param variable1 variable1
     (125) saw_id_param -> .
@@ -6046,9 +6242,9 @@ state 259
     COMMA           reduce using rule 125 (saw_id_param -> .)
     CPAREN          reduce using rule 125 (saw_id_param -> .)
 
-    saw_id_param                   shift and go to state 271
+    saw_id_param                   shift and go to state 283
 
-state 260
+state 272
 
     (13) clase_bloque -> OCURLY ATTRIBUTES COLON . clase_bloque1 METHODS COLON clase_metodos_bloque class_scope_end CCURLY
     (14) clase_bloque1 -> . dec
@@ -6059,44 +6255,44 @@ state 260
     VAR             shift and go to state 10
     METHODS         reduce using rule 120 (empty -> .)
 
-    clase_bloque1                  shift and go to state 272
-    dec                            shift and go to state 273
-    empty                          shift and go to state 274
+    clase_bloque1                  shift and go to state 284
+    dec                            shift and go to state 285
+    empty                          shift and go to state 286
 
-state 261
+state 273
 
     (28) tipo1 -> COMMA ID saw_id saw_variable . tipo1
     (28) tipo1 -> . COMMA ID saw_id saw_variable tipo1
     (29) tipo1 -> . empty
     (120) empty -> .
 
-    COMMA           shift and go to state 220
+    COMMA           shift and go to state 232
     SEMICOLON       reduce using rule 120 (empty -> .)
 
-    tipo1                          shift and go to state 275
-    empty                          shift and go to state 221
+    tipo1                          shift and go to state 287
+    empty                          shift and go to state 233
 
-state 262
+state 274
 
     (32) tipo3 -> OBRACKET . CSTINT CBRACKET
 
-    CSTINT          shift and go to state 276
+    CSTINT          shift and go to state 288
 
 
-state 263
+state 275
 
     (27) tipo -> multiple ID saw_id saw_variable OBRACKET CSTINT CBRACKET tipo3 . tipo2
     (30) tipo2 -> . COMMA ID saw_id OBRACKET CSTINT CBRACKET tipo3
     (31) tipo2 -> . empty
     (120) empty -> .
 
-    COMMA           shift and go to state 278
+    COMMA           shift and go to state 290
     SEMICOLON       reduce using rule 120 (empty -> .)
 
-    tipo2                          shift and go to state 277
-    empty                          shift and go to state 279
+    tipo2                          shift and go to state 289
+    empty                          shift and go to state 291
 
-state 264
+state 276
 
     (33) tipo3 -> empty .
 
@@ -6104,14 +6300,14 @@ state 264
     SEMICOLON       reduce using rule 33 (tipo3 -> empty .)
 
 
-state 265
+state 277
 
     (83) variable2 -> PERIOD ID saw_id variable1 variable1 . variable2
     (83) variable2 -> . PERIOD ID saw_id variable1 variable1 variable2
     (84) variable2 -> . empty
     (120) empty -> .
 
-    PERIOD          shift and go to state 204
+    PERIOD          shift and go to state 210
     AS              reduce using rule 120 (empty -> .)
     MULT            reduce using rule 120 (empty -> .)
     DIV             reduce using rule 120 (empty -> .)
@@ -6153,10 +6349,10 @@ state 265
     TO              reduce using rule 120 (empty -> .)
     BY              reduce using rule 120 (empty -> .)
 
-    variable2                      shift and go to state 280
-    empty                          shift and go to state 205
+    variable2                      shift and go to state 292
+    empty                          shift and go to state 211
 
-state 266
+state 278
 
     (70) cond1 -> ELSE IF cond2 THEN bloque . cond1
     (69) cond1 -> . ELSE bloque
@@ -6164,20 +6360,20 @@ state 266
     (71) cond1 -> . empty
     (120) empty -> .
 
-    ELSE            shift and go to state 208
+    ELSE            shift and go to state 214
     SEMICOLON       reduce using rule 120 (empty -> .)
 
-    cond1                          shift and go to state 281
-    empty                          shift and go to state 209
+    cond1                          shift and go to state 293
+    empty                          shift and go to state 215
 
-state 267
+state 279
 
     (19) ciclo_for -> FOR OPAREN variable FROM ciclo_for1 TO ciclo_for1 BY ciclo_for1 . CPAREN THEN bloque SEMICOLON
 
-    CPAREN          shift and go to state 282
+    CPAREN          shift and go to state 294
 
 
-state 268
+state 280
 
     (3) funcion -> FUNCTION func1 ID saw_id saw_function OPAREN param CPAREN bloque .
 
@@ -6201,20 +6397,20 @@ state 268
     CCURLY          reduce using rule 3 (funcion -> FUNCTION func1 ID saw_id saw_function OPAREN param CPAREN bloque .)
 
 
-state 269
+state 281
 
     (8) param1 -> COMMA param2 . param1
     (8) param1 -> . COMMA param2 param1
     (9) param1 -> . empty
     (120) empty -> .
 
-    COMMA           shift and go to state 256
+    COMMA           shift and go to state 268
     CPAREN          reduce using rule 120 (empty -> .)
 
-    param1                         shift and go to state 283
-    empty                          shift and go to state 257
+    param1                         shift and go to state 295
+    empty                          shift and go to state 269
 
-state 270
+state 282
 
     (10) param2 -> simple ID saw_id_param .
 
@@ -6222,7 +6418,7 @@ state 270
     CPAREN          reduce using rule 10 (param2 -> simple ID saw_id_param .)
 
 
-state 271
+state 283
 
     (11) param2 -> multiple ID saw_id_param . variable1 variable1
     (81) variable1 -> . OBRACKET exp CBRACKET
@@ -6236,66 +6432,66 @@ state 271
 
   ! OBRACKET        [ reduce using rule 120 (empty -> .) ]
 
-    variable1                      shift and go to state 284
+    variable1                      shift and go to state 296
     empty                          shift and go to state 142
 
-state 272
+state 284
 
     (13) clase_bloque -> OCURLY ATTRIBUTES COLON clase_bloque1 . METHODS COLON clase_metodos_bloque class_scope_end CCURLY
 
-    METHODS         shift and go to state 285
+    METHODS         shift and go to state 297
 
 
-state 273
+state 285
 
     (14) clase_bloque1 -> dec .
 
     METHODS         reduce using rule 14 (clase_bloque1 -> dec .)
 
 
-state 274
+state 286
 
     (15) clase_bloque1 -> empty .
 
     METHODS         reduce using rule 15 (clase_bloque1 -> empty .)
 
 
-state 275
+state 287
 
     (28) tipo1 -> COMMA ID saw_id saw_variable tipo1 .
 
     SEMICOLON       reduce using rule 28 (tipo1 -> COMMA ID saw_id saw_variable tipo1 .)
 
 
-state 276
+state 288
 
     (32) tipo3 -> OBRACKET CSTINT . CBRACKET
 
-    CBRACKET        shift and go to state 286
+    CBRACKET        shift and go to state 298
 
 
-state 277
+state 289
 
     (27) tipo -> multiple ID saw_id saw_variable OBRACKET CSTINT CBRACKET tipo3 tipo2 .
 
     SEMICOLON       reduce using rule 27 (tipo -> multiple ID saw_id saw_variable OBRACKET CSTINT CBRACKET tipo3 tipo2 .)
 
 
-state 278
+state 290
 
     (30) tipo2 -> COMMA . ID saw_id OBRACKET CSTINT CBRACKET tipo3
 
-    ID              shift and go to state 287
+    ID              shift and go to state 299
 
 
-state 279
+state 291
 
     (31) tipo2 -> empty .
 
     SEMICOLON       reduce using rule 31 (tipo2 -> empty .)
 
 
-state 280
+state 292
 
     (83) variable2 -> PERIOD ID saw_id variable1 variable1 variable2 .
 
@@ -6341,28 +6537,28 @@ state 280
     BY              reduce using rule 83 (variable2 -> PERIOD ID saw_id variable1 variable1 variable2 .)
 
 
-state 281
+state 293
 
     (70) cond1 -> ELSE IF cond2 THEN bloque cond1 .
 
     SEMICOLON       reduce using rule 70 (cond1 -> ELSE IF cond2 THEN bloque cond1 .)
 
 
-state 282
+state 294
 
     (19) ciclo_for -> FOR OPAREN variable FROM ciclo_for1 TO ciclo_for1 BY ciclo_for1 CPAREN . THEN bloque SEMICOLON
 
-    THEN            shift and go to state 288
+    THEN            shift and go to state 300
 
 
-state 283
+state 295
 
     (8) param1 -> COMMA param2 param1 .
 
     CPAREN          reduce using rule 8 (param1 -> COMMA param2 param1 .)
 
 
-state 284
+state 296
 
     (11) param2 -> multiple ID saw_id_param variable1 . variable1
     (81) variable1 -> . OBRACKET exp CBRACKET
@@ -6373,17 +6569,17 @@ state 284
     COMMA           reduce using rule 120 (empty -> .)
     CPAREN          reduce using rule 120 (empty -> .)
 
-    variable1                      shift and go to state 289
+    variable1                      shift and go to state 301
     empty                          shift and go to state 142
 
-state 285
+state 297
 
     (13) clase_bloque -> OCURLY ATTRIBUTES COLON clase_bloque1 METHODS . COLON clase_metodos_bloque class_scope_end CCURLY
 
-    COLON           shift and go to state 290
+    COLON           shift and go to state 302
 
 
-state 286
+state 298
 
     (32) tipo3 -> OBRACKET CSTINT CBRACKET .
 
@@ -6391,25 +6587,25 @@ state 286
     SEMICOLON       reduce using rule 32 (tipo3 -> OBRACKET CSTINT CBRACKET .)
 
 
-state 287
+state 299
 
     (30) tipo2 -> COMMA ID . saw_id OBRACKET CSTINT CBRACKET tipo3
     (124) saw_id -> .
 
     OBRACKET        reduce using rule 124 (saw_id -> .)
 
-    saw_id                         shift and go to state 291
+    saw_id                         shift and go to state 303
 
-state 288
+state 300
 
     (19) ciclo_for -> FOR OPAREN variable FROM ciclo_for1 TO ciclo_for1 BY ciclo_for1 CPAREN THEN . bloque SEMICOLON
     (47) bloque -> . OCURLY b1 CCURLY scope_end
 
     OCURLY          shift and go to state 9
 
-    bloque                         shift and go to state 292
+    bloque                         shift and go to state 304
 
-state 289
+state 301
 
     (11) param2 -> multiple ID saw_id_param variable1 variable1 .
 
@@ -6417,7 +6613,7 @@ state 289
     CPAREN          reduce using rule 11 (param2 -> multiple ID saw_id_param variable1 variable1 .)
 
 
-state 290
+state 302
 
     (13) clase_bloque -> OCURLY ATTRIBUTES COLON clase_bloque1 METHODS COLON . clase_metodos_bloque class_scope_end CCURLY
     (16) clase_metodos_bloque -> . funcion clase_metodos_bloque
@@ -6428,34 +6624,34 @@ state 290
     FUNCTION        shift and go to state 36
     CCURLY          reduce using rule 120 (empty -> .)
 
-    clase_metodos_bloque           shift and go to state 293
-    funcion                        shift and go to state 294
-    empty                          shift and go to state 295
+    clase_metodos_bloque           shift and go to state 305
+    funcion                        shift and go to state 306
+    empty                          shift and go to state 307
 
-state 291
+state 303
 
     (30) tipo2 -> COMMA ID saw_id . OBRACKET CSTINT CBRACKET tipo3
 
-    OBRACKET        shift and go to state 296
+    OBRACKET        shift and go to state 308
 
 
-state 292
+state 304
 
     (19) ciclo_for -> FOR OPAREN variable FROM ciclo_for1 TO ciclo_for1 BY ciclo_for1 CPAREN THEN bloque . SEMICOLON
 
-    SEMICOLON       shift and go to state 297
+    SEMICOLON       shift and go to state 309
 
 
-state 293
+state 305
 
     (13) clase_bloque -> OCURLY ATTRIBUTES COLON clase_bloque1 METHODS COLON clase_metodos_bloque . class_scope_end CCURLY
-    (133) class_scope_end -> .
+    (135) class_scope_end -> .
 
-    CCURLY          reduce using rule 133 (class_scope_end -> .)
+    CCURLY          reduce using rule 135 (class_scope_end -> .)
 
-    class_scope_end                shift and go to state 298
+    class_scope_end                shift and go to state 310
 
-state 294
+state 306
 
     (16) clase_metodos_bloque -> funcion . clase_metodos_bloque
     (16) clase_metodos_bloque -> . funcion clase_metodos_bloque
@@ -6466,25 +6662,25 @@ state 294
     FUNCTION        shift and go to state 36
     CCURLY          reduce using rule 120 (empty -> .)
 
-    funcion                        shift and go to state 294
-    clase_metodos_bloque           shift and go to state 299
-    empty                          shift and go to state 295
+    funcion                        shift and go to state 306
+    clase_metodos_bloque           shift and go to state 311
+    empty                          shift and go to state 307
 
-state 295
+state 307
 
     (17) clase_metodos_bloque -> empty .
 
     CCURLY          reduce using rule 17 (clase_metodos_bloque -> empty .)
 
 
-state 296
+state 308
 
     (30) tipo2 -> COMMA ID saw_id OBRACKET . CSTINT CBRACKET tipo3
 
-    CSTINT          shift and go to state 300
+    CSTINT          shift and go to state 312
 
 
-state 297
+state 309
 
     (19) ciclo_for -> FOR OPAREN variable FROM ciclo_for1 TO ciclo_for1 BY ciclo_for1 CPAREN THEN bloque SEMICOLON .
 
@@ -6508,48 +6704,48 @@ state 297
     CCURLY          reduce using rule 19 (ciclo_for -> FOR OPAREN variable FROM ciclo_for1 TO ciclo_for1 BY ciclo_for1 CPAREN THEN bloque SEMICOLON .)
 
 
-state 298
+state 310
 
     (13) clase_bloque -> OCURLY ATTRIBUTES COLON clase_bloque1 METHODS COLON clase_metodos_bloque class_scope_end . CCURLY
 
-    CCURLY          shift and go to state 301
+    CCURLY          shift and go to state 313
 
 
-state 299
+state 311
 
     (16) clase_metodos_bloque -> funcion clase_metodos_bloque .
 
     CCURLY          reduce using rule 16 (clase_metodos_bloque -> funcion clase_metodos_bloque .)
 
 
-state 300
+state 312
 
     (30) tipo2 -> COMMA ID saw_id OBRACKET CSTINT . CBRACKET tipo3
 
-    CBRACKET        shift and go to state 302
+    CBRACKET        shift and go to state 314
 
 
-state 301
+state 313
 
     (13) clase_bloque -> OCURLY ATTRIBUTES COLON clase_bloque1 METHODS COLON clase_metodos_bloque class_scope_end CCURLY .
 
     SEMICOLON       reduce using rule 13 (clase_bloque -> OCURLY ATTRIBUTES COLON clase_bloque1 METHODS COLON clase_metodos_bloque class_scope_end CCURLY .)
 
 
-state 302
+state 314
 
     (30) tipo2 -> COMMA ID saw_id OBRACKET CSTINT CBRACKET . tipo3
     (32) tipo3 -> . OBRACKET CSTINT CBRACKET
     (33) tipo3 -> . empty
     (120) empty -> .
 
-    OBRACKET        shift and go to state 262
+    OBRACKET        shift and go to state 274
     SEMICOLON       reduce using rule 120 (empty -> .)
 
-    tipo3                          shift and go to state 303
-    empty                          shift and go to state 264
+    tipo3                          shift and go to state 315
+    empty                          shift and go to state 276
 
-state 303
+state 315
 
     (30) tipo2 -> COMMA ID saw_id OBRACKET CSTINT CBRACKET tipo3 .
 
@@ -6563,5 +6759,5 @@ WARNING: shift/reduce conflict for VAR in state 114 resolved as shift
 WARNING: shift/reduce conflict for OBRACKET in state 144 resolved as shift
 WARNING: shift/reduce conflict for OPAREN in state 144 resolved as shift
 WARNING: shift/reduce conflict for OBRACKET in state 187 resolved as shift
-WARNING: shift/reduce conflict for OBRACKET in state 239 resolved as shift
-WARNING: shift/reduce conflict for OBRACKET in state 271 resolved as shift
+WARNING: shift/reduce conflict for OBRACKET in state 251 resolved as shift
+WARNING: shift/reduce conflict for OBRACKET in state 283 resolved as shift

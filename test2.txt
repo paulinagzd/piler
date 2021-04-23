@@ -13,12 +13,15 @@ var cha c;
     var str ha;
     var int a, e, i;
     a = 20
-    b = True && True
+    e = 2 + 2
     
   }
 
   func boo adios(boos jajas[12], cha si) {
     var str uuuu;
     var int o, w, oo;
+    w = 80.1
+    o = 12 * 5
+    oo = 60/5 
   }
 }

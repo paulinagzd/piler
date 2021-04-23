@@ -2,7 +2,7 @@ ERROR_MESSAGE = 'TYPE MISMATCH'
 
 # TODO VOID HANDLING IF NEEDED Y CONECTARLE LOGICA
 
-semanticCube = {
+SemanticCube = {
   '+': {
     'int': {
       'int': 'int',
@@ -448,3 +448,6 @@ semanticCube = {
     },
   },
 }
+
+def returningType(left, right, op):
+  return SemanticCube[op][left][right]

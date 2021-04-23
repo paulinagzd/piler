@@ -7,6 +7,7 @@
 import ply.lex as lex
 import ply.yacc as yacc
 from symbolTable import Variable, Function, SymbolTable
+from semanticCube import SemanticCube
 import sys
 
 # reserved words
@@ -106,14 +107,14 @@ t_LTE = r'\<\='
 
 t_ignore = r' '
 
-def t_CSTINT(t):
-  r'\d+'
-  t.value = int(t.value)
-  return t
-
 def t_CSTFLT(t):
   r'\d+\.\d+'
   t.value = float(t.value)
+  return t
+
+def t_CSTINT(t):
+  r'\d+'
+  t.value = int(t.value)
   return t
 
 def t_ID(t):
@@ -501,7 +502,7 @@ def p_exp(p):
 
 def p_exp1(p):
   '''
-  exp1 : OR texp exp1
+  exp1 : OR saw_op texp exp1
        | empty
   '''
   p[0] = tuple(p[1:])
@@ -514,7 +515,7 @@ def p_texp(p):
 
 def p_texp1(p):
   '''
-  texp1 : AND gexp texp1
+  texp1 : AND saw_op gexp texp1
         | empty
   '''
   p[0] = tuple(p[1:])
@@ -527,12 +528,12 @@ def p_gexp(p):
 
 def p_gexp1(p):
   '''
-  gexp1 : LT mexp
-        | GT mexp
-        | GTE mexp
-        | LTE mexp
-        | EQ mexp
-        | NE mexp
+  gexp1 : LT saw_op mexp
+        | GT saw_op mexp
+        | GTE saw_op mexp
+        | LTE saw_op mexp
+        | EQ saw_op mexp
+        | NE saw_op mexp
         | empty
   '''
   p[0] = tuple(p[1:])
@@ -545,8 +546,8 @@ def p_mexp(p):
 
 def p_mexp1(p):
   '''
-  mexp1 : PLUS termino mexp1
-        | MINUS termino mexp1
+  mexp1 : PLUS saw_op termino mexp1
+        | MINUS saw_op termino mexp1
         | empty
   '''
   p[0] = tuple(p[1:])
@@ -561,8 +562,8 @@ def p_termino(p):
 
 def p_term1(p):
   '''
-  term1 : MULT factor term1
-        | DIV factor term1
+  term1 : MULT saw_op factor term1
+        | DIV saw_op factor term1
         | empty
   '''
   p[0] = tuple(p[1:])
@@ -657,13 +658,35 @@ def p_saw_asig(p):
   '''
   value = p[-1]
   # print('VALUE VALUE VALUE VALUE VALUE VALUE', value)
-  # symbolTable.addLatestVariableValue(value)
+  symbolTable.assignOperation()
 
 def p_saw_end_value(p):
   '''
   saw_end_value : 
   '''
   value = p[-1]
+  if p[-2] != '[':
+    symbolTable.addLatestValues(value, 'pilao')
+  # print('END END END ENDVALUE VALUE VALUE VALUE VALUE VALUE', value)
+  # symbolTable.addLatestVariableValue(value)
+
+def p_do_not_save(p):
+  '''
+  do_not_save : 
+  '''
+  symbolTable.popLatestValue()
+  # print('END END END ENDVALUE VALUE VALUE VALUE VALUE VALUE', value)
+  # symbolTable.addLatestVariableValue(value)
+
+def p_saw_op(p):
+  '''
+  saw_op : 
+  '''
+  value = p[-1]
+  # print(value)
+  if value != '&&' and value != '||' and value != '!=' and value != '==':
+    symbolTable.addLatestValues(value, 'pOper')
+  # value = p[-1]
   # print('END END END ENDVALUE VALUE VALUE VALUE VALUE VALUE', value)
   # symbolTable.addLatestVariableValue(value)
 
@@ -702,10 +725,37 @@ parser = yacc.yacc()
 
 symbolTable = SymbolTable()
 
-# lexer.input(
-#   '''
-#   '''
-# )
+lexer.input(
+  '''
+  program viendo;
+  var ints globales[1];
+  var ints globs[12][12];
+  var boos matriz[12][12];
+  var str strinn, stru;
+  var cha c;
+  {
+    /* Este programa es
+    demostracion */
+
+    func int hola(ints globales[20], boo you) {
+      /* ints globales[20] */
+      var str ha;
+      var int a, e, i;
+      a = 20
+      e = 2 + 2
+      
+    }
+
+    func boo adios(boos jajas[12], cha si) {
+      var str uuuu;
+      var int o, w, oo;
+      w = 80.1
+      o = 12 * 5
+      oo = 60/5 
+    }
+  }
+  '''
+)
 
 while True:
   # tok = lexer.token()
