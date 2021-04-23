@@ -582,11 +582,11 @@ def p_factor(p):
 #VARCST
 def p_varcst(p):
   '''
-  varcst : CSTINT
-         | CSTFLT
-         | CSTCHAR
-         | CSTSTRING
-         | boolean
+  varcst : CSTINT saw_end_value
+         | CSTFLT saw_end_value
+         | CSTCHAR saw_end_value
+         | CSTSTRING saw_end_value
+         | boolean saw_end_value
   '''
   p[0] = tuple(p[1:])
 
@@ -655,8 +655,16 @@ def p_saw_asig(p):
   '''
   saw_asig : 
   '''
-  # value = p[-1]
-  # print(value)
+  value = p[-1]
+  # print('VALUE VALUE VALUE VALUE VALUE VALUE', value)
+  # symbolTable.addLatestVariableValue(value)
+
+def p_saw_end_value(p):
+  '''
+  saw_end_value : 
+  '''
+  value = p[-1]
+  # print('END END END ENDVALUE VALUE VALUE VALUE VALUE VALUE', value)
   # symbolTable.addLatestVariableValue(value)
 
 def p_saw_function(p):
@@ -713,7 +721,7 @@ while True:
       if parser.parse(curr) == 'SUCCESS':
         print("SUCCESSFULLY COMPILED!")
       
-      # print(symbolTable.functionTable)
+      # symbolTable.printScopes()
 
     except EOFError:
       print("INCORRECT")

@@ -12,6 +12,8 @@ var cha c;
     /* ints globales[20] */
     var str ha;
     var int a, e, i;
+    a = 20
+    b = True && True
     
   }
 

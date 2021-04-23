@@ -8,33 +8,51 @@ class Variable:
 
     def setValue(self, value):
         self.value = value
+
+    # def __repr__(self):
+    #     return "<VARIABLE with type %s value %s> \n" % (self.type, self.value)    # def __str__(self):
+    
+    # def __str__(self):
+    #    return "<VARIABLE with type %s value %s> \n" % (self.type, self.value)
+
+    # def print(self):
+    #     for item in self.getScopeVariables():
+    #         item.printV()
 class Function:
     def __init__(self, name, type, varTable):
         self.name = name
         self.type = type
         self.variableTable = varTable
 
+
+    # def __repr__(self):
+    #     return "<FUNCTION with type %s varTable %s> \n" % (self.type, self.variableTable) 
+    
+    
+    # def __str__(self):
+    #     return "<FUNCTION with type %s varTable %s> \n" % (self.type, self.variableTable) 
+        
     def getVariableTable(self):
         return self.variableTable
     
-    # Variable dictionary storing design -> variable_name : variable_object
-    def addVariable(self, variableName, variableType):
-        if variableName in self.variableTable.keys():
-            print("Variable already declared")
-        else:
-            self.variableTable[variableName] = Variable(variableName, variableType)
+    # # Variable dictionary storing design -> variable_name : variable_object
+    # def addVariable(self, variableName, variableType):
+    #     if variableName in self.variableTable.keys():
+    #         print("Variable already declared")
+    #     else:
+    #         self.variableTable[variableName] = Variable(variableName, variableType)
     
-    def getVariable(self,variableName):
-        if variableName not in self.variableTable.keys():
-            print("Variable doesn't exist")
-        else:
-            return self.variableTable[variableName]
+    # def getVariable(self,variableName):
+    #     if variableName not in self.variableTable.keys():
+    #         print("Variable doesn't exist")
+    #     else:
+    #         return self.variableTable[variableName]
 
-    def setVariable(self,variableName,value):
-        if variableName not in self.variableTable.keys():
-            print("Variable doesn't exist")
-        else:
-            self.variableTable[variableName].value = value
+    # def setVariable(self,variableName,value):
+    #     if variableName not in self.variableTable.keys():
+    #         print("Variable doesn't exist")
+    #     else:
+    #         self.variableTable[variableName].value = value
         
 class Scope:
     def __init__(self, scopeId):
@@ -63,6 +81,8 @@ class Scope:
         if classId not in self.scopeFunctions:
             self.scopeFunctions[classId] = { classId : Scope(classId) }
             s.getInstance().setLatestScope(self.scopeFunctions[classId][classId])
+            # for item in self.getScopeVariables().items():
+            #     print(item)
         else:
             print("Function already declared")
             return False
@@ -71,9 +91,23 @@ class Scope:
         if functionId not in self.scopeFunctions:
             self.scopeFunctions[functionId] = Function(functionId, functionType, { functionId : Scope(functionId) })
             s.getInstance().setLatestScope(self.scopeFunctions[functionId].getVariableTable()[functionId])
+            # for item in self.getScopeFunctions().items():
+            #     print(item)
         else:
             print("Function already declared")
             return False
+
+    # def __repr__(self):
+    #     return "%s SCOPE : %s %s > \n" % (self.scopeId, self.scopeFunctions, self.scopeVariables)    # def __str__(self):
+    
+    # def __str__(self):
+    #     return "%s SCOPE : %s %s > \n" % (self.scopeId, self.scopeFunctions, self.scopeVariables)    # def __str__(self):
+
+    # def print(self):
+    #     for item in self.getScopeVariables():
+    #         print(item)
+    #     for item in self.getScopeFunctions():
+    #         print(item)
 
 class SymbolTable:
     def __init__(self):
@@ -97,7 +131,7 @@ class SymbolTable:
 
     def setLatestScope(self, x):
         self.__latestScope = x
-        print('latestScope', self.__latestScope)
+        # print('latestScope', self.__latestScope)
 
     def getLatestFunction(self):
         return self.__latestScope
@@ -105,7 +139,7 @@ class SymbolTable:
     def instantiate(self):
         self.allScopes = { self.latestId : Scope(self.latestId) }
         self.globalScope = self.allScopes[self.latestId]
-        self.__latestScope = self.allScopes[self.latestId]
+        self.setLatestScope(self.globalScope)
 
     def scopeStarts(self):
         print('entreScopeStart', self.__latestScope)
@@ -119,7 +153,7 @@ class SymbolTable:
         self.getLatestScope().addVariable(self.latestId, self.latestType, None)
 
     def addLatestVariableValue(self, value):
-        # print('variable:', self.latestId, self.latestType, self.getLatestScope())
+        print('variable:', self.latestId, self.latestType, self.getLatestScope())
         self.getLatestScope().addVariable(self.latestId, self.latestType, value)
 
     def addLatestParameterVariable(self):
@@ -134,23 +168,29 @@ class SymbolTable:
         print('function:', self.latestId, self.latestType)
         self.getLatestScope().addFunction(self.latestId, self.latestType)
 
-    def addFunction(self,functionName):
-        if functionName in self.functionTable.keys():
-            print("Function already declared")
-        else:
-            self.functionTable[functionName] = Function()
-        
-    def getFunction(self,functionName):
-        if functionName not in self.functionTable.keys():
-            print("Function doesn't exist")
-        else:
-            return self.variableTable[functionName]
+    # def printScopes(self):
+    #         # self.allScopes['viendo'].__repr__()
+    #         for item in self.allScopes['viendo']:
+    #             item.print()
 
-    def deleteFunction(self,functionName):
-        if self.functionTable:
-            if function.name in self.functionTable.keys():
-                del self.functionTable[functionName]
-            else:
-                print("Function doesn't exist")
-        else:
-            print("No functions declared")
+
+    # def addFunction(self,functionName):
+    #     if functionName in self.functionTable.keys():
+    #         print("Function already declared")
+    #     else:
+    #         self.functionTable[functionName] = Function()
+        
+    # def getFunction(self,functionName):
+    #     if functionName not in self.functionTable.keys():
+    #         print("Function doesn't exist")
+    #     else:
+    #         return self.variableTable[functionName]
+
+    # def deleteFunction(self,functionName):
+    #     if self.functionTable:
+    #         if function.name in self.functionTable.keys():
+    #             del self.functionTable[functionName]
+    #         else:
+    #             print("Function doesn't exist")
+    #     else:
+    #         print("No functions declared")
