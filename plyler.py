@@ -583,11 +583,11 @@ def p_factor(p):
 #VARCST
 def p_varcst(p):
   '''
-  varcst : CSTINT saw_end_value
-         | CSTFLT saw_end_value
-         | CSTCHAR saw_end_value
-         | CSTSTRING saw_end_value
-         | boolean saw_end_value
+  varcst : CSTINT saw_end_value_int
+         | CSTFLT saw_end_value_flt
+         | CSTCHAR 
+         | CSTSTRING 
+         | boolean 
   '''
   p[0] = tuple(p[1:])
 
@@ -660,15 +660,21 @@ def p_saw_asig(p):
   # print('VALUE VALUE VALUE VALUE VALUE VALUE', value)
   symbolTable.assignOperation()
 
-def p_saw_end_value(p):
+def p_saw_end_value_int(p):
   '''
-  saw_end_value : 
+  saw_end_value_int : 
   '''
   value = p[-1]
   if p[-2] != '[':
-    symbolTable.addLatestValues(value, 'pilao')
-  # print('END END END ENDVALUE VALUE VALUE VALUE VALUE VALUE', value)
-  # symbolTable.addLatestVariableValue(value)
+    symbolTable.addLatestValues(value, 'int', 'pilao')
+
+def p_saw_end_value_flt(p):
+  '''
+  saw_end_value_flt : 
+  '''
+  value = p[-1]
+  if p[-2] != '[':
+    symbolTable.addLatestValues(value, 'float', 'pilao')
 
 def p_do_not_save(p):
   '''
@@ -685,7 +691,7 @@ def p_saw_op(p):
   value = p[-1]
   # print(value)
   if value != '&&' and value != '||' and value != '!=' and value != '==':
-    symbolTable.addLatestValues(value, 'pOper')
+    symbolTable.addLatestValues(value, '', 'pOper')
   # value = p[-1]
   # print('END END END ENDVALUE VALUE VALUE VALUE VALUE VALUE', value)
   # symbolTable.addLatestVariableValue(value)

@@ -1,4 +1,5 @@
 from semanticCube import SemanticCube
+from quadForms import QuadForms
 
 # global variable to instantiate only ONCE
 s = None
@@ -39,25 +40,6 @@ class Function:
         
     def getVariableTable(self):
         return self.variableTable
-    
-    # # Variable dictionary storing design -> variable_name : variable_object
-    # def addVariable(self, variableName, variableType):
-    #     if variableName in self.variableTable.keys():
-    #         print("Variable already declared")
-    #     else:
-    #         self.variableTable[variableName] = Variable(variableName, variableType)
-    
-    # def getVariable(self,variableName):
-    #     if variableName not in self.variableTable.keys():
-    #         print("Variable doesn't exist")
-    #     else:
-    #         return self.variableTable[variableName]
-
-    # def setVariable(self,variableName,value):
-    #     if variableName not in self.variableTable.keys():
-    #         print("Variable doesn't exist")
-    #     else:
-    #         self.variableTable[variableName].value = value
         
 class Scope:
     def __init__(self, scopeId):
@@ -174,17 +156,14 @@ class SymbolTable:
         # print('function:', self.latestId, self.latestType)
         self.getLatestScope().addFunction(self.latestId, self.latestType)
 
-    def addLatestValues(self, value, stack):
+    def addLatestValues(self, value, type, stack):
         # print(stack)
         if stack == 'pilao':
-            self.latestValue.append(value)
+            self.latestValue.append({"value": value, "type": type})
         else:
             self.latestOps.append(value)
-
-    # def popLatestValue(self):
-    #     # print(stack)
-    #     self.latestValue.pop()
-
+            # if self.latestOps.top() == '+' or self.latestOps.top() == '-'
+                # generateQuad
 
     def assignOperation(self):
         print(self.latestId)
@@ -202,32 +181,10 @@ class SymbolTable:
         lsc = self.getLatestScope().getScopeVariables()[self.latestId].type
         print(lsc)
 
-        SemanticCube.quad(self.latestOps, self.latestValue, self.latestId)
+        # SemanticCube.quad(self.latestOps, self.latestValue, self.latestId)
 
 
     # def printScopes(self):
     #         # self.allScopes['viendo'].__repr__()
     #         for item in self.allScopes['viendo']:
     #             item.print()
-
-
-    # def addFunction(self,functionName):
-    #     if functionName in self.functionTable.keys():
-    #         print("Function already declared")
-    #     else:
-    #         self.functionTable[functionName] = Function()
-        
-    # def getFunction(self,functionName):
-    #     if functionName not in self.functionTable.keys():
-    #         print("Function doesn't exist")
-    #     else:
-    #         return self.variableTable[functionName]
-
-    # def deleteFunction(self,functionName):
-    #     if self.functionTable:
-    #         if function.name in self.functionTable.keys():
-    #             del self.functionTable[functionName]
-    #         else:
-    #             print("Function doesn't exist")
-    #     else:
-    #         print("No functions declared")
