@@ -1,3 +1,6 @@
+from semanticCube import SemanticCube
+from quadForms import QuadForms
+
 # global variable to instantiate only ONCE
 s = None
 class Variable:
@@ -8,6 +11,9 @@ class Variable:
 
     def setValue(self, value):
         self.value = value
+
+    def setType(self, type):
+        self.type = type
 
     # def __repr__(self):
     #     return "<VARIABLE with type %s value %s> \n" % (self.type, self.value)    # def __str__(self):
@@ -34,25 +40,6 @@ class Function:
         
     def getVariableTable(self):
         return self.variableTable
-    
-    # # Variable dictionary storing design -> variable_name : variable_object
-    # def addVariable(self, variableName, variableType):
-    #     if variableName in self.variableTable.keys():
-    #         print("Variable already declared")
-    #     else:
-    #         self.variableTable[variableName] = Variable(variableName, variableType)
-    
-    # def getVariable(self,variableName):
-    #     if variableName not in self.variableTable.keys():
-    #         print("Variable doesn't exist")
-    #     else:
-    #         return self.variableTable[variableName]
-
-    # def setVariable(self,variableName,value):
-    #     if variableName not in self.variableTable.keys():
-    #         print("Variable doesn't exist")
-    #     else:
-    #         self.variableTable[variableName].value = value
         
 class Scope:
     def __init__(self, scopeId):
@@ -116,7 +103,8 @@ class SymbolTable:
         self.context = None
         self.latestType = None
         self.latestId = None
-        self.latestValue = None
+        self.latestValue = []
+        self.latestOps = []
         self.latestFunction = None
         self.__latestScope = None
         self.globalScopeObject = None
@@ -149,48 +137,54 @@ class SymbolTable:
         self.setLatestScope(self.globalScope)
 
     def addLatestVariable(self):
-        print('variable:', self.latestId, self.latestType, self.getLatestScope())
+        # print('variable:', self.latestId, self.latestType, self.getLatestScope())
         self.getLatestScope().addVariable(self.latestId, self.latestType, None)
 
     def addLatestVariableValue(self, value):
-        print('variable:', self.latestId, self.latestType, self.getLatestScope())
+        # print('variable:', self.latestId, self.latestType, self.getLatestScope())
         self.getLatestScope().addVariable(self.latestId, self.latestType, value)
 
     def addLatestParameterVariable(self):
-        print('param:', self.latestId, self.latestType, self.getLatestScope())
+        # print('param:', self.latestId, self.latestType, self.getLatestScope())
         self.getLatestScope().addVariable(self.latestId, self.latestType, None)
 
     def addLatestClass(self):
-        print('class:', self.latestId, self.latestType)
+        # print('class:', self.latestId, self.latestType)
         self.getLatestScope().addClass(self.latestId, self.latestType)
 
     def addLatestFunction(self):
-        print('function:', self.latestId, self.latestType)
+        # print('function:', self.latestId, self.latestType)
         self.getLatestScope().addFunction(self.latestId, self.latestType)
+
+    def addLatestValues(self, value, type, stack):
+        # print(stack)
+        if stack == 'pilao':
+            self.latestValue.append({"value": value, "type": type})
+        else:
+            self.latestOps.append(value)
+            # if self.latestOps.top() == '+' or self.latestOps.top() == '-'
+                # generateQuad
+
+    def assignOperation(self):
+        print(self.latestId)
+        print(self.getLatestScope())
+        print('entro lv')
+        for item in self.latestValue:
+            print(item)
+        self.latestValue = []
+
+        print('entro lops')
+        for item in self.latestOps:
+            print(item)
+        self.latestOps = []
+
+        lsc = self.getLatestScope().getScopeVariables()[self.latestId].type
+        print(lsc)
+
+        # SemanticCube.quad(self.latestOps, self.latestValue, self.latestId)
+
 
     # def printScopes(self):
     #         # self.allScopes['viendo'].__repr__()
     #         for item in self.allScopes['viendo']:
     #             item.print()
-
-
-    # def addFunction(self,functionName):
-    #     if functionName in self.functionTable.keys():
-    #         print("Function already declared")
-    #     else:
-    #         self.functionTable[functionName] = Function()
-        
-    # def getFunction(self,functionName):
-    #     if functionName not in self.functionTable.keys():
-    #         print("Function doesn't exist")
-    #     else:
-    #         return self.variableTable[functionName]
-
-    # def deleteFunction(self,functionName):
-    #     if self.functionTable:
-    #         if function.name in self.functionTable.keys():
-    #             del self.functionTable[functionName]
-    #         else:
-    #             print("Function doesn't exist")
-    #     else:
-    #         print("No functions declared")
