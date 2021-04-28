@@ -1,0 +1,9 @@
+program nombre;
+var ints globales[1];
+var ints globs[12][12];
+var boos matriz[12][12];
+var str strinn, stru;
+var cha c;
+{
+
+}

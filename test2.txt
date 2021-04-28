@@ -8,16 +8,14 @@ var cha c;
   /* Este programa es
   demostracion */
 
-  func int hola(ints globales[20], boo you) {
-    /* ints globales[20] */
+  func int hola(boo you) {
     var str ha;
     var int a, e, i;
     a = 20
     e = 2 + 2
-    
   }
 
-  func boo adios(boos jajas[12], cha si) {
+  func boo adios(cha si) {
     var str uuuu;
     var int o, w, oo;
     w = 80.1
