@@ -1,190 +1,254 @@
-from semanticCube import SemanticCube
-from quadForms import QuadForms
-
 # global variable to instantiate only ONCE
 s = None
+from collections import deque
+
 class Variable:
-    def __init__(self, name, type):
-        self.name = name
-        self.type = type
-        self.value = None
+  def __init__(self, varName, varType, dimensions):
+    self.__varName = varName
+    self.__varType = varType
+    self.__dimensions = dimensions
+  
+  # getters
+  def getVarName(self):
+    return self.__varName
+  
+  def getVarType(self):
+    return self.__varType
 
-    def setValue(self, value):
-        self.value = value
+  def getDimensions(self):
+    return self.__dimensions
 
-    def setType(self, type):
-        self.type = type
+  # setters
+  def setVarName(self, varName):
+    self.__varName = varName
 
-    # def __repr__(self):
-    #     return "<VARIABLE with type %s value %s> \n" % (self.type, self.value)    # def __str__(self):
-    
-    # def __str__(self):
-    #    return "<VARIABLE with type %s value %s> \n" % (self.type, self.value)
+  def setVarType(self, varType):
+    self.__varType = varType
+  
+  def setDimensions(self):
+    self.__dimensions += 1
 
-    # def print(self):
-    #     for item in self.getScopeVariables():
-    #         item.printV()
-class Function:
-    def __init__(self, name, type, varTable):
-        self.name = name
-        self.type = type
-        self.variableTable = varTable
+  def __repr__(self):
+    return "{\n name: %s \n type: %s \n dimensions: %s \n}" % (self.getVarName(), self.getVarType(), self.getDimensions())
 
-
-    # def __repr__(self):
-    #     return "<FUNCTION with type %s varTable %s> \n" % (self.type, self.variableTable) 
-    
-    
-    # def __str__(self):
-    #     return "<FUNCTION with type %s varTable %s> \n" % (self.type, self.variableTable) 
-        
-    def getVariableTable(self):
-        return self.variableTable
-        
 class Scope:
-    def __init__(self, scopeId):
-        self.scopeId = scopeId
-        self.scopeVariables = {}
-        self.scopeFunctions = {}
+  # SCOPE: what a block contains.
+  # Global scopes contain variables, functions, and classes
+  # Class local scopes contain variables and functions (empty scopeClasses objects)
+  # Function local scopes contain variables (empty scopeFunctions and scopeClasses objects)
 
-    def getScopeId(self):
-        return self.scopeId
+  def __init__(self, type, context):
+    self.__scopeType = type # Will be used to validate if local or global
+    self.__context = context
+    self.__scopeFunctions = {}
+    self.__scopeVariables = {}
+    self.__scopeClasses = {}
+    self.__latestName = None
+    self.__latestType = None
+    self.__latestDimension = 0
 
-    def getScopeVariables(self):
-        return self.scopeVariables
+  # getters
+  def getScopeType(self):
+    return self.__scopeType
 
-    def getScopeFunctions(self):
-        return self.scopeFunctions
+  def getContext(self):
+    return self.__context
 
-    def addVariable(self, varId, varType, value):
-        if varId not in self.scopeVariables:
-            self.scopeVariables[varId] = Variable(varId, varType)
-        else:
-            print("Variable already declared")
-            self.scopeVariables[varId].setValue(value)
-            # return False
+  def getScopeVariables(self):
+    return self.__scopeVariables
 
-    def addClass(self, classId, classType):
-        if classId not in self.scopeFunctions:
-            self.scopeFunctions[classId] = { classId : Scope(classId) }
-            s.getInstance().setLatestScope(self.scopeFunctions[classId][classId])
-            # for item in self.getScopeVariables().items():
-            #     print(item)
-        else:
-            print("Function already declared")
-            return False
+  def getScopeFunctions(self):
+    return self.__scopeFunctions
 
-    def addFunction(self, functionId, functionType):
-        if functionId not in self.scopeFunctions:
-            self.scopeFunctions[functionId] = Function(functionId, functionType, { functionId : Scope(functionId) })
-            s.getInstance().setLatestScope(self.scopeFunctions[functionId].getVariableTable()[functionId])
-            # for item in self.getScopeFunctions().items():
-            #     print(item)
-        else:
-            print("Function already declared")
-            return False
+  def getScopeClasses(self):
+    return self.__scopeClasses
 
-    # def __repr__(self):
-    #     return "%s SCOPE : %s %s > \n" % (self.scopeId, self.scopeFunctions, self.scopeVariables)    # def __str__(self):
+  def getLatestName(self):
+    return self.__latestName
+
+  def getLatestType(self):
+    return self.__latestType 
+
+  def getLatestDimension(self):
+    return self.__latestDimension 
+
+  # setters
+  def setScopeType(self, scopeType):
+    self.__scopeType = scopeType
+
+  def setContext(self, context):
+    self.__context = context
+
+  def setLatestName(self, latestName):
+    self.__latestName = latestName
+
+  def setLatestType(self, latestType):
+    self.__latestType = latestType
+           
+  def setLatestDimension(self):
+    self.__latestDimension += 1
+
+  def resetLatestDimension(self):
+    self.__latestDimension = 0
+
+  # methods
+  def addVariable(self, varName, varType, dimensions):
+    if varName in self.getScopeVariables():
+      print('ERROR! Variable with identifier: "%s" already exists!', varName)
+      return False
+
+    self.__scopeVariables[varName] = Variable(varName, varType, dimensions)
+    self.resetLatestDimension()
+
+
+  def addFunction(self, funcName, funcType):
+    if funcName in self.getScopeFunctions():
+      print('ERROR! Function with identifier: "%s" already exists!', funcName)
+      return False
+
+    if (SymbolTable.instantiate().getCurrentScope().getScopeType() == 'global'):
+      keyword = 'function'
+    elif (SymbolTable.instantiate().getCurrentScope().getScopeType() == 'class'):
+      keyword = 'classFunction'
+    self.__scopeFunctions[funcName] = Scope(funcType, keyword)
+    SymbolTable.instantiate().setCurrentScope(self.__scopeFunctions[funcName])
     
-    # def __str__(self):
-    #     return "%s SCOPE : %s %s > \n" % (self.scopeId, self.scopeFunctions, self.scopeVariables)    # def __str__(self):
+  def addClass(self, className):
+    if className in self.getScopeClasses():
+      print('ERROR! Class with identifier: "%s" already exists!', className)
+      return False
 
-    # def print(self):
-    #     for item in self.getScopeVariables():
-    #         print(item)
-    #     for item in self.getScopeFunctions():
-    #         print(item)
+    classType = 'class'
+    self.__scopeClasses[className] = Scope(classType, classType)
+    SymbolTable.instantiate().setStackPush(className)
+    SymbolTable.instantiate().setCurrentScope(self.__scopeClasses[className])
+
+
+  def sawCalledVariable(self, varName):
+    globalScope = SymbolTable.instantiate().getGlobalScope()
+    if not varName in self.getScopeVariables() and not varName in globalScope.getScopeVariables():
+      print('ERROR! Variable with identifier:', varName, 'is not defined in this scope')
+      return False
+    
+    self.resetLatestDimension()
+    if varName in self.getScopeVariables():
+      return self.__scopeVariables[varName]
+    elif varName in globalScope.getScopeVariables():
+      return globalScope.__scopeVariables[varName]
+
+
+  def doesClassExist(self, className, varName):
+    globalScope = SymbolTable.instantiate().getGlobalScope()
+    if not className in globalScope.getScopeClasses():
+      print('ERROR! Class with identifier: ', className, 'is not defined in this scope')
+      return False
+    
+    currentClass = globalScope.__scopeClasses[className]
+
+    if not varName in currentClass.getScopeVariables():
+      print('ERROR! Variable with identifier:', varName, 'is not defined in this scope')
+      return False
+    
+    return currentClass.__scopeVariables[varName]
+
+
+  def __repr__(self):
+    return "{\n type: %s \n context: %s \n}" % (self.getScopeType(), self.getContext())
 
 class SymbolTable:
-    def __init__(self):
-        self.functionTable = {} # Symbol Table storage -> function_name : function_object
-        self.allScopes = None
-        self.context = None
-        self.latestType = None
-        self.latestId = None
-        self.latestValue = []
-        self.latestOps = []
-        self.latestFunction = None
-        self.__latestScope = None
-        self.globalScopeObject = None
-        global s 
-        s = self
+  isAlive = None
 
-    def getInstance(self):
-        return self
+  def __init__(self):
+    SymbolTable.isAlive = self
+    self.__globalScope = {}
+    keyword = "global"
+    self.__globalScope["global"] = Scope(keyword, keyword)
+    self.__currentScope = self.__globalScope["global"]
+    self.__classStack = []
 
-    def getLatestScope(self):
-        return self.__latestScope
+  @classmethod
+  def instantiate(cls):
+    if SymbolTable.isAlive is None:
+      SymbolTable()
+    return SymbolTable.isAlive
 
-    def setLatestScope(self, x):
-        self.__latestScope = x
-        # print('latestScope', self.__latestScope)
+  def getCurrentScope(self):
+    return self.__currentScope
 
-    def getLatestFunction(self):
-        return self.__latestScope
+  def getGlobalScope(self):
+    return self.__globalScope["global"]
 
-    def instantiate(self):
-        self.allScopes = { self.latestId : Scope(self.latestId) }
-        self.globalScope = self.allScopes[self.latestId]
-        self.setLatestScope(self.globalScope)
+  def getStack(self):
+    print(self.__classStack[-1])
+    return self.__classStack[-1]
 
-    def scopeStarts(self):
-        print('entreScopeStart', self.__latestScope)
+  def setCurrentScope(self, val):
+    self.__currentScope = val
 
-    def scopeEnds(self):
-        print('entreScopeEnds next line cambio')
-        self.setLatestScope(self.globalScope)
+  def setCurrentScope(self, val):
+    self.__currentScope = val
 
-    def addLatestVariable(self):
-        # print('variable:', self.latestId, self.latestType, self.getLatestScope())
-        self.getLatestScope().addVariable(self.latestId, self.latestType, None)
+  def setStackPush(self, value):
+    self.__classStack.append(value)
+    print(self.__classStack[-1])
 
-    def addLatestVariableValue(self, value):
-        # print('variable:', self.latestId, self.latestType, self.getLatestScope())
-        self.getLatestScope().addVariable(self.latestId, self.latestType, value)
+  def setStackPop(self,):
+    self.__classStack.pop()
 
-    def addLatestParameterVariable(self):
-        # print('param:', self.latestId, self.latestType, self.getLatestScope())
-        self.getLatestScope().addVariable(self.latestId, self.latestType, None)
+  def addFunctionScope(self):
+    current = self.getCurrentScope()
+    current.addFunction(self.__currentScope.getLatestName(), self.__currentScope.getLatestType())
 
-    def addLatestClass(self):
-        # print('class:', self.latestId, self.latestType)
-        self.getLatestScope().addClass(self.latestId, self.latestType)
+  def addClassScope(self):
+    current = self.getCurrentScope()
+    self.setStackPush(current.getLatestName())
+    current.addClass(current.getLatestName())
 
-    def addLatestFunction(self):
-        # print('function:', self.latestId, self.latestType)
-        self.getLatestScope().addFunction(self.latestId, self.latestType)
+  # if its in a local function, exit to global scope
+  # if its in a class local, exit to global scope
+  # if its in a class function, exit to local class
+  def exitScope(self):
+    if (self.getCurrentScope().getContext() == 'classFunction'):
+      print(self.getStack())
+      self.setCurrentScope(self.__globalScope["global"].getScopeClasses()[self.getStack()])
+    elif (self.getCurrentScope().getContext() == 'function'):
+      self.setCurrentScope(self.__globalScope["global"])
 
-    def addLatestValues(self, value, type, stack):
-        # print(stack)
-        if stack == 'pilao':
-            self.latestValue.append({"value": value, "type": type})
-        else:
-            self.latestOps.append(value)
-            # if self.latestOps.top() == '+' or self.latestOps.top() == '-'
-                # generateQuad
+  def exitClassScope(self):
+    self.setCurrentScope(self.__globalScope["global"])
 
-    def assignOperation(self):
-        print(self.latestId)
-        print(self.getLatestScope())
-        print('entro lv')
-        for item in self.latestValue:
-            print(item)
-        self.latestValue = []
+  def printingAll(self):
+    for key, val in self.__globalScope.items():
+      print(key, ': ', val)
 
-        print('entro lops')
-        for item in self.latestOps:
-            print(item)
-        self.latestOps = []
+      print('\n \n GLOBAL VARIABLES')
+      for i, ii in val.getScopeVariables().items():
+        print(i, ': ', ii)
 
-        lsc = self.getLatestScope().getScopeVariables()[self.latestId].type
-        print(lsc)
+      print('\n \n GLOBAL FUNCTIONS')
+      for j, jj in val.getScopeFunctions().items():
+        print(j, ': ', jj)
 
-        # SemanticCube.quad(self.latestOps, self.latestValue, self.latestId)
+        print('\n \n FUNCTION VARIABLES')
+        for m, mm in jj.getScopeVariables().items():
+          print(m, ': ', mm)
+        print('---------------------------------')
 
 
-    # def printScopes(self):
-    #         # self.allScopes['viendo'].__repr__()
-    #         for item in self.allScopes['viendo']:
-    #             item.print()
+      print('\n \n CLASSES')
+      for k, kk in val.getScopeClasses().items():
+        print(k, ': ', kk)
+
+        print('\n \n CLASS VARS')
+        for n, nn in kk.getScopeVariables().items():
+          print(n, ': ', nn)
+
+        print('\n \n CLASS FUNCTIONS')
+        for o, oo in kk.getScopeFunctions().items():
+          print(o, ': ', oo)
+        
+          for x, xx in oo.getScopeVariables().items():
+            print(x, ': ', xx)
+          print('---------------------------------')
+
+
