@@ -208,7 +208,6 @@ class SymbolTable:
   # if its in a class local, exit to global scope
   # if its in a class function, exit to local class
   def exitScope(self):
-    print('EXIT')
     if (self.getCurrentScope().getContext() == 'classFunction'):
       print(self.getStack())
       self.setCurrentScope(self.__globalScope["global"].getScopeClasses()[self.getStack()])
