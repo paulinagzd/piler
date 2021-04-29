@@ -1,5 +1,4 @@
 from semanticCube import SemanticCube
-from quadForms import QuadForms
 
 # global variable to instantiate only ONCE
 s = None

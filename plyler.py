@@ -7,7 +7,8 @@
 import ply.lex as lex
 import ply.yacc as yacc
 from symbolTable import Variable, Function, SymbolTable
-from semanticCube import SemanticCube
+from semanticCube import ERROR_MESSAGE, SemanticCube
+from quad import *
 import sys
 
 # reserved words
@@ -496,13 +497,14 @@ def p_llamada_funcion1(p):
 # EXP
 def p_exp(p):
   '''
-  exp : texp exp1
+  exp : texp exp1 end_of_expression
   '''
   p[0] = tuple(p[1:])
+  
 
 def p_exp1(p):
   '''
-  exp1 : OR saw_op texp exp1
+  exp1 : OR texp exp1
        | empty
   '''
   p[0] = tuple(p[1:])
@@ -515,7 +517,7 @@ def p_texp(p):
 
 def p_texp1(p):
   '''
-  texp1 : AND saw_op gexp texp1
+  texp1 : AND gexp texp1
         | empty
   '''
   p[0] = tuple(p[1:])
@@ -528,12 +530,12 @@ def p_gexp(p):
 
 def p_gexp1(p):
   '''
-  gexp1 : LT saw_op mexp
-        | GT saw_op mexp
-        | GTE saw_op mexp
-        | LTE saw_op mexp
-        | EQ saw_op mexp
-        | NE saw_op mexp
+  gexp1 : LT mexp
+        | GT mexp
+        | GTE mexp
+        | LTE mexp
+        | EQ mexp
+        | NE mexp
         | empty
   '''
   p[0] = tuple(p[1:])
@@ -542,12 +544,11 @@ def p_mexp(p):
   '''
   mexp : termino mexp1
   '''
-  p[0] = tuple(p[1:])
 
 def p_mexp1(p):
   '''
-  mexp1 : PLUS saw_op termino mexp1
-        | MINUS saw_op termino mexp1
+  mexp1 : PLUS saw_plusminus_operator termino mexp1
+        | MINUS saw_plusminus_operator termino mexp1
         | empty
   '''
   p[0] = tuple(p[1:])
@@ -556,14 +557,14 @@ def p_mexp1(p):
 # TERMINO
 def p_termino(p):
   '''
-  termino : factor term1
+  termino : factor term1 check_plusminus_operator
   '''
   p[0] = tuple(p[1:])
 
 def p_term1(p):
   '''
-  term1 : MULT saw_op factor term1
-        | DIV saw_op factor term1
+  term1 : MULT saw_multdiv_operator factor term1
+        | DIV saw_multdiv_operator factor term1
         | empty
   '''
   p[0] = tuple(p[1:])
@@ -572,8 +573,8 @@ def p_term1(p):
 # FACTOR
 def p_factor(p):
   '''
-  factor : OPAREN exp CPAREN
-         | varcst
+  factor : OPAREN exp CPAREN check_multdiv_operator
+         | varcst check_multdiv_operator
          | variable
          | llamada
   '''
@@ -667,6 +668,8 @@ def p_saw_end_value_int(p):
   value = p[-1]
   if p[-2] != '[':
     symbolTable.addLatestValues(value, 'int', 'pilao')
+  quadruple.pilaO.append(value)
+  
 
 def p_saw_end_value_flt(p):
   '''
@@ -676,23 +679,82 @@ def p_saw_end_value_flt(p):
   if p[-2] != '[':
     symbolTable.addLatestValues(value, 'float', 'pilao')
 
+def getType(operand):
+  if isinstance(operand,int):
+    return 'int'
+  elif isinstance(operand,float):
+    return 'float'
+
+def p_saw_plusminus_operator(p):
+  '''
+  saw_plusminus_operator  : 
+  '''
+  quadruple.pOper.append(p[-1])
+
+def p_check_plusminus_operator(p):
+  '''
+  check_plusminus_operator  : 
+  '''
+  if quadruple.pOper:
+    if quadruple.pOper[-1] == '+' or quadruple.pOper[-1] == '-':
+      right_operand = quadruple.pilaO.pop() 
+      right_type = getType(right_operand)
+      left_operand = quadruple.pilaO.pop()
+      left_type = getType(left_operand)
+      operator = quadruple.pOper.pop()
+      result_Type = SemanticCube[operator][left_type][right_type]
+      
+      if result_Type != ERROR_MESSAGE:
+        if operator == '+':
+          tvalue = left_operand + right_operand
+          quadruple.pilaO.append(tvalue)
+        elif operator == '-':
+          tvalue = left_operand - right_operand
+          quadruple.pilaO.append(tvalue)
+      else:
+        return result_Type
+
+
+def p_saw_multdiv_operator(p):
+  '''
+  saw_multdiv_operator  : 
+  '''
+  quadruple.pOper.append(p[-1])
+
+def p_check_multdiv_operator(p):
+  '''
+  check_multdiv_operator  : 
+  '''
+  if quadruple.pOper:
+    if quadruple.pOper[-1] == '*' or quadruple.pOper[-1] == '/':
+      right_operand = quadruple.pilaO.pop() 
+      right_type = getType(right_operand)
+      left_operand = quadruple.pilaO.pop()
+      left_type = getType(left_operand)
+      operator = quadruple.pOper.pop()
+      result_Type = SemanticCube[operator][left_type][right_type]
+      
+      if result_Type != ERROR_MESSAGE:
+        if operator == '*':
+          tvalue = left_operand * right_operand
+          quadruple.pilaO.append(tvalue)
+        elif operator == '/':
+          tvalue = left_operand / right_operand
+          quadruple.pilaO.append(tvalue)
+      else:
+        return result_Type
+
+def p_end_of_expression(p):
+  '''
+  end_of_expression : 
+  '''
+  print(quadruple.pilaO[-1])
+
 def p_do_not_save(p):
   '''
   do_not_save : 
   '''
   symbolTable.popLatestValue()
-  # print('END END END ENDVALUE VALUE VALUE VALUE VALUE VALUE', value)
-  # symbolTable.addLatestVariableValue(value)
-
-def p_saw_op(p):
-  '''
-  saw_op : 
-  '''
-  value = p[-1]
-  # print(value)
-  if value != '&&' and value != '||' and value != '!=' and value != '==':
-    symbolTable.addLatestValues(value, '', 'pOper')
-  # value = p[-1]
   # print('END END END ENDVALUE VALUE VALUE VALUE VALUE VALUE', value)
   # symbolTable.addLatestVariableValue(value)
 
@@ -730,6 +792,8 @@ def p_class_scope_end(p):
 parser = yacc.yacc()
 
 symbolTable = SymbolTable()
+
+quadruple = Quad()
 
 lexer.input(
   '''
