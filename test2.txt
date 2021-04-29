@@ -1,5 +1,25 @@
 program viendo;
-
+var ints globales[1];
+var ints globs[12][12];
+var boos matriz[12][12];
+var str strinn, stru;
+var cha c;
 {
-  a = 20 + 2 * 3 - 4 - 6
+  /* Este programa es
+  demostracion */
+
+  func int hola(boo you) {
+    var str ha;
+    var int a, e, i;
+    a = 20
+    e = 2 + 2
+  }
+
+  func boo adios(cha si) {
+    var str uuuu;
+    var int o, w, oo;
+    w = 80.1
+    o = 12 * 5
+    oo = 60/5 
+  }
 }

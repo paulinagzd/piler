@@ -6,10 +6,13 @@
 
 import ply.lex as lex
 import ply.yacc as yacc
-from symbolTable import Variable, Function, SymbolTable
-from semanticCube import ERROR_MESSAGE, SemanticCube
-from quad import *
+from symbolTable import SymbolTable
+from quad import Quad
+from semanticCube import SemanticCube
 import sys
+
+symbolTable = SymbolTable.instantiate()
+quadruple = Quad()
 
 # reserved words
 reserved = {
@@ -156,12 +159,10 @@ lexer = lex.lex()
 # PROGRAMA
 def p_programa(p):
   '''
-  programa : PROGRAM ID saw_id saw_program SEMICOLON bloque
-           | PROGRAM ID saw_id saw_program SEMICOLON dec bloque
+  programa : PROGRAM ID saw_program SEMICOLON bloque
+           | PROGRAM ID saw_program SEMICOLON dec bloque
   '''
   p[0] = tuple(p[1:])
-  # symbolTable.context = p[0][1]
-  # symbolTable.addFunction(symbolTable.context)
 
 ################################################
 # FUNCION
@@ -170,8 +171,6 @@ def p_funcion(p):
   funcion : FUNCTION func1 ID saw_id saw_function OPAREN param CPAREN bloque
   '''
   p[0] = tuple(p[1:])
-  # symbolTable.addFunction(p[0][2])
-  # symbolTable.context = p[0][2]
 
 
 def p_funcion1(p):
@@ -181,8 +180,6 @@ def p_funcion1(p):
   '''
   p[0] = p[1]
 
-  # if p[0] == 'void':
-  #   symbolTable.functionTable[symbolTable.context].type = 'void'
 
 def p_param(p):
   '''
@@ -204,8 +201,8 @@ def p_param1(p):
 
 def p_param2(p): ####### OJO
   '''
-  param2 : simple ID saw_id_param
-         | multiple ID saw_id_param variable1 variable1
+  param2 : simple ID saw_id saw_variable
+         | multiple ID saw_id OBRACKET CSTINT CBRACKET saw_dimension tipo3 saw_variable
   '''
   p[0] = tuple(p[1:])
 
@@ -217,7 +214,6 @@ def p_clase(p):
     clase : CLASS ID saw_id saw_class COLON clase_bloque SEMICOLON
   '''
   p[0] = tuple(p[1:])
-  # symbolTable.functionTable[context].addVariable(p[0][1])
 
 def p_clase_bloque(p):
   ''' 
@@ -285,10 +281,9 @@ def p_tipo(p):
   '''
   tipo : compuesto ID saw_id saw_variable tipo1
        | simple ID saw_id saw_variable tipo1
-       | multiple ID saw_id saw_variable OBRACKET CSTINT CBRACKET tipo3 tipo2
+       | multiple ID saw_id OBRACKET CSTINT CBRACKET saw_dimension tipo3 saw_variable tipo2
   '''
   p[0] = tuple(p[1:])
-  # symbolTable.functionTable[symbolTable.context].addVariable(p[0][1])
 
 def p_tipo1(p):
   '''
@@ -296,18 +291,17 @@ def p_tipo1(p):
         | empty
   '''
   p[0] = tuple(p[1:])
-  # symbolTable.functionTable[symbolTable.context].addVariable(p[0][1])
 
 def p_tipo2(p):
   '''
-  tipo2 : COMMA ID saw_id OBRACKET CSTINT CBRACKET tipo3
+  tipo2 : COMMA ID saw_id OBRACKET CSTINT CBRACKET saw_dimension tipo3 saw_variable
         | empty
   '''
   p[0] = tuple(p[1:])
 
 def p_tipo3(p):
   '''
-  tipo3 : OBRACKET CSTINT CBRACKET
+  tipo3 : OBRACKET CSTINT CBRACKET saw_dimension
         | empty
   '''
   p[0] = tuple(p[1:])
@@ -321,7 +315,6 @@ def p_tipo_simple(p):
          | CHAR saw_type
   '''
   p[0] = p[1]
-  # symbolTable.functionTable[symbolTable.context].type = p[0]
 
 def p_tipo_multiple(p):
   '''
@@ -459,21 +452,23 @@ def p_boolean(p):
 # VARIABLE (llamada)
 def p_variable(p):
   '''
-  variable : ID saw_id variable1 variable1 variable2
+  variable : ID saw_id saw_called_var
+           | ID saw_id OBRACKET exp CBRACKET saw_dimension variable1 saw_called_var
+           | ID saw_id variable2
   '''
   p[0] = tuple(p[1:])
 
 def p_variable1(p):
   '''
-  variable1 : OBRACKET exp CBRACKET
+  variable1 : OBRACKET exp CBRACKET saw_dimension
             | empty
   '''
   p[0] = tuple(p[1:])
 
 def p_variable2(p):
   '''
-  variable2 : PERIOD ID saw_id variable1 variable1 variable2
-            | empty 
+  variable2 : PERIOD ID saw_called_var_from_class
+            | PERIOD ID saw_called_var_from_class OBRACKET exp CBRACKET saw_dimension variable1
   '''
   p[0] = tuple(p[1:])
 
@@ -494,7 +489,7 @@ def p_llamada_funcion1(p):
   p[0] = tuple(p[1:])
 
 ################################################
-# EXP
+# SUPER EXP
 def p_exp(p):
   '''
   exp : texp exp1 end_of_expression
@@ -611,73 +606,83 @@ def p_saw_program(p):
   '''
   saw_program : 
   '''
-  # print(p[0])
-  symbolTable.instantiate()
 
 def p_saw_class(p):
   '''
   saw_class : 
   '''
-  print(p[-3])
-  symbolTable.latestId = p[-2]
-  symbolTable.latestType = p[-3]
-  symbolTable.addLatestClass()
+  # print(p[-3])
+  symbolTable.getCurrentScope().setLatestName(p[-2])
+  symbolTable.getCurrentScope().addClass(symbolTable.getCurrentScope().getLatestName())
 
 def p_saw_type(p):
   '''
   saw_type : 
   '''
   # print(p[-1])
-  symbolTable.latestType = p[-1]
+  # print(symbolTable.getCurrentScope())
+  symbolTable.getCurrentScope().setLatestType(p[-1])
 
 def p_saw_id(p):
   '''
   saw_id : 
   '''
-  symbolTable.latestId = p[-1]
+  # print(p[-1])
+  symbolTable.getCurrentScope().setLatestName(p[-1])
 
 
-def p_saw_id_param(p):
-  '''
-  saw_id_param : 
-  '''
-  # print('param', p[-1], p[-2])
-  symbolTable.latestId = p[-1]
-  symbolTable.latestType = p[-2]
-  symbolTable.addLatestParameterVariable()
+# def p_saw_id_param(p):
+#   '''
+#   saw_id_param : 
+#   '''
 
 
 def p_saw_variable(p):
   '''
   saw_variable : 
   '''
-  symbolTable.addLatestVariable()
+  current = symbolTable.getCurrentScope()
+  current.addVariable(current.getLatestName(), current.getLatestType(), current.getLatestDimension())
+
+def p_saw_dimension(p):
+  '''
+  saw_dimension : 
+  '''
+  current = symbolTable.getCurrentScope()
+  current.setLatestDimension()
+
+def p_saw_called_var(p):
+  '''
+  saw_called_var : 
+  '''
+  current = symbolTable.getCurrentScope()
+  current.sawCalledVariable(current.getLatestName())
+
+
+def p_saw_called_var_from_class(p):
+  '''
+  saw_called_var_from_class : 
+  '''
+  current = symbolTable.getCurrentScope()
+  temp = current.getLatestName()
+  current.setLatestName(p[-1])
+  current.doesClassExist(temp, p[-1])
 
 def p_saw_asig(p):
   '''
   saw_asig : 
   '''
-  value = p[-1]
-  # print('VALUE VALUE VALUE VALUE VALUE VALUE', value)
-  symbolTable.assignOperation()
 
 def p_saw_end_value_int(p):
   '''
   saw_end_value_int : 
   '''
-  value = p[-1]
-  if p[-2] != '[':
-    symbolTable.addLatestValues(value, 'int', 'pilao')
-  quadruple.pilaO.append(value)
-  
+  quadruple.pilaO.append(p[-1])
 
 def p_saw_end_value_flt(p):
   '''
   saw_end_value_flt : 
   '''
-  value = p[-1]
-  if p[-2] != '[':
-    symbolTable.addLatestValues(value, 'float', 'pilao')
 
 def getType(operand):
   if isinstance(operand,int):
@@ -704,7 +709,7 @@ def p_check_plusminus_operator(p):
       operator = quadruple.pOper.pop()
       result_Type = SemanticCube[operator][left_type][right_type]
       
-      if result_Type != ERROR_MESSAGE:
+      if result_Type != 'TYPE MISMATCH':
         if operator == '+':
           tvalue = left_operand + right_operand
           quadruple.pilaO.append(tvalue)
@@ -734,7 +739,7 @@ def p_check_multdiv_operator(p):
       operator = quadruple.pOper.pop()
       result_Type = SemanticCube[operator][left_type][right_type]
       
-      if result_Type != ERROR_MESSAGE:
+      if result_Type != 'TYPE MISMATCH':
         if operator == '*':
           tvalue = left_operand * right_operand
           quadruple.pilaO.append(tvalue)
@@ -762,38 +767,22 @@ def p_saw_function(p):
   '''
   saw_function : 
   '''
-  symbolTable.addLatestFunction()
-
-
-def p_scope_start(p):
-  '''
-  scope_start : 
-  '''
-  symbolTable.scopeStarts()
+  current = symbolTable.getCurrentScope()
+  current.addFunction(symbolTable.getCurrentScope().getLatestName(), symbolTable.getCurrentScope().getLatestType())
 
 def p_scope_end(p):
   '''
   scope_end : 
   '''
-  symbolTable.scopeEnds()
-
-
-def p_class_scope_start(p):
-  '''
-  class_scope_start : 
-  '''
-  # symbolTable.addLatestFunction()
+  symbolTable.exitScope()
 
 def p_class_scope_end(p):
   '''
   class_scope_end : 
   '''
+  symbolTable.exitClassScope()
 
 parser = yacc.yacc()
-
-symbolTable = SymbolTable()
-
-quadruple = Quad()
 
 lexer.input(
   '''
@@ -841,7 +830,7 @@ while True:
       if parser.parse(curr) == 'SUCCESS':
         print("SUCCESSFULLY COMPILED!")
       
-      # symbolTable.printScopes()
+      symbolTable.printingAll()
 
     except EOFError:
       print("INCORRECT")
