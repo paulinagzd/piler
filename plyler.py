@@ -7,11 +7,12 @@
 import ply.lex as lex
 import ply.yacc as yacc
 from symbolTable import SymbolTable
-from quadForms import Quad
+from quad import Quad
 from semanticCube import SemanticCube
 import sys
 
 symbolTable = SymbolTable.instantiate()
+quadruple = Quad()
 
 # reserved words
 reserved = {
@@ -111,12 +112,12 @@ t_LTE = r'\<\='
 t_ignore = r' '
 
 def t_CSTFLT(t):
-  r'\d+\.\d+'
+  r'-?\d+\.\d+'
   t.value = float(t.value)
   return t
 
 def t_CSTINT(t):
-  r'\d+'
+  r'-?\d+'
   t.value = int(t.value)
   return t
 
@@ -493,11 +494,16 @@ def p_exp(p):
   '''
   exp : texp exp1
   '''
-  p[0] = tuple(p[1:])
+  p[0] = quadruple.pilaO[-1]
+  if not quadruple.pOper:
+    print('EVALUACION EXPRESION:')
+    print(p[0])
+    quadruple.clearQuad()
+  
 
 def p_exp1(p):
   '''
-  exp1 : OR saw_op texp exp1
+  exp1 : OR texp exp1
        | empty
   '''
   p[0] = tuple(p[1:])
@@ -510,25 +516,25 @@ def p_texp(p):
 
 def p_texp1(p):
   '''
-  texp1 : AND saw_op gexp texp1
+  texp1 : AND gexp texp1
         | empty
   '''
   p[0] = tuple(p[1:])
 
 def p_gexp(p):
   '''
-  gexp : mexp gexp1
+  gexp : mexp gexp1 check_relational_operator
   '''
   p[0] = tuple(p[1:])
 
 def p_gexp1(p):
   '''
-  gexp1 : LT saw_op mexp
-        | GT saw_op mexp
-        | GTE saw_op mexp
-        | LTE saw_op mexp
-        | EQ saw_op mexp
-        | NE saw_op mexp
+  gexp1 : LT saw_relational_operator mexp
+        | GT saw_relational_operator mexp
+        | GTE saw_relational_operator mexp
+        | LTE saw_relational_operator mexp
+        | EQ saw_relational_operator mexp
+        | NE saw_relational_operator mexp
         | empty
   '''
   p[0] = tuple(p[1:])
@@ -537,12 +543,11 @@ def p_mexp(p):
   '''
   mexp : termino mexp1
   '''
-  p[0] = tuple(p[1:])
 
 def p_mexp1(p):
   '''
-  mexp1 : PLUS saw_op termino mexp1
-        | MINUS saw_op termino mexp1
+  mexp1 : PLUS saw_plusminus_operator termino mexp1
+        | MINUS saw_plusminus_operator termino mexp1
         | empty
   '''
   p[0] = tuple(p[1:])
@@ -551,14 +556,14 @@ def p_mexp1(p):
 # TERMINO
 def p_termino(p):
   '''
-  termino : factor term1
+  termino : factor term1 check_plusminus_operator
   '''
   p[0] = tuple(p[1:])
 
 def p_term1(p):
   '''
-  term1 : MULT saw_op factor term1
-        | DIV saw_op factor term1
+  term1 : MULT saw_multdiv_operator factor term1
+        | DIV saw_multdiv_operator factor term1
         | empty
   '''
   p[0] = tuple(p[1:])
@@ -567,8 +572,8 @@ def p_term1(p):
 # FACTOR
 def p_factor(p):
   '''
-  factor : OPAREN exp CPAREN
-         | varcst
+  factor : OPAREN saw_oparen exp CPAREN saw_cparen check_multdiv_operator
+         | varcst check_multdiv_operator
          | variable
          | llamada
   '''
@@ -676,16 +681,152 @@ def p_saw_end_value_int(p):
   '''
   saw_end_value_int : 
   '''
+  quadruple.pilaO.append(p[-1])
 
 def p_saw_end_value_flt(p):
   '''
   saw_end_value_flt : 
   '''
+  quadruple.pilaO.append(p[-1])
 
-def p_saw_op(p):
+def getType(operand):
+  if isinstance(operand,int):
+    return 'int'
+  elif isinstance(operand,float):
+    return 'float'
+  elif isinstance(operand,bool):
+    return 'bool'
+
+def p_saw_plusminus_operator(p):
   '''
-  saw_op : 
+  saw_plusminus_operator  : 
   '''
+  quadruple.pOper.append(p[-1])
+
+def p_check_plusminus_operator(p):
+  '''
+  check_plusminus_operator  : 
+  '''
+  workingStack = quadruple.getWorkingStack()
+  if workingStack:
+    if workingStack[-1] == '+' or workingStack[-1] == '-':
+      right_operand = quadruple.pilaO.pop() 
+      right_type = getType(right_operand)
+      left_operand = quadruple.pilaO.pop()
+      left_type = getType(left_operand)
+      operator = workingStack.pop()
+      if quadruple.pOper:
+        quadruple.pOper.pop()
+      result_Type = SemanticCube[operator][left_type][right_type]
+      
+      if result_Type != 'TYPE MISMATCH':
+        if operator == '+':
+          tvalue = left_operand + right_operand
+          quadruple.pilaO.append(tvalue)
+        elif operator == '-':
+          tvalue = left_operand - right_operand
+          quadruple.pilaO.append(tvalue)
+      else:
+        return result_Type
+
+
+def p_saw_multdiv_operator(p):
+  '''
+  saw_multdiv_operator  : 
+  '''
+  quadruple.pOper.append(p[-1])
+
+def p_check_multdiv_operator(p):
+  '''
+  check_multdiv_operator  : 
+  '''
+  workingStack = quadruple.getWorkingStack()
+  if workingStack:
+    if workingStack[-1] == '*' or workingStack[-1] == '/':
+      right_operand = quadruple.pilaO.pop() 
+      right_type = getType(right_operand)
+      left_operand = quadruple.pilaO.pop()
+      left_type = getType(left_operand)
+      operator = workingStack.pop()
+      if quadruple.pOper:
+        quadruple.pOper.pop()
+      result_Type = SemanticCube[operator][left_type][right_type]
+      
+      if result_Type != 'TYPE MISMATCH':
+        if operator == '*':
+          tvalue = left_operand * right_operand
+          quadruple.pilaO.append(tvalue)
+        elif operator == '/':
+          tvalue = left_operand / right_operand
+          quadruple.pilaO.append(tvalue)
+      else:
+        return result_Type
+
+def p_saw_relational_operator(p):
+  '''
+  saw_relational_operator : 
+  '''
+  quadruple.pOper.append(p[-1])
+
+def p_check_relational_operator(p):
+  '''
+  check_relational_operator : 
+  '''
+  workingStack = quadruple.getWorkingStack()
+  if workingStack:
+    operatorSet = {'>','<','==','!=','>=','<='}
+    if workingStack[-1] in operatorSet:
+      right_operand = quadruple.pilaO.pop() 
+      right_type = getType(right_operand)
+      left_operand = quadruple.pilaO.pop()
+      left_type = getType(left_operand)
+      operator = workingStack.pop()
+      if quadruple.pOper:
+        quadruple.pOper.pop()
+      result_Type = SemanticCube[operator][left_type][right_type]
+      
+      if result_Type != 'TYPE MISMATCH':
+        if operator == '>':
+          tvalue = left_operand > right_operand
+          quadruple.pilaO.append(tvalue)
+        elif operator == '<':
+          tvalue = left_operand < right_operand
+          quadruple.pilaO.append(tvalue)
+        elif operator == '>=':
+          tvalue = left_operand >= right_operand
+          quadruple.pilaO.append(tvalue)
+        elif operator == '<=':
+          tvalue = left_operand <= right_operand
+          quadruple.pilaO.append(tvalue)
+        elif operator == '==':
+          tvalue = left_operand == right_operand
+          quadruple.pilaO.append(tvalue)
+        elif operator == '!=':
+          tvalue = left_operand != right_operand
+          quadruple.pilaO.append(tvalue)
+      else:
+        return result_Type
+
+def p_saw_oparen(p):
+  '''
+  saw_oparen : 
+  '''
+  quadruple.pOper.append(p[-1])
+
+def p_saw_cparen(p):
+  '''
+  saw_cparen : 
+  '''
+  if quadruple.pOper:
+    quadruple.pOper.pop()
+
+def p_do_not_save(p):
+  '''
+  do_not_save : 
+  '''
+  symbolTable.popLatestValue()
+  # print('END END END ENDVALUE VALUE VALUE VALUE VALUE VALUE', value)
+  # symbolTable.addLatestVariableValue(value)
 
 def p_saw_function(p):
   '''
@@ -705,6 +846,8 @@ def p_class_scope_end(p):
   class_scope_end : 
   '''
   symbolTable.exitClassScope()
+
+
 
 parser = yacc.yacc()
 
