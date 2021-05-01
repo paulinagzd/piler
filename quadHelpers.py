@@ -9,9 +9,9 @@ def getType(operand):
   if isinstance(operand,int):
     return 'int'
   elif isinstance(operand,float):
-    return 'float'
+    return 'flt'
   elif isinstance(operand,bool):
-    return 'bool'
+    return 'boo'
 
 def check_multdiv_operator(workingStack):
   if workingStack:

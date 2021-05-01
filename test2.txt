@@ -10,14 +10,17 @@ var cha c;
 
   func int hola(boo you) {
     var str ha;
-    var int a, e, i;
+    var int i;
+    var boo e;
+    var flt a;
     a = 20 + 10.5 * (8 - 1 / 2)
     e = 2 == 2
   }
 
   func boo adios(cha si) {
     var str uuuu;
-    var int o, w, oo;
+    var int o;
+    var flt w, oo;
     w = 80.1
     o = 12 * 5
     oo = 60/5 
