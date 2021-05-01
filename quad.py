@@ -3,10 +3,18 @@ from symbolTable import SymbolTable
 from semanticCube import SemanticCube
 
 class Quad:
+  isAlive = None
+
   def __init__(self):
+      Quad.isAlive = self
       self.pOper = []
       self.pilaO = []
 
+  @classmethod
+  def instantiate(cls):
+    if Quad.isAlive is None:
+      Quad()
+    return Quad.isAlive
 
   def clearQuad(self):
     self.pOper.clear()
