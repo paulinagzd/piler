@@ -11,8 +11,8 @@ var cha c;
   func int hola(boo you) {
     var str ha;
     var int a, e, i;
-    a = 20
-    e = 2 + 2
+    a = 20 + 10.5 * (8 - 1 / 2)
+    e = 2 == 2
   }
 
   func boo adios(cha si) {
