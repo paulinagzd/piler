@@ -679,8 +679,11 @@ def p_saw_asig(p):
   # POINTS TO EXISTING VARIABLE
   global pointer
   if pointer != False and pointer != None:
-    pointer.setVarType(symbolTable.getCurrentScope().getLatestType())
-    pointer.setValue(p[-1])
+    if (pointer.getVarType() == symbolTable.getCurrentScope().getLatestType()):
+      pointer.setValue(p[-1])
+    else:
+      print("ERROR! Type Mismatch")
+      return False
   pointer = None
 
 
