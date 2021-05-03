@@ -1,12 +1,10 @@
 # global variable to instantiate only ONCE
-s = None
-from collections import deque
-
 class Variable:
   def __init__(self, varName, varType, dimensions):
     self.__varName = varName
     self.__varType = varType
     self.__dimensions = dimensions
+    self.__value = None
   
   # getters
   def getVarName(self):
@@ -18,6 +16,9 @@ class Variable:
   def getDimensions(self):
     return self.__dimensions
 
+  def getValue(self):
+    return self.__value
+
   # setters
   def setVarName(self, varName):
     self.__varName = varName
@@ -28,8 +29,11 @@ class Variable:
   def setDimensions(self):
     self.__dimensions += 1
 
+  def setValue(self, value):
+    self.__value = value
+
   def __repr__(self):
-    return "{\n name: %s \n type: %s \n dimensions: %s \n}" % (self.getVarName(), self.getVarType(), self.getDimensions())
+    return "{\n name: %s \n type: %s \n dimensions: %s \n value: %s \n}" % (self.getVarName(), self.getVarType(), self.getDimensions(), self.getValue())
 
 class Scope:
   # SCOPE: what a block contains.
@@ -45,6 +49,7 @@ class Scope:
     self.__scopeClasses = {}
     self.__latestName = None
     self.__latestType = None
+    self.__latestExpValue = None
     self.__latestDimension = 0
 
   # getters
@@ -72,6 +77,9 @@ class Scope:
   def getLatestDimension(self):
     return self.__latestDimension 
 
+  def getLatestExpValue(self):
+    return self.__latestExpValue 
+
   # setters
   def setScopeType(self, scopeType):
     self.__scopeType = scopeType
@@ -91,10 +99,13 @@ class Scope:
   def resetLatestDimension(self):
     self.__latestDimension = 0
 
+  def setLatestExpValue(self, val):
+    self.__latestExpValue = val
+
   # methods
   def addVariable(self, varName, varType, dimensions):
     if varName in self.getScopeVariables():
-      print('ERROR! Variable with identifier: "%s" already exists!', varName)
+      print('ERROR! Variable with identifier:', varName, 'already exists!')
       return False
 
     self.__scopeVariables[varName] = Variable(varName, varType, dimensions)
@@ -103,7 +114,7 @@ class Scope:
 
   def addFunction(self, funcName, funcType):
     if funcName in self.getScopeFunctions():
-      print('ERROR! Function with identifier: "%s" already exists!', funcName)
+      print('ERROR! Function with identifier: ', funcName, 'already exists!')
       return False
 
     if (SymbolTable.instantiate().getCurrentScope().getScopeType() == 'global'):
@@ -115,7 +126,7 @@ class Scope:
     
   def addClass(self, className):
     if className in self.getScopeClasses():
-      print('ERROR! Class with identifier: "%s" already exists!', className)
+      print('ERROR! Class with identifier:', className, 'already exists!')
       return False
 
     classType = 'class'

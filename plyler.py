@@ -8,11 +8,13 @@ import ply.lex as lex
 import ply.yacc as yacc
 from symbolTable import SymbolTable
 from quad import Quad
-from semanticCube import SemanticCube
+import quadHelpers
 import sys
 
 symbolTable = SymbolTable.instantiate()
-quadruple = Quad()
+quadruple = Quad.instantiate()
+
+pointer = None
 
 # reserved words
 reserved = {
@@ -420,13 +422,13 @@ def p_ternaria(p):
 # ESCRITURA
 def p_escritura(p):
   '''
-  escritura : PRINT OPAREN exp e1 CPAREN
+  escritura : PRINT OPAREN exp saw_print_exp e1 CPAREN
   '''
   p[0] = tuple(p[1:])
 
 def p_e1(p):
   '''
-  e1 : COMMA exp e1
+  e1 : COMMA exp saw_print_exp e1
      | empty
   '''
   p[0] = tuple(p[1:])
@@ -435,10 +437,16 @@ def p_e1(p):
 # LEER
 def p_leer(p):
   '''
-  leer  : READ OPAREN exp e1 CPAREN
+  leer  : READ OPAREN variable saw_read_exp l1 CPAREN
   '''
   p[0] = tuple(p[1:])
 
+def p_l1(p):
+  '''
+  l1 : COMMA variable saw_read_exp e1
+     | empty
+  '''
+  p[0] = tuple(p[1:])
 ################################################
 # BOOLEAN
 def p_boolean(p):
@@ -499,6 +507,13 @@ def p_exp(p):
     #TODO: usar la función getType para tener el tipo final que evalua la expresion y guardarlo
     print('EVALUACION EXPRESION:')
     print(p[0])
+    # print('EVALUACION EXPRESION:')
+    # print(symbolTable.getCurrentScope().getLatestName())
+    # print(symbolTable.getCurrentScope().getLatestType())
+    # print(p[0])
+    symbolTable.getCurrentScope().setLatestExpValue(p[0])
+    quadruple.clearQuad()
+ 
 
 def p_exp1(p):
   '''
@@ -585,7 +600,7 @@ def p_varcst(p):
   varcst : CSTINT saw_end_value_int
          | CSTFLT saw_end_value_flt
          | CSTCHAR 
-         | CSTSTRING 
+         | CSTSTRING saw_end_value_str
          | boolean 
   '''
   p[0] = tuple(p[1:])
@@ -614,7 +629,6 @@ def p_saw_class(p):
   '''
   saw_class : 
   '''
-  # print(p[-3])
   symbolTable.getCurrentScope().setLatestName(p[-2])
   symbolTable.getCurrentScope().addClass(symbolTable.getCurrentScope().getLatestName())
 
@@ -622,23 +636,13 @@ def p_saw_type(p):
   '''
   saw_type : 
   '''
-  # print(p[-1])
-  # print(symbolTable.getCurrentScope())
   symbolTable.getCurrentScope().setLatestType(p[-1])
 
 def p_saw_id(p):
   '''
   saw_id : 
   '''
-  # print(p[-1])
   symbolTable.getCurrentScope().setLatestName(p[-1])
-
-
-# def p_saw_id_param(p):
-#   '''
-#   saw_id_param : 
-#   '''
-
 
 def p_saw_variable(p):
   '''
@@ -659,8 +663,8 @@ def p_saw_called_var(p):
   saw_called_var : 
   '''
   current = symbolTable.getCurrentScope()
-  current.sawCalledVariable(current.getLatestName())
-
+  global pointer
+  pointer = current.sawCalledVariable(current.getLatestName())
 
 def p_saw_called_var_from_class(p):
   '''
@@ -675,6 +679,16 @@ def p_saw_asig(p):
   '''
   saw_asig : 
   '''
+  # POINTS TO EXISTING VARIABLE
+  global pointer
+  if pointer != False and pointer != None:
+    if (pointer.getVarType() == symbolTable.getCurrentScope().getLatestType()):
+      pointer.setValue(p[-1])
+    else:
+      print("ERROR! Type Mismatch")
+      return False
+  pointer = None
+
 
 def p_saw_end_value_int(p):
   '''
@@ -696,6 +710,11 @@ def getType(operand):
   elif isinstance(operand,float):
     return 'float'
   
+def p_saw_end_value_str(p):
+  '''
+  saw_end_value_str : 
+  '''
+  quadruple.pilaO.append(p[-1])
 
 def p_saw_plusminus_operator(p):
   '''
@@ -708,27 +727,7 @@ def p_check_plusminus_operator(p):
   check_plusminus_operator  : 
   '''
   workingStack = quadruple.getWorkingStack()
-  if workingStack:
-    if workingStack[-1] == '+' or workingStack[-1] == '-':
-      right_operand = quadruple.pilaO.pop() 
-      right_type = getType(right_operand)
-      left_operand = quadruple.pilaO.pop()
-      left_type = getType(left_operand)
-      operator = workingStack.pop()
-      if quadruple.pOper:
-        quadruple.pOper.pop()
-      result_Type = SemanticCube[operator][left_type][right_type]
-      
-      if result_Type != 'TYPE MISMATCH':
-        if operator == '+':
-          tvalue = left_operand + right_operand
-          quadruple.pilaO.append(tvalue)
-        elif operator == '-':
-          tvalue = left_operand - right_operand
-          quadruple.pilaO.append(tvalue)
-      else:
-        return result_Type
-
+  res = quadHelpers.check_plusminus_operator(workingStack)
 
 def p_saw_multdiv_operator(p):
   '''
@@ -741,26 +740,7 @@ def p_check_multdiv_operator(p):
   check_multdiv_operator  : 
   '''
   workingStack = quadruple.getWorkingStack()
-  if workingStack:
-    if workingStack[-1] == '*' or workingStack[-1] == '/':
-      right_operand = quadruple.pilaO.pop() 
-      right_type = getType(right_operand)
-      left_operand = quadruple.pilaO.pop()
-      left_type = getType(left_operand)
-      operator = workingStack.pop()
-      if quadruple.pOper:
-        quadruple.pOper.pop()
-      result_Type = SemanticCube[operator][left_type][right_type]
-      
-      if result_Type != 'TYPE MISMATCH':
-        if operator == '*':
-          tvalue = left_operand * right_operand
-          quadruple.pilaO.append(tvalue)
-        elif operator == '/':
-          tvalue = left_operand / right_operand
-          quadruple.pilaO.append(tvalue)
-      else:
-        return result_Type
+  quadHelpers.check_multdiv_operator(workingStack)
 
 def p_saw_relational_operator(p):
   '''
@@ -773,39 +753,7 @@ def p_check_relational_operator(p):
   check_relational_operator : 
   '''
   workingStack = quadruple.getWorkingStack()
-  if workingStack:
-    operatorSet = {'>','<','==','!=','>=','<='}
-    if workingStack[-1] in operatorSet:
-      right_operand = quadruple.pilaO.pop() 
-      right_type = getType(right_operand)
-      left_operand = quadruple.pilaO.pop()
-      left_type = getType(left_operand)
-      operator = workingStack.pop()
-      if quadruple.pOper:
-        quadruple.pOper.pop()
-      result_Type = SemanticCube[operator][left_type][right_type]
-      
-      if result_Type != 'TYPE MISMATCH':
-        if operator == '>':
-          tvalue = left_operand > right_operand
-          quadruple.pilaO.append(tvalue)
-        elif operator == '<':
-          tvalue = left_operand < right_operand
-          quadruple.pilaO.append(tvalue)
-        elif operator == '>=':
-          tvalue = left_operand >= right_operand
-          quadruple.pilaO.append(tvalue)
-        elif operator == '<=':
-          tvalue = left_operand <= right_operand
-          quadruple.pilaO.append(tvalue)
-        elif operator == '==':
-          tvalue = left_operand == right_operand
-          quadruple.pilaO.append(tvalue)
-        elif operator == '!=':
-          tvalue = left_operand != right_operand
-          quadruple.pilaO.append(tvalue)
-      else:
-        return result_Type
+  quadHelpers.check_relational_operator(workingStack)
 
 def p_check_and_operator(p):
   '''
@@ -876,14 +824,6 @@ def p_saw_cparen(p):
   if quadruple.pOper:
     quadruple.pOper.pop()
 
-def p_do_not_save(p):
-  '''
-  do_not_save : 
-  '''
-  symbolTable.popLatestValue()
-  # print('END END END ENDVALUE VALUE VALUE VALUE VALUE VALUE', value)
-  # symbolTable.addLatestVariableValue(value)
-
 def p_saw_function(p):
   '''
   saw_function : 
@@ -903,7 +843,17 @@ def p_class_scope_end(p):
   '''
   symbolTable.exitClassScope()
 
+def p_saw_print_exp(p):
+  '''
+  saw_print_exp : 
+  '''
+  print(symbolTable.getCurrentScope().getLatestExpValue())
 
+def p_saw_read_exp(p):
+  '''
+  saw_read_exp : 
+  '''
+  # print(symbolTable.getCurrentScope().sawCalledVariable(symbolTable.getCurrentScope().getLatestName()))
 
 parser = yacc.yacc()
 
@@ -953,7 +903,7 @@ while True:
       if parser.parse(curr) == 'SUCCESS':
         print("SUCCESSFULLY COMPILED!")
       
-      symbolTable.printingAll()
+      # symbolTable.printingAll()
 
     except EOFError:
       print("INCORRECT")
