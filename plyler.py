@@ -492,31 +492,30 @@ def p_llamada_funcion1(p):
 # SUPER EXP
 def p_exp(p):
   '''
-  exp : texp exp1
+  exp : texp exp1 check_or_operator
   '''
-  p[0] = quadruple.pilaO[-1]
   if not quadruple.pOper:
+    p[0] = quadruple.pilaO.pop()
+    #TODO: usar la función getType para tener el tipo final que evalua la expresion y guardarlo
     print('EVALUACION EXPRESION:')
     print(p[0])
-    quadruple.clearQuad()
-  
 
 def p_exp1(p):
   '''
-  exp1 : OR texp exp1
+  exp1 : OR saw_or texp exp1
        | empty
   '''
   p[0] = tuple(p[1:])
 
 def p_texp(p):
   '''
-  texp : gexp texp1
+  texp : gexp texp1 check_and_operator
   '''
   p[0] = tuple(p[1:])
 
 def p_texp1(p):
   '''
-  texp1 : AND gexp texp1
+  texp1 : AND saw_and gexp texp1
         | empty
   '''
   p[0] = tuple(p[1:])
@@ -690,12 +689,13 @@ def p_saw_end_value_flt(p):
   quadruple.pilaO.append(p[-1])
 
 def getType(operand):
-  if isinstance(operand,int):
+  if isinstance(operand,bool):
+    return 'bool'
+  elif isinstance(operand,int):
     return 'int'
   elif isinstance(operand,float):
     return 'float'
-  elif isinstance(operand,bool):
-    return 'bool'
+  
 
 def p_saw_plusminus_operator(p):
   '''
@@ -806,6 +806,62 @@ def p_check_relational_operator(p):
           quadruple.pilaO.append(tvalue)
       else:
         return result_Type
+
+def p_check_and_operator(p):
+  '''
+  check_and_operator  :
+  '''
+  workingStack = quadruple.getWorkingStack()
+  if workingStack:
+    if workingStack[-1] == '&&':
+      right_operand = quadruple.pilaO.pop() 
+      right_type = getType(right_operand) 
+      left_operand = quadruple.pilaO.pop()
+      left_type = getType(left_operand)
+      operator = workingStack.pop()
+      if quadruple.pOper:
+        quadruple.pOper.pop()
+      result_Type = SemanticCube[operator][left_type][right_type]
+      
+      if result_Type != 'TYPE MISMATCH':
+        tvalue = left_operand and right_operand
+        quadruple.pilaO.append(tvalue)
+      else:
+        return result_Type
+
+def p_check_or_operator(p):
+  '''
+  check_or_operator :
+  '''
+  workingStack = quadruple.getWorkingStack()
+  if workingStack:
+    if workingStack[-1] == '||':
+      right_operand = quadruple.pilaO.pop() 
+      right_type = getType(right_operand)
+      left_operand = quadruple.pilaO.pop()
+      left_type = getType(left_operand)
+      operator = workingStack.pop()
+      if quadruple.pOper:
+        quadruple.pOper.pop()
+      result_Type = SemanticCube[operator][left_type][right_type]
+      
+      if result_Type != 'TYPE MISMATCH':
+        tvalue = left_operand or right_operand
+        quadruple.pilaO.append(tvalue)
+      else:
+        return result_Type
+
+def p_saw_and(p):
+  '''
+  saw_and  :
+  '''
+  quadruple.pOper.append(p[-1])
+
+def p_saw_or(p):
+  '''
+  saw_or :
+  '''
+  quadruple.pOper.append(p[-1])
 
 def p_saw_oparen(p):
   '''

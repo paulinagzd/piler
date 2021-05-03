@@ -7,11 +7,6 @@ class Quad:
       self.pOper = []
       self.pilaO = []
 
-
-  def clearQuad(self):
-    self.pOper.clear()
-    self.pilaO.clear()
-
   def getWorkingStack(self):
     workingStack = []
     if '(' not in self.pOper:
