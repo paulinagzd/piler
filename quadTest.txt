@@ -1,5 +1,5 @@
 program aritmetica;
 var int a;
 {
-    a = (3 < 2) || (1 > 2)
+    a = 8 * (7 - 4) + 5 
 }

@@ -7,6 +7,7 @@
 import ply.lex as lex
 import ply.yacc as yacc
 from symbolTable import SymbolTable
+from semanticCube import SemanticCube
 from quad import Quad
 import quadHelpers
 import sys
@@ -704,11 +705,11 @@ def p_saw_end_value_flt(p):
 
 def getType(operand):
   if isinstance(operand,bool):
-    return 'bool'
+    return 'boo'
   elif isinstance(operand,int):
     return 'int'
   elif isinstance(operand,float):
-    return 'float'
+    return 'flt'
   
 def p_saw_end_value_str(p):
   '''
@@ -902,8 +903,7 @@ while True:
       correctFile.close()
       if parser.parse(curr) == 'SUCCESS':
         print("SUCCESSFULLY COMPILED!")
-      
-      # symbolTable.printingAll()
+      symbolTable.reset()
 
     except EOFError:
       print("INCORRECT")
