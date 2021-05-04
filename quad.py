@@ -73,3 +73,20 @@ class QuadContainer:
     # if not isinstance(self.__result, PendingJump):
     #   raise Exception("Trying to set a jump but this quadruple does not have a pending jump")
     self.__res = val
+
+
+class QuadsStack:
+  isAlive = None
+  cont = 0
+
+  def __init__(self):
+    QuadsStack.isAlive = self
+    self.__stack = []
+
+  @classmethod
+  def instantiate(cls):
+    if QuadsStack.isAlive is None:
+      QuadsStack()
+    return QuadsStack.isAlive
+
+  

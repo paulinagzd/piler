@@ -384,13 +384,11 @@ def p_estatuto(p):
 def p_estatuto_ciclo(p):
   '''
   estatuto_ciclo : asignacion
-                 | llamada
                  | condicion
                  | escritura
                  | leer
                  | ciclo_while
                  | ciclo_for
-                 | ternaria
                  | dec
   '''
   p[0] = p[1]
