@@ -1,0 +1,20 @@
+program aritmetica;
+{
+  func boo funcion1() {
+    var int a;
+    var int b;
+    var int c;
+    a = 18
+    b = 30
+    if (a >= b) then {
+      while (a < 20) then {
+        a = a + 1
+        print(a)
+      };
+    } else {
+      print('HOLA')
+      var boo res;
+      res = True
+    };
+  }
+}

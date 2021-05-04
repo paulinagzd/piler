@@ -24,6 +24,7 @@ def check_multdiv_operator(workingStack):
       if quadruple.pOper:
         quadruple.pOper.pop()
       result_Type = SemanticCube[operator][left_type][right_type]
+      print(operator, left_operand, right_operand)
       symbolTable.getCurrentScope().setLatestType(result_Type)
 
       if result_Type != 'TYPE MISMATCH':
@@ -47,6 +48,7 @@ def check_plusminus_operator(workingStack):
       if quadruple.pOper:
         quadruple.pOper.pop()
       result_Type = SemanticCube[operator][left_type][right_type]
+      print(operator, left_operand, right_operand)
       symbolTable.getCurrentScope().setLatestType(result_Type)
 
       if result_Type != 'TYPE MISMATCH':

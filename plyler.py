@@ -204,11 +204,10 @@ def p_param1(p):
 
 def p_param2(p): ####### OJO
   '''
-  param2 : simple ID saw_id saw_variable
-         | multiple ID saw_id OBRACKET CSTINT CBRACKET saw_dimension tipo3 saw_variable
+  param2 : simple ID saw_id saw_variable_param
+         | multiple ID saw_id OBRACKET CSTINT CBRACKET saw_dimension tipo3 saw_variable_param
   '''
   p[0] = tuple(p[1:])
-
 
 ################################################
 # CLASE
@@ -242,16 +241,15 @@ def p_clase_metodos_bloque(p):
 # CICLO WHILE
 def p_ciclo_while(p):
   '''
-  ciclo_while : WHILE cond2 THEN bloque SEMICOLON
+  ciclo_while : WHILE cond2 THEN bloque_ciclo SEMICOLON
   '''
   p[0] = tuple(p[1:])
-
 
 ################################################
 # CICLO FOR
 def p_ciclo_for(p):
   '''
-  ciclo_for : FOR OPAREN variable FROM ciclo_for1 TO ciclo_for1 BY ciclo_for1 CPAREN THEN bloque SEMICOLON
+  ciclo_for : FOR OPAREN variable FROM ciclo_for1 TO ciclo_for1 BY ciclo_for1 CPAREN THEN bloque_ciclo SEMICOLON
   '''
   p[0] = tuple(p[1:])
 
@@ -352,6 +350,18 @@ def p_b1(p):
   '''
   p[0] = tuple(p[1:])
 
+# BLOQUE CICLO
+def p_bloque_ciclo(p):
+  '''
+  bloque_ciclo : OCURLY bc1 CCURLY bc_end
+  '''
+
+def p_bc1(p):
+  '''
+  bc1 : estatuto_ciclo bc1
+      | empty
+  '''
+
 ################################################
 # ESTATUTO
 def p_estatuto(p):
@@ -368,6 +378,20 @@ def p_estatuto(p):
            | funcion
            | clase
            | dec
+  '''
+  p[0] = p[1]
+
+def p_estatuto_ciclo(p):
+  '''
+  estatuto_ciclo : asignacion
+                 | llamada
+                 | condicion
+                 | escritura
+                 | leer
+                 | ciclo_while
+                 | ciclo_for
+                 | ternaria
+                 | dec
   '''
   p[0] = p[1]
 
@@ -393,14 +417,14 @@ def p_asignacion(p):
 # CONDICIONAL
 def p_condicion(p):
   '''
-  condicion : IF cond2 THEN bloque cond1 SEMICOLON
+  condicion : IF cond2 saw_cond THEN bloque_ciclo cond1 SEMICOLON
   '''
   p[0] = tuple(p[1:])
 
 def p_cond1(p):
   '''
-  cond1 : ELSE bloque
-        | ELSE IF cond2 THEN bloque cond1
+  cond1 : ELSE bloque_ciclo
+        | ELSE IF cond2 saw_cond THEN bloque_ciclo cond1
         | empty
   '''
   p[0] = tuple(p[1:])
@@ -622,85 +646,70 @@ def p_error(p):
 ################################################
 # AUX RULES FOR SYMBOL TABLE
 def p_saw_program(p):
-  '''
-  saw_program : 
-  '''
+  ''' saw_program : '''
 
 def p_saw_class(p):
-  '''
-  saw_class : 
-  '''
+  ''' saw_class : '''
   symbolTable.getCurrentScope().setLatestName(p[-2])
   symbolTable.getCurrentScope().addClass(symbolTable.getCurrentScope().getLatestName())
 
 def p_saw_type(p):
-  '''
-  saw_type : 
-  '''
+  ''' saw_type : '''
   symbolTable.getCurrentScope().setLatestType(p[-1])
 
 def p_saw_id(p):
-  '''
-  saw_id : 
-  '''
+  ''' saw_id : '''
   symbolTable.getCurrentScope().setLatestName(p[-1])
 
 def p_saw_variable(p):
-  '''
-  saw_variable : 
-  '''
+  ''' saw_variable : '''
   current = symbolTable.getCurrentScope()
-  current.addVariable(current.getLatestName(), current.getLatestType(), current.getLatestDimension())
+  isParam = False
+  current.addVariable(current.getLatestName(), current.getLatestType(), current.getLatestDimension(), isParam)
+
+def p_saw_variable_param(p):
+  ''' saw_variable_param : '''
+  current = symbolTable.getCurrentScope()
+  isParam = True
+  current.addVariable(current.getLatestName(), current.getLatestType(), current.getLatestDimension(), isParam)
 
 def p_saw_dimension(p):
-  '''
-  saw_dimension : 
-  '''
+  ''' saw_dimension : '''
   current = symbolTable.getCurrentScope()
   current.setLatestDimension()
 
 def p_saw_called_var(p):
-  '''
-  saw_called_var : 
-  '''
+  ''' saw_called_var : '''
   current = symbolTable.getCurrentScope()
   global pointer
   pointer = current.sawCalledVariable(current.getLatestName())
 
 def p_saw_called_var_from_class(p):
-  '''
-  saw_called_var_from_class : 
-  '''
+  ''' saw_called_var_from_class : '''
   current = symbolTable.getCurrentScope()
   temp = current.getLatestName()
   current.setLatestName(p[-1])
   current.doesClassExist(temp, p[-1])
 
 def p_saw_asig(p):
-  '''
-  saw_asig : 
-  '''
+  ''' saw_asig : '''
   # POINTS TO EXISTING VARIABLE
   global pointer
   if pointer != False and pointer != None:
     if (pointer.getVarType() == symbolTable.getCurrentScope().getLatestType()):
       pointer.setValue(p[-1])
     else:
-      print("ERROR! Type Mismatch")
-      return False
+      raise Exception("ERROR! Type Mismatch")
+      # return False
   pointer = None
 
 
 def p_saw_end_value_int(p):
-  '''
-  saw_end_value_int : 
-  '''
+  ''' saw_end_value_int : '''
   quadruple.pilaO.append(p[-1])
 
 def p_saw_end_value_flt(p):
-  '''
-  saw_end_value_flt : 
-  '''
+  ''' saw_end_value_flt : '''
   quadruple.pilaO.append(p[-1])
 
 def getType(operand):
@@ -712,47 +721,33 @@ def getType(operand):
     return 'flt'
   
 def p_saw_end_value_str(p):
-  '''
-  saw_end_value_str : 
-  '''
+  ''' saw_end_value_str : '''
   quadruple.pilaO.append(p[-1])
 
 def p_saw_plusminus_operator(p):
-  '''
-  saw_plusminus_operator  : 
-  '''
+  ''' saw_plusminus_operator  : '''
   quadruple.pOper.append(p[-1])
 
 def p_check_plusminus_operator(p):
-  '''
-  check_plusminus_operator  : 
-  '''
+  ''' check_plusminus_operator  : '''
   workingStack = quadruple.getWorkingStack()
   res = quadHelpers.check_plusminus_operator(workingStack)
 
 def p_saw_multdiv_operator(p):
-  '''
-  saw_multdiv_operator  : 
-  '''
+  ''' saw_multdiv_operator  : '''
   quadruple.pOper.append(p[-1])
 
 def p_check_multdiv_operator(p):
-  '''
-  check_multdiv_operator  : 
-  '''
+  ''' check_multdiv_operator  : '''
   workingStack = quadruple.getWorkingStack()
   quadHelpers.check_multdiv_operator(workingStack)
 
 def p_saw_relational_operator(p):
-  '''
-  saw_relational_operator : 
-  '''
+  ''' saw_relational_operator : '''
   quadruple.pOper.append(p[-1])
 
 def p_check_relational_operator(p):
-  '''
-  check_relational_operator : 
-  '''
+  ''' check_relational_operator : '''
   workingStack = quadruple.getWorkingStack()
   quadHelpers.check_relational_operator(workingStack)
 
@@ -813,48 +808,41 @@ def p_saw_or(p):
   quadruple.pOper.append(p[-1])
 
 def p_saw_oparen(p):
-  '''
-  saw_oparen : 
-  '''
+  ''' saw_oparen : '''
   quadruple.pOper.append(p[-1])
 
 def p_saw_cparen(p):
-  '''
-  saw_cparen : 
-  '''
+  ''' saw_cparen : '''
   if quadruple.pOper:
     quadruple.pOper.pop()
 
 def p_saw_function(p):
-  '''
-  saw_function : 
-  '''
+  ''' saw_function : '''
   current = symbolTable.getCurrentScope()
   current.addFunction(symbolTable.getCurrentScope().getLatestName(), symbolTable.getCurrentScope().getLatestType())
 
 def p_scope_end(p):
-  '''
-  scope_end : 
-  '''
+  ''' scope_end : '''
   symbolTable.exitScope()
 
 def p_class_scope_end(p):
-  '''
-  class_scope_end : 
-  '''
+  ''' class_scope_end : '''
   symbolTable.exitClassScope()
 
 def p_saw_print_exp(p):
-  '''
-  saw_print_exp : 
-  '''
+  ''' saw_print_exp : '''
   print(symbolTable.getCurrentScope().getLatestExpValue())
 
 def p_saw_read_exp(p):
-  '''
-  saw_read_exp : 
-  '''
+  ''' saw_read_exp : '''
   # print(symbolTable.getCurrentScope().sawCalledVariable(symbolTable.getCurrentScope().getLatestName()))
+
+def p_saw_cond(p):
+  ''' saw_cond : '''
+  # print(symbolTable.getCurrentScope().sawCalledVariable(symbolTable.getCurrentScope().getLatestName()))
+
+def p_bc_end(p):
+  ''' bc_end : '''
 
 parser = yacc.yacc()
 
@@ -903,6 +891,7 @@ while True:
       correctFile.close()
       if parser.parse(curr) == 'SUCCESS':
         print("SUCCESSFULLY COMPILED!")
+      symbolTable.printingAll()
       symbolTable.reset()
 
     except EOFError:

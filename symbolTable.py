@@ -1,11 +1,12 @@
 # global variable to instantiate only ONCE
 class Variable:
-  def __init__(self, varName, varType, dimensions):
+  def __init__(self, varName, varType, dimensions, isParam):
     self.__varName = varName
     self.__varType = varType
     self.__dimensions = dimensions
+    self.__isParam = isParam
     self.__value = None
-  
+
   # getters
   def getVarName(self):
     return self.__varName
@@ -18,6 +19,9 @@ class Variable:
 
   def getValue(self):
     return self.__value
+
+  def getIsParam(self):
+    return self.__isParam
 
   # setters
   def setVarName(self, varName):
@@ -32,8 +36,11 @@ class Variable:
   def setValue(self, value):
     self.__value = value
 
+  def setIsParam(self, value):
+    self.__isParam = value
+
   def __repr__(self):
-    return "{\n name: %s \n type: %s \n dimensions: %s \n value: %s \n}" % (self.getVarName(), self.getVarType(), self.getDimensions(), self.getValue())
+    return "{\n name: %s \n type: %s \n dimensions: %s \n value: %s \n isParam: %s \n}" % (self.getVarName(), self.getVarType(), self.getDimensions(), self.getValue(), self.getIsParam())
 
 class Scope:
   # SCOPE: what a block contains.
@@ -103,19 +110,19 @@ class Scope:
     self.__latestExpValue = val
 
   # methods
-  def addVariable(self, varName, varType, dimensions):
+  def addVariable(self, varName, varType, dimensions, isParam):
     if varName in self.getScopeVariables():
-      print('ERROR! Variable with identifier:', varName, 'already exists!')
-      return False
+      raise Exception('ERROR! Variable with identifier:', varName, 'already exists!')
+      # return False
 
-    self.__scopeVariables[varName] = Variable(varName, varType, dimensions)
+    self.__scopeVariables[varName] = Variable(varName, varType, dimensions, isParam)
     self.resetLatestDimension()
 
 
   def addFunction(self, funcName, funcType):
     if funcName in self.getScopeFunctions():
-      print('ERROR! Function with identifier: ', funcName, 'already exists!')
-      return False
+      raise Exception('ERROR! Function with identifier: ', funcName, 'already exists!')
+      # return False
 
     if (SymbolTable.instantiate().getCurrentScope().getScopeType() == 'global'):
       keyword = 'function'
@@ -126,8 +133,8 @@ class Scope:
     
   def addClass(self, className):
     if className in self.getScopeClasses():
-      print('ERROR! Class with identifier:', className, 'already exists!')
-      return False
+      raise Exception('ERROR! Class with identifier:', className, 'already exists!')
+      # return False
 
     classType = 'class'
     self.__scopeClasses[className] = Scope(classType, classType)
@@ -138,8 +145,8 @@ class Scope:
   def sawCalledVariable(self, varName):
     globalScope = SymbolTable.instantiate().getGlobalScope()
     if not varName in self.getScopeVariables() and not varName in globalScope.getScopeVariables():
-      print('ERROR! Variable with identifier:', varName, 'is not defined in this scope')
-      return False
+      raise Exception('ERROR! Variable with identifier:', varName, 'is not defined in this scope')
+      # return False
     
     self.resetLatestDimension()
     if varName in self.getScopeVariables():
@@ -151,14 +158,14 @@ class Scope:
   def doesClassExist(self, className, varName):
     globalScope = SymbolTable.instantiate().getGlobalScope()
     if not className in globalScope.getScopeClasses():
-      print('ERROR! Class with identifier: ', className, 'is not defined in this scope')
-      return False
+      raise Exception('ERROR! Class with identifier: ', className, 'is not defined in this scope')
+      # return False
     
     currentClass = globalScope.__scopeClasses[className]
 
     if not varName in currentClass.getScopeVariables():
-      print('ERROR! Variable with identifier:', varName, 'is not defined in this scope')
-      return False
+      raise Exception('ERROR! Variable with identifier:', varName, 'is not defined in this scope')
+      # return False
     
     return currentClass.__scopeVariables[varName]
 
