@@ -261,5 +261,11 @@ class SymbolTable:
           for x, xx in oo.getScopeVariables().items():
             print(x, ': ', xx)
           print('---------------------------------')
-
+  
+  def reset(self):
+    self.__globalScope = {}
+    keyword = "global"
+    self.__globalScope["global"] = Scope(keyword, keyword)
+    self.__currentScope = self.__globalScope["global"]
+    self.__classStack = []
 
