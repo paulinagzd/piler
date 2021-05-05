@@ -19,13 +19,13 @@ class Quad:
     return Quad.isAlive
 
   def saveQuad(self, operator, leftOperand, rightOperand, tvalue):
-    q = (self.quadCounter, operator, leftOperand, rightOperand, tvalue)
+    q = QuadContainer(self.quadCounter, operator, leftOperand, rightOperand, tvalue)
     self.quads.append(q)
     self.quadCounter += 1
 
   def getWorkingStack(self):
     workingStack = []
-    if '(' not in self.pOper:
+    if not '(' in self.pOper:
       workingStack = self.pOper
       return workingStack
     elif self.pOper[-1] == '(':
@@ -37,12 +37,17 @@ class Quad:
           break
       workingStack = self.pOper[index + 1:]
       return workingStack
+    
+  def print(self):
+    for item in self.quads:
+      print(item)
       
 class QuadContainer:
   isAlive = None
 
-  def __init__(self, op, left, right, res):
+  def __init__(self, ide, op, left, right, res):
     QuadContainer.isAlive = self
+    self.__id = ide
     self.__op = op
     self.__left = left
     self.__right = right
@@ -76,6 +81,9 @@ class QuadContainer:
     # if not isinstance(self.__result, PendingJump):
     #   raise Exception("Trying to set a jump but this quadruple does not have a pending jump")
     self.__res = val
+
+  def __repr__(self):
+    return "{%s %s %s %s %s}" % (self.getId(), self.getOp(), self.getLeft(), self.getRight(), self.getRes())
 
 
 class QuadsStack:

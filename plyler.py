@@ -403,11 +403,18 @@ def p_estatuto_redux(p):
   '''
   p[0] = tuple(p[1:])
 
+def p_check_asig(p):
+  '''
+  check_asig : 
+  '''
+  # workingStack = quadruple.getWorkingStack()
+  # quadHelpers.check_asig(quadruple, workingStack)
+
 ################################################
 # ASIGNACION
 def p_asignacion(p):
   '''
-  asignacion : variable AS exp saw_asig
+  asignacion : variable saw_var_factor AS saw_asig exp check_asig
   '''
   p[0] = tuple(p[1:])
 
@@ -525,16 +532,19 @@ def p_exp(p):
   '''
   exp : texp exp1 check_or_operator
   '''
-  if not quadruple.pOper:
-    p[0] = quadruple.pilaO.pop()
-    #TODO: usar la función getType para tener el tipo final que evalua la expresion y guardarlo
-    print('EVALUACION EXPRESION:')
-    print(p[0])
-    # print('EVALUACION EXPRESION:')
-    # print(symbolTable.getCurrentScope().getLatestName())
-    # print(symbolTable.getCurrentScope().getLatestType())
-    # print(p[0])
-    symbolTable.getCurrentScope().setLatestExpValue(p[0])
+  if not quadruple.pOper or quadruple.pOper[-1] == '=':
+    if not quadruple.pOper:
+      p[0] = quadruple.pilaO.pop()
+      print('EVALUACION EXPRESION:', p[0])
+      symbolTable.getCurrentScope().setLatestExpValue(p[0])
+    elif quadruple.pOper[-1] == '=':
+      right_operand = quadruple.pilaO.pop()
+      left_operand = quadruple.pilaO.pop() # this should be an id
+      print('LEFTO', left_operand)
+      # quadruple.pilaO.pop() # MARCA ERROR
+  else:
+    pass
+    # print('ELSE', quadruple.pOper[-1], quadruple.pilaO[-1])
  
 
 def p_exp1(p):
@@ -610,10 +620,18 @@ def p_factor(p):
   '''
   factor : OPAREN saw_oparen exp CPAREN saw_cparen check_multdiv_operator
          | varcst check_multdiv_operator
-         | variable
+         | variable saw_var_factor check_multdiv_operator
          | llamada
   '''
   p[0] = tuple(p[1:])
+
+def p_saw_var_factor(p):
+  '''
+  saw_var_factor :
+  '''
+  current = symbolTable.getCurrentScope().sawCalledVariable(symbolTable.getCurrentScope().getLatestName())
+  # print(current)
+  quadruple.pilaO.append(current)
 
 ################################################
 #VARCST
@@ -691,14 +709,18 @@ def p_saw_called_var_from_class(p):
 def p_saw_asig(p):
   ''' saw_asig : '''
   # POINTS TO EXISTING VARIABLE
-  global pointer
-  if pointer != False and pointer != None:
-    if (pointer.getVarType() == symbolTable.getCurrentScope().getLatestType()):
-      pointer.setValue(p[-1])
-    else:
-      raise Exception("ERROR! Type Mismatch")
-      # return False
-  pointer = None
+  quadruple.pOper.append(p[-1])
+  # print("ASSIGNING")
+  # print(symbolTable.getCurrentScope().getLatestName())
+  # quadruple.pilaO.append(p[-1])
+  # global pointer
+  # if pointer != False and pointer != None:
+  #   if (pointer.getVarType() == symbolTable.getCurrentScope().getLatestType()):
+  #     pointer.setValue(p[-1])
+  #   else:
+  #     raise Exception("ERROR! Type Mismatch")
+  #     # return False
+  # pointer = None
 
 
 def p_saw_end_value_int(p):
@@ -727,8 +749,7 @@ def p_saw_plusminus_operator(p):
 
 def p_check_plusminus_operator(p):
   ''' check_plusminus_operator  : '''
-  workingStack = quadruple.getWorkingStack()
-  res = quadHelpers.check_plusminus_operator(quadruple,workingStack)
+  res = quadHelpers.check_plusminus_operator(quadruple)
 
 def p_saw_multdiv_operator(p):
   ''' saw_multdiv_operator  : '''
@@ -736,8 +757,7 @@ def p_saw_multdiv_operator(p):
 
 def p_check_multdiv_operator(p):
   ''' check_multdiv_operator  : '''
-  workingStack = quadruple.getWorkingStack()
-  quadHelpers.check_multdiv_operator(quadruple, workingStack)
+  quadHelpers.check_multdiv_operator(quadruple)
 
 def p_saw_relational_operator(p):
   ''' saw_relational_operator : '''
@@ -746,21 +766,21 @@ def p_saw_relational_operator(p):
 def p_check_relational_operator(p):
   ''' check_relational_operator : '''
   workingStack = quadruple.getWorkingStack()
-  quadHelpers.check_relational_operator(quadruple, workingStack)
+  quadHelpers.check_relational_operator(quadruple)
 
 def p_check_and_operator(p):
   '''
   check_and_operator  :
   '''
   workingStack = quadruple.getWorkingStack()
-  res = quadHelpers.check_and_operator(quadruple,workingStack)
+  res = quadHelpers.check_and_operator(quadruple)
 
 def p_check_or_operator(p):
   '''
   check_or_operator :
   '''
   workingStack = quadruple.getWorkingStack()
-  res = quadHelpers.check_or_operator(quadruple,workingStack)
+  res = quadHelpers.check_or_operator(quadruple)
 
 def p_saw_and(p):
   '''
@@ -782,6 +802,12 @@ def p_saw_cparen(p):
   ''' saw_cparen : '''
   if quadruple.pOper:
     quadruple.pOper.pop()
+  print('SAWCPAREN', quadruple.pilaO[-1])
+      # elif quadruple.pOper[-1] == '=':
+      # right_operand = quadruple.pilaO.pop()
+      # left_operand = quadruple.pilaO.pop() # this should be an id
+      # print('LEFTO', left_operand)
+  
 
 def p_saw_function(p):
   ''' saw_function : '''
@@ -858,7 +884,8 @@ while True:
       correctFile.close()
       if parser.parse(curr) == 'SUCCESS':
         print("SUCCESSFULLY COMPILED!")
-      symbolTable.printingAll()
+      # symbolTable.printingAll()
+      quadruple.print()
       symbolTable.reset()
 
     except EOFError:
