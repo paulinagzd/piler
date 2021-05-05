@@ -467,7 +467,7 @@ def p_e1(p):
 # LEER
 def p_leer(p):
   '''
-  leer  : READ OPAREN variable saw_read_exp l1 CPAREN
+  leer  : READ saw_read OPAREN variable saw_read_exp l1 CPAREN saw_read_end
   '''
   p[0] = tuple(p[1:])
 
@@ -535,8 +535,8 @@ def p_exp(p):
   if not quadruple.pOper or quadruple.pOper[-1] == '=' or quadruple.pOper[-1] == 'print':
     if not quadruple.pOper:
       p[0] = quadruple.pilaO.pop()
-      # print('EVALUACION EXPRESION:', p[0])
-      symbolTable.getCurrentScope().setLatestExpValue(p[0])
+      print('EVALUACION EXPRESION:', p[0])
+      # symbolTable.getCurrentScope().setLatestExpValue(p[0])
     elif quadruple.pOper[-1] == '=':
       right_operand = quadruple.pilaO.pop() # this should be a value
       left_operand = quadruple.pilaO.pop() # this should be an id
@@ -544,13 +544,11 @@ def p_exp(p):
       left_var = symbolTable.getCurrentScope().sawCalledVariable(symbolTable.getCurrentScope().getLatestName())
       left_type = left_var.getVarType()      
       if right_type == left_type:
-        quadruple.saveQuad('=', right_operand, None, left_operand)
+        quadruple.saveQuad('=', right_operand, None ,left_operand)
+      quadruple.pOper.pop()
     elif quadruple.pOper[-1] == 'print':
-      # print_operand = quadruple.pilaO.pop() # this should be the value to print
-      # left_type = left_var.getVarType()      
-      # if right_type == left_type:
-      #   quadruple.saveQuad('=', right_operand, None, left_operand)
-      print('to print')
+      print_operand = quadruple.pilaO.pop() # this should be the value to print
+      quadruple.saveQuad('print', None, None, print_operand)
 
 def p_exp1(p):
   '''
@@ -810,18 +808,29 @@ def p_class_scope_end(p):
 
 def p_saw_print(p):
   ''' saw_print : '''
-  # quadruple.pOper.append(p[-1])
+  quadruple.pOper.append(p[-1])
 
 def p_saw_print_end(p):
   ''' saw_print_end : '''
-  # quadruple.pOper.pop()
+  quadruple.pOper.pop()
 
 def p_saw_print_exp(p):
   ''' saw_print_exp : '''
-  # print(symbolTable.getCurrentScope().getLatestExpValue(), quadruple.pOper[-1])
+
+def p_saw_read(p):
+  ''' saw_read : '''
+  quadruple.pOper.append(p[-1])
 
 def p_saw_read_exp(p):
   ''' saw_read_exp : '''
+  if quadruple.pOper[-1] == 'read':
+    current = symbolTable.getCurrentScope()
+    read_operand = current.sawCalledVariable(current.getLatestName())
+    quadruple.saveQuad('read', None, None, read_operand)
+
+def p_saw_read_end(p):
+  ''' saw_read_end : '''
+  quadruple.pOper.pop()
 
 def p_saw_cond(p):
   ''' saw_cond : '''
@@ -831,37 +840,10 @@ def p_bc_end(p):
 
 parser = yacc.yacc()
 
-lexer.input(
-  '''
-  program viendo;
-  var ints globales[1];
-  var ints globs[12][12];
-  var boos matriz[12][12];
-  var str strinn, stru;
-  var cha c;
-  {
-    /* Este programa es
-    demostracion */
-
-    func int hola(ints globales[20], boo you) {
-      /* ints globales[20] */
-      var str ha;
-      var int a, e, i;
-      a = 20
-      e = 2 + 2
-      
-    }
-
-    func boo adios(boos jajas[12], cha si) {
-      var str uuuu;
-      var int o, w, oo;
-      w = 80.1
-      o = 12 * 5
-      oo = 60/5 
-    }
-  }
-  '''
-)
+# lexer.input(
+#   '''
+#   '''
+# )
 
 while True:
   # tok = lexer.token()
