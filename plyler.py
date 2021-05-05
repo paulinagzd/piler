@@ -540,6 +540,7 @@ def p_exp(p):
     elif quadruple.pOper[-1] == '=':
       right_operand = quadruple.pilaO.pop()
       left_operand = quadruple.pilaO.pop() # this should be an id
+      quadruple.saveQuad('=', left_operand, None, right_operand)
       print('LEFTO', left_operand)
       # quadruple.pilaO.pop() # MARCA ERROR
   else:

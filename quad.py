@@ -25,8 +25,8 @@ class Quad:
 
   def getWorkingStack(self):
     workingStack = []
-    if not '(' in self.pOper:
-      workingStack = self.pOper
+    if '(' not in self.pOper:
+      workingStack = self.pOper[0:]
       return workingStack
     elif self.pOper[-1] == '(':
       return workingStack
