@@ -452,7 +452,7 @@ def p_ternaria(p):
 # ESCRITURA
 def p_escritura(p):
   '''
-  escritura : PRINT OPAREN exp saw_print_exp e1 CPAREN
+  escritura : PRINT saw_print OPAREN exp saw_print_exp e1 CPAREN saw_print_end
   '''
   p[0] = tuple(p[1:])
 
@@ -532,21 +532,25 @@ def p_exp(p):
   '''
   exp : texp exp1 check_or_operator
   '''
-  if not quadruple.pOper or quadruple.pOper[-1] == '=':
+  if not quadruple.pOper or quadruple.pOper[-1] == '=' or quadruple.pOper[-1] == 'print':
     if not quadruple.pOper:
       p[0] = quadruple.pilaO.pop()
-      print('EVALUACION EXPRESION:', p[0])
+      # print('EVALUACION EXPRESION:', p[0])
       symbolTable.getCurrentScope().setLatestExpValue(p[0])
     elif quadruple.pOper[-1] == '=':
-      right_operand = quadruple.pilaO.pop()
+      right_operand = quadruple.pilaO.pop() # this should be a value
       left_operand = quadruple.pilaO.pop() # this should be an id
-      quadruple.saveQuad('=', left_operand, None, right_operand)
-      print('LEFTO', left_operand)
-      # quadruple.pilaO.pop() # MARCA ERROR
-  else:
-    pass
-    # print('ELSE', quadruple.pOper[-1], quadruple.pilaO[-1])
- 
+      right_type = quadHelpers.getType(right_operand)
+      left_var = symbolTable.getCurrentScope().sawCalledVariable(symbolTable.getCurrentScope().getLatestName())
+      left_type = left_var.getVarType()      
+      if right_type == left_type:
+        quadruple.saveQuad('=', right_operand, None, left_operand)
+    elif quadruple.pOper[-1] == 'print':
+      # print_operand = quadruple.pilaO.pop() # this should be the value to print
+      # left_type = left_var.getVarType()      
+      # if right_type == left_type:
+      #   quadruple.saveQuad('=', right_operand, None, left_operand)
+      print('to print')
 
 def p_exp1(p):
   '''
@@ -709,20 +713,7 @@ def p_saw_called_var_from_class(p):
 
 def p_saw_asig(p):
   ''' saw_asig : '''
-  # POINTS TO EXISTING VARIABLE
   quadruple.pOper.append(p[-1])
-  # print("ASSIGNING")
-  # print(symbolTable.getCurrentScope().getLatestName())
-  # quadruple.pilaO.append(p[-1])
-  # global pointer
-  # if pointer != False and pointer != None:
-  #   if (pointer.getVarType() == symbolTable.getCurrentScope().getLatestType()):
-  #     pointer.setValue(p[-1])
-  #   else:
-  #     raise Exception("ERROR! Type Mismatch")
-  #     # return False
-  # pointer = None
-
 
 def p_saw_end_value_int(p):
   ''' saw_end_value_int : '''
@@ -803,12 +794,6 @@ def p_saw_cparen(p):
   ''' saw_cparen : '''
   if quadruple.pOper:
     quadruple.pOper.pop()
-  print('SAWCPAREN', quadruple.pilaO[-1])
-      # elif quadruple.pOper[-1] == '=':
-      # right_operand = quadruple.pilaO.pop()
-      # left_operand = quadruple.pilaO.pop() # this should be an id
-      # print('LEFTO', left_operand)
-  
 
 def p_saw_function(p):
   ''' saw_function : '''
@@ -823,17 +808,23 @@ def p_class_scope_end(p):
   ''' class_scope_end : '''
   symbolTable.exitClassScope()
 
+def p_saw_print(p):
+  ''' saw_print : '''
+  # quadruple.pOper.append(p[-1])
+
+def p_saw_print_end(p):
+  ''' saw_print_end : '''
+  # quadruple.pOper.pop()
+
 def p_saw_print_exp(p):
   ''' saw_print_exp : '''
-  print(symbolTable.getCurrentScope().getLatestExpValue())
+  # print(symbolTable.getCurrentScope().getLatestExpValue(), quadruple.pOper[-1])
 
 def p_saw_read_exp(p):
   ''' saw_read_exp : '''
-  # print(symbolTable.getCurrentScope().sawCalledVariable(symbolTable.getCurrentScope().getLatestName()))
 
 def p_saw_cond(p):
   ''' saw_cond : '''
-  # print(symbolTable.getCurrentScope().sawCalledVariable(symbolTable.getCurrentScope().getLatestName()))
 
 def p_bc_end(p):
   ''' bc_end : '''
@@ -888,6 +879,7 @@ while True:
       # symbolTable.printingAll()
       quadruple.print()
       symbolTable.reset()
+      quadruple.reset()
 
     except EOFError:
       print("INCORRECT")

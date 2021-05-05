@@ -1,5 +1,7 @@
 program aritmetica;
 var int a;
+var int b;
 {
-    a = 8 * (7 - 4) + 5 
+    a = 8 * (7 - 4) + 5
+    a = 9
 }

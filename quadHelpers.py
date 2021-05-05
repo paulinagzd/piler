@@ -13,14 +13,27 @@ def getType(operand):
   elif isinstance(operand,int):
     return 'int'
 
+def getTypeIfVariable(operand):
+  if str(type(operand)) == "<class 'symbolTable.Variable'>":
+    print(operand.getVarType())
+    return operand.getVarType()
+  else:
+    return getType(operand)
+     
+# def getValIfVariable(operand):
+#   if str(type(operand)) == "<class 'symbolTable.Variable'>":
+#     return operand.getValue()
+#   else:
+#     return operand
+
 def check_multdiv_operator(quadruple):
   workingStack = quadruple.getWorkingStack()
   if workingStack:
     if workingStack[-1] == '*' or workingStack[-1] == '/':
       right_operand = quadruple.pilaO.pop() 
-      right_type = getType(right_operand)
+      right_type = getTypeIfVariable(right_operand)
       left_operand = quadruple.pilaO.pop()
-      left_type = getType(left_operand)
+      left_type = getTypeIfVariable(left_operand)
       operator = workingStack.pop()
       if quadruple.pOper:
         quadruple.pOper.pop()
@@ -40,17 +53,17 @@ def check_multdiv_operator(quadruple):
         quadruple.saveQuad(operator,left_operand,right_operand,tvalue)
       else:
         return result_Type
-  else:
-    print('ESTE ELSE NO HAY WORKINGSTACK', workingStack)
 
 def check_plusminus_operator(quadruple):
   workingStack = quadruple.getWorkingStack()
   if workingStack:
     if workingStack[-1] == '+' or workingStack[-1] == '-':
       right_operand = quadruple.pilaO.pop() 
-      right_type = getType(right_operand)
+      right_type = getTypeIfVariable(right_operand)
+      # print(right_type)
       left_operand = quadruple.pilaO.pop()
-      left_type = getType(left_operand)
+      left_type = getTypeIfVariable(left_operand)
+      # print(left_type)
       operator = workingStack.pop()
       if quadruple.pOper:
         quadruple.pOper.pop()
@@ -75,9 +88,9 @@ def check_relational_operator(quadruple):
     operatorSet = {'>','<','==','!=','>=','<='}
     if workingStack[-1] in operatorSet:
       right_operand = quadruple.pilaO.pop() 
-      right_type = getType(right_operand)
+      right_type = getTypeIfVariable(right_operand)
       left_operand = quadruple.pilaO.pop()
-      left_type = getType(left_operand)
+      left_type = getTypeIfVariable(left_operand)
       operator = workingStack.pop()
       if quadruple.pOper:
         quadruple.pOper.pop()
@@ -111,10 +124,10 @@ def check_and_operator(quadruple):
   workingStack = quadruple.getWorkingStack()
   if workingStack:
     if workingStack[-1] == '&&':
-      right_operand = quadruple.pilaO.pop() 
-      right_type = getType(right_operand) 
+      right_operand = quadruple.pilaO.pop()
+      right_type = getTypeIfVariable(right_operand)
       left_operand = quadruple.pilaO.pop()
-      left_type = getType(left_operand)
+      left_type = getTypeIfVariable(left_operand)
       operator = workingStack.pop()
       if quadruple.pOper:
         quadruple.pOper.pop()
@@ -131,10 +144,10 @@ def check_or_operator(quadruple):
   workingStack = quadruple.getWorkingStack()
   if workingStack:
     if workingStack[-1] == '||':
-      right_operand = quadruple.pilaO.pop() 
-      right_type = getType(right_operand)
+      right_operand = quadruple.pilaO.pop()
+      right_type = getTypeIfVariable(right_operand)
       left_operand = quadruple.pilaO.pop()
-      left_type = getType(left_operand)
+      left_type = getTypeIfVariable(left_operand)
       operator = workingStack.pop()
       if quadruple.pOper:
         quadruple.pOper.pop()
@@ -147,24 +160,3 @@ def check_or_operator(quadruple):
       else:
         return result_Type
 
-def check_asig(quadruple):
-  workingStack = quadruple.getWorkingStack()
-  if workingStack:
-    if workingStack[-1] == '=':
-      left_operand = quadruple.pilaO[-1]
-      # print(left_operand)
-      left_type = getType(left_operand)
-      # print(left_type)
-
-      operator = workingStack.pop()
-      if quadruple.pOper:
-        quadruple.pOper.pop()
-      assigning_var = symbolTable.getCurrentScope().sawCalledVariable(symbolTable.getCurrentScope().getLatestName())
-      result_Type = assigning_var.getVarType()
-
-      if result_Type == left_type:
-        quadruple.pilaO.append(assigning_var)
-        quadruple.saveQuad(operator,left_operand, None, assigning_var)
-      else:
-        raise Exception("ERROR! Type mismatch")
-  # print(symbolTable.getCurrentScope().getLatestName())

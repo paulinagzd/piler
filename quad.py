@@ -37,6 +37,13 @@ class Quad:
           break
       workingStack = self.pOper[index + 1:]
       return workingStack
+  
+  def reset(self):
+    self.pOper = []
+    self.pilaO = []
+    self.quads = []
+    self.quadCounter = 1
+
     
   def print(self):
     for item in self.quads:
