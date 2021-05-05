@@ -9,6 +9,8 @@ class Quad:
       Quad.isAlive = self
       self.pOper = []
       self.pilaO = []
+      self.quads = []
+      self.quadCounter = 0
 
   @classmethod
   def instantiate(cls):
@@ -16,9 +18,10 @@ class Quad:
       Quad()
     return Quad.isAlive
 
-  def clearQuad(self):
-    self.pOper.clear()
-    self.pilaO.clear()
+  def saveQuad(self, operator, leftOperand, rightOperand, tvalue):
+    self.quadCounter += 1
+    q = (self.quadCounter, operator, leftOperand, rightOperand, tvalue)
+    self.quads.append(q)
 
   def getWorkingStack(self):
     workingStack = []
