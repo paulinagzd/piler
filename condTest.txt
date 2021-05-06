@@ -1,0 +1,16 @@
+program condicionales;
+var int a;
+var int b;
+var int c;
+var int e;
+{ 
+    b = 2
+    c = 1
+    e = 1
+    a = b + c
+    while (a > b * c) then {
+      a = b - c
+      b = b + e
+    };
+    c = a + b
+}

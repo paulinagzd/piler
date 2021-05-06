@@ -9,11 +9,15 @@ import ply.yacc as yacc
 from symbolTable import SymbolTable
 from semanticCube import SemanticCube
 from quad import Quad
+from jumps import Jumps
 import quadHelpers
+import condHelpers
 import sys
+# sys.tracebacklimit=0
 
 symbolTable = SymbolTable.instantiate()
 quadruple = Quad.instantiate()
+jumps = Jumps.instantiate()
 
 pointer = None
 
@@ -241,7 +245,7 @@ def p_clase_metodos_bloque(p):
 # CICLO WHILE
 def p_ciclo_while(p):
   '''
-  ciclo_while : WHILE cond2 THEN bloque_ciclo SEMICOLON
+  ciclo_while : WHILE saw_while cond2 THEN bloque_ciclo SEMICOLON saw_while_end
   '''
   p[0] = tuple(p[1:])
 
@@ -353,7 +357,7 @@ def p_b1(p):
 # BLOQUE CICLO
 def p_bloque_ciclo(p):
   '''
-  bloque_ciclo : OCURLY bc1 CCURLY bc_end
+  bloque_ciclo : OCURLY bc1 CCURLY
   '''
 
 def p_bc1(p):
@@ -403,18 +407,11 @@ def p_estatuto_redux(p):
   '''
   p[0] = tuple(p[1:])
 
-def p_check_asig(p):
-  '''
-  check_asig : 
-  '''
-  # workingStack = quadruple.getWorkingStack()
-  # quadHelpers.check_asig(quadruple, workingStack)
-
 ################################################
 # ASIGNACION
 def p_asignacion(p):
   '''
-  asignacion : variable saw_var_factor AS saw_asig exp check_asig
+  asignacion : variable saw_var_factor AS saw_asig exp
   '''
   p[0] = tuple(p[1:])
 
@@ -422,14 +419,13 @@ def p_asignacion(p):
 # CONDICIONAL
 def p_condicion(p):
   '''
-  condicion : IF cond2 saw_cond THEN bloque_ciclo cond1 SEMICOLON
+  condicion : IF cond2 THEN bloque_ciclo cond1 SEMICOLON bc_end
   '''
   p[0] = tuple(p[1:])
 
 def p_cond1(p):
   '''
-  cond1 : ELSE bloque_ciclo
-        | ELSE IF cond2 saw_cond THEN bloque_ciclo cond1
+  cond1 : ELSE saw_else bloque_ciclo
         | empty
   '''
   p[0] = tuple(p[1:])
@@ -452,13 +448,13 @@ def p_ternaria(p):
 # ESCRITURA
 def p_escritura(p):
   '''
-  escritura : PRINT saw_print OPAREN exp saw_print_exp e1 CPAREN saw_print_end
+  escritura : PRINT saw_print OPAREN exp e1 CPAREN saw_print_end
   '''
   p[0] = tuple(p[1:])
 
 def p_e1(p):
   '''
-  e1 : COMMA exp saw_print_exp e1
+  e1 : COMMA exp e1
      | empty
   '''
   p[0] = tuple(p[1:])
@@ -534,8 +530,11 @@ def p_exp(p):
   '''
   if not quadruple.pOper or quadruple.pOper[-1] == '=' or quadruple.pOper[-1] == 'print':
     if not quadruple.pOper:
-      p[0] = quadruple.pilaO.pop()
-      print('EVALUACION EXPRESION:', p[0])
+      if p[-2] == 'if' or p[-3] == 'while':
+        condHelpers.enterCond()
+      else:
+        p[0] = quadruple.pilaO.pop()
+        print('EVALUACION EXPRESION:', p[0])
       # symbolTable.getCurrentScope().setLatestExpValue(p[0])
     elif quadruple.pOper[-1] == '=':
       right_operand = quadruple.pilaO.pop() # this should be a value
@@ -640,11 +639,11 @@ def p_saw_var_factor(p):
 #VARCST
 def p_varcst(p):
   '''
-  varcst : CSTINT saw_end_value_int
-         | CSTFLT saw_end_value_flt
-         | CSTCHAR 
-         | CSTSTRING saw_end_value_str
-         | boolean 
+  varcst : CSTINT saw_end_value
+         | CSTFLT saw_end_value
+         | CSTCHAR saw_end_value
+         | CSTSTRING saw_end_value
+         | boolean saw_end_value
   '''
   p[0] = tuple(p[1:])
 
@@ -659,7 +658,7 @@ def p_empty(p):
 ################################################
 # ERROR
 def p_error(p):
-    print("SYNTAX ERROR! BEFORE THE", p.value , "ON LINE", p.lineno)
+    raise Exception("SYNTAX ERROR! BEFORE THE {} ON LINE {}".format(p.value, p.lineno))
   
 ################################################
 # AUX RULES FOR SYMBOL TABLE
@@ -713,24 +712,8 @@ def p_saw_asig(p):
   ''' saw_asig : '''
   quadruple.pOper.append(p[-1])
 
-def p_saw_end_value_int(p):
-  ''' saw_end_value_int : '''
-  quadruple.pilaO.append(p[-1])
-
-def p_saw_end_value_flt(p):
-  ''' saw_end_value_flt : '''
-  quadruple.pilaO.append(p[-1])
-
-def getType(operand):
-  if isinstance(operand,bool):
-    return 'boo'
-  elif isinstance(operand,int):
-    return 'int'
-  elif isinstance(operand,float):
-    return 'flt'
-  
-def p_saw_end_value_str(p):
-  ''' saw_end_value_str : '''
+def p_saw_end_value(p):
+  ''' saw_end_value : '''
   quadruple.pilaO.append(p[-1])
 
 def p_saw_plusminus_operator(p):
@@ -814,9 +797,6 @@ def p_saw_print_end(p):
   ''' saw_print_end : '''
   quadruple.pOper.pop()
 
-def p_saw_print_exp(p):
-  ''' saw_print_exp : '''
-
 def p_saw_read(p):
   ''' saw_read : '''
   quadruple.pOper.append(p[-1])
@@ -832,11 +812,21 @@ def p_saw_read_end(p):
   ''' saw_read_end : '''
   quadruple.pOper.pop()
 
-def p_saw_cond(p):
-  ''' saw_cond : '''
-
 def p_bc_end(p):
   ''' bc_end : '''
+  condHelpers.exitIf()
+
+def p_saw_else(p):
+  '''saw_else : '''
+  condHelpers.enterElse()
+
+def p_saw_while(p):
+  '''saw_while : '''
+  jumps.setStackPush(quadruple.quadCounter)
+
+def p_saw_while_end(p):
+  ''' saw_while_end : '''
+  condHelpers.exitWhile()
 
 parser = yacc.yacc()
 

@@ -1,7 +1,6 @@
 from re import split
-from symbolTable import SymbolTable
-from semanticCube import SemanticCube
-    
+from jumps import TBD
+
 class Quad:
   isAlive = None
 
@@ -9,7 +8,7 @@ class Quad:
       Quad.isAlive = self
       self.pOper = []
       self.pilaO = []
-      self.quads = []
+      self.quads = {}
       self.quadCounter = 1
 
   @classmethod
@@ -20,7 +19,7 @@ class Quad:
 
   def saveQuad(self, operator, leftOperand, rightOperand, tvalue):
     q = QuadContainer(self.quadCounter, operator, leftOperand, rightOperand, tvalue)
-    self.quads.append(q)
+    self.quads[self.quadCounter] = q
     self.quadCounter += 1
 
   def getWorkingStack(self):
@@ -41,13 +40,13 @@ class Quad:
   def reset(self):
     self.pOper = []
     self.pilaO = []
-    self.quads = []
+    self.quads = {}
     self.quadCounter = 1
 
     
   def print(self):
-    for item in self.quads:
-      print(item)
+    for item, value in self.quads.items():
+      print(item, ': ', value)
       
 class QuadContainer:
   isAlive = None
@@ -85,14 +84,12 @@ class QuadContainer:
     self.__id = val
 
   def setJump(self, val):
-    # if not isinstance(self.__result, PendingJump):
-    #   raise Exception("Trying to set a jump but this quadruple does not have a pending jump")
+    if not isinstance(self.getRes(), TBD):
+      raise Exception("ERROR! Quad has no pending jump")
     self.__res = val
 
   def __repr__(self):
     return "{%s %s %s %s %s}" % (self.getId(), self.getOp(), self.getLeft(), self.getRight(), self.getRes())
-
-
 class QuadsStack:
   isAlive = None
   cont = 0
