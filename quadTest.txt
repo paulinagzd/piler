@@ -4,6 +4,10 @@ var int b;
 {
     a = 8 * (7 - 4) + 5
     a = 9
-    print(2+2, a)
+    if (a == 2) then {
+        print(2+2, a)
+    } else {
+        print(b)
+    };
     print(a)
 }

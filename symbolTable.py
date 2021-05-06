@@ -128,6 +128,8 @@ class Scope:
       keyword = 'function'
     elif (SymbolTable.instantiate().getCurrentScope().getScopeType() == 'class'):
       keyword = 'classFunction'
+    else:
+      keyword = 'function' # remove UnboundLocalError
     self.__scopeFunctions[funcName] = Scope(funcType, keyword)
     SymbolTable.instantiate().setCurrentScope(self.__scopeFunctions[funcName])
     

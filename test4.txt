@@ -1,9 +1,10 @@
 program aritmetica;
 {
   func boo funcion1() {
-    var int a;
+    var flt a;
     var int b;
     var int c;
+    var boo res;
     a = 18
     b = 30
     if (a >= b) then {
@@ -13,8 +14,8 @@ program aritmetica;
       };
     } else {
       print('HOLA')
-      var boo res;
       res = True
     };
+    a = 10...41 * "haha"
   }
 }
