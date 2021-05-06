@@ -448,6 +448,3 @@ SemanticCube = {
     },
   },
 }
-
-def returningType(left, right, op):
-  return SemanticCube[op][left][right]
