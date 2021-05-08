@@ -432,7 +432,7 @@ def p_cond2(p):
 # conditional ternary
 def p_ternary(p):
   '''
-  ternary : exp QUESTION estatuto_redux COLON estatuto_redux SEMICOLON
+  ternary : exp QUESTION saw_cond estatuto_redux COLON saw_else estatuto_redux SEMICOLON bc_end
   '''
   p[0] = tuple(p[1:])
 
@@ -860,6 +860,10 @@ def p_generate_gosub(p):
   global cont
   cont = 0
 
+def p_saw_cond(p):
+  ''' saw_cond : '''
+  condHelpers.enterCond()
+
 parser = yacc.yacc()
 
 # lexer.input(
@@ -880,8 +884,8 @@ while True:
       correctFile.close()
       if parser.parse(curr) == 'SUCCESS':
         print("SUCCESSFULLY COMPILED!")
-      # symbolTable.printingAll()
-      quadruple.print()
+      symbolTable.printingAll()
+      # quadruple.print()
       symbolTable.reset()
       quadruple.reset()
 
