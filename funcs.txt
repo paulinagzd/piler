@@ -39,5 +39,5 @@ func boo adios(cha si) {
 }
 
 int main() {
-
+  hola(True)
 }

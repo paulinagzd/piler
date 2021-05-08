@@ -12,6 +12,7 @@ from quad import Quad
 from jumps import Jumps
 import quadHelpers
 import condHelpers
+import moduleHelpers
 import sys
 # sys.tracebacklimit=0
 
@@ -20,6 +21,7 @@ quadruple = Quad.instantiate()
 jumps = Jumps.instantiate()
 
 pointer = None
+cont = 0
 
 # reserved words
 reserved = {
@@ -167,7 +169,7 @@ lexer = lex.lex()
 # program
 def p_program(p):
   '''
-  program : PROGRAM ID SEMICOLON program_content main
+  program : PROGRAM ID SEMICOLON saw_program program_content main saw_program_end
   '''
   p[0] = tuple(p[1:])
 
@@ -184,7 +186,7 @@ def p_program_content(p):
 # function
 def p_main(p):
   '''
-  main : INT MAIN saw_main OPAREN CPAREN block scope_end
+  main : INT MAIN saw_main OPAREN CPAREN block saw_function_end scope_end
   '''
   p[0] = tuple(p[1:])
 
@@ -196,7 +198,7 @@ def p_functions(p): # function declarations in a FIXED PLACE (such as class meth
 
 def p_function(p):
   '''
-  function : FUNCTION func1 ID saw_id saw_function OPAREN param CPAREN block scope_end
+  function : FUNCTION func1 ID saw_id saw_function OPAREN param CPAREN block saw_function_end scope_end
   '''
   p[0] = tuple(p[1:])
 
@@ -375,7 +377,7 @@ def p_b1(p):
 def p_estatuto(p):
   '''
   estatuto : assign
-           | llamada
+           | function_call
            | conditional
            | write
            | read
@@ -389,7 +391,7 @@ def p_estatuto(p):
 def p_estatuto_redux(p): # TERNARY ONE LINERS
   '''
   estatuto_redux : assign
-                 | llamada
+                 | function_call
                  | write
                  | read
                  | ternary
@@ -473,7 +475,7 @@ def p_boolean(p):
   p[0] = p[1]
 
 ################################################
-# VARIABLE (llamada)
+# VARIABLE (function_call)
 def p_variable(p):
   '''
   variable : ID saw_id saw_called_var
@@ -497,18 +499,18 @@ def p_variable2(p):
   p[0] = tuple(p[1:])
 
 ################################################
-# LLAMADA function
-def p_llamada_function(p):
+# function_call
+def p_function_call(p):
   '''
-  llamada : ID saw_id OPAREN exp llamada1 CPAREN
-          | ID saw_id OPAREN CPAREN
+  function_call : ID saw_id verify_func OPAREN exp verify_param function_call1 CPAREN generate_gosub
+                | ID saw_id verify_func OPAREN CPAREN generate_gosub
   '''
   p[0] = tuple(p[1:])
 
-def p_llamada_function1(p):
+def p_function_call1(p):
   '''
-  llamada1 : COMMA exp llamada1
-           | empty
+  function_call1 : COMMA increment_cont exp verify_param function_call1
+                 | empty
   '''
   p[0] = tuple(p[1:])
 
@@ -523,9 +525,10 @@ def p_exp(p):
       if p[-2] == 'if' or p[-3] == 'while':
         condHelpers.enterCond()
       else:
-        p[0] = quadruple.pilaO.pop()
+        p[0] = quadruple.pilaO[-1]
         print('EVALUACION EXPRESION:', p[0])
-      # symbolTable.getCurrentScope().setLatestExpValue(p[0])
+        # print(quadruple.pilaO[-2])
+        symbolTable.getCurrentScope().setLatestExpValue(p[0])
     elif quadruple.pOper[-1] == '=':
       right_operand = quadruple.pilaO.pop() # this should be a value
       left_operand = quadruple.pilaO.pop() # this should be an id
@@ -613,7 +616,7 @@ def p_factor(p):
   factor : OPAREN saw_oparen exp CPAREN saw_cparen check_multdiv_operator
          | varcst check_multdiv_operator
          | variable saw_var_factor check_multdiv_operator
-         | llamada
+         | function_call
   '''
   p[0] = tuple(p[1:])
 
@@ -652,9 +655,17 @@ def p_error(p):
   
 ################################################
 # AUX RULES FOR SYMBOL TABLE
+def p_saw_progsawram(p):
+  ''' saw_program : '''
+  condHelpers.saveForMain()
+
+def p_saw_program_end(p):
+  ''' saw_program_end : '''
+  quadruple.saveQuad("END", None, None, None)
+
 def p_saw_main(p):
   ''' saw_main : '''
-  p[0] = tuple(p[1:])
+  condHelpers.enterMain()
 
 def p_saw_class(p):
   ''' saw_class : '''
@@ -772,6 +783,10 @@ def p_saw_function(p):
   current = symbolTable.getCurrentScope()
   current.addFunction(symbolTable.getCurrentScope().getLatestName(), symbolTable.getCurrentScope().getLatestType())
 
+def p_saw_function_end(p):
+  ''' saw_function_end : '''
+  quadruple.saveQuad("endfunc", None, None, None)
+
 def p_scope_end(p):
   ''' scope_end : '''
   symbolTable.exitScope()
@@ -822,6 +837,28 @@ def p_saw_while_end(p):
 def p_count_vars(p):
   ''' count_vars : '''
   symbolTable.getCurrentScope().countVars()
+
+def p_verify_func(p):
+  ''' verify_func : '''
+  symbolTable.getCurrentScope().sawCalledFunction(symbolTable.getCurrentScope().getLatestName())
+
+def p_verify_param(p):
+  ''' verify_param : '''
+  global cont
+  cont = moduleHelpers.verifyParamMatch(cont)
+
+
+def p_increment_cont(p):
+  ''' increment_cont : '''
+  global cont
+  cont = moduleHelpers.incrementParamCounter(cont)
+  print("CONTINMAIN: ", cont)
+
+def p_generate_gosub(p):
+  ''' generate_gosub : '''
+  quadruple.saveQuad('GOSUB', symbolTable.getCurrentScope().getLatestFuncName(), None, None)
+  global cont
+  cont = 0
 
 parser = yacc.yacc()
 

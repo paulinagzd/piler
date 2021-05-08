@@ -1,4 +1,6 @@
-# global variable to instantiate only ONCE
+from quad import Quad
+quadruple = Quad.instantiate()
+
 class Variable:
   def __init__(self, varName, varType, dimensions, isParam):
     self.__varName = varName
@@ -42,6 +44,11 @@ class Variable:
   def __repr__(self):
     return "{\n name: %s \n type: %s \n dimensions: %s \n value: %s \n isParam: %s \n}" % (self.getVarName(), self.getVarType(), self.getDimensions(), self.getValue(), self.getIsParam())
 
+class ParameterTable:
+  isAlive = None
+  def __init__(self, params):
+    isAlive = self
+    self = params
 class Scope:
   # SCOPE: what a block contains.
   # Global scopes contain variables, functions, and classes
@@ -55,9 +62,15 @@ class Scope:
     self.__scopeVariables = {}
     self.__scopeClasses = {}
     self.__latestName = None
+    self.__latestFuncName = None
     self.__latestType = None
     self.__latestExpValue = None
     self.__latestDimension = 0
+    # for functions and modules
+    self.__quadCont = 0
+    self.__numParams = 0
+    self.__numLocalVars = 0
+    self.__currentFunctionParams = []
 
   # getters
   def getScopeType(self):
@@ -78,6 +91,9 @@ class Scope:
   def getLatestName(self):
     return self.__latestName
 
+  def getLatestFuncName(self):
+    return self.__latestFuncName
+
   def getLatestType(self):
     return self.__latestType 
 
@@ -86,6 +102,18 @@ class Scope:
 
   def getLatestExpValue(self):
     return self.__latestExpValue 
+
+  def getQuadCont(self):
+    return self.__quadCont 
+
+  def getNumParams(self):
+    return self.__numParams 
+
+  def getNumLocalVars(self):
+    return self.__numLocalVars 
+
+  def getCurrentFunctionParams(self):
+    return self.__currentFunctionParams 
 
   # setters
   def setScopeType(self, scopeType):
@@ -96,6 +124,9 @@ class Scope:
 
   def setLatestName(self, latestName):
     self.__latestName = latestName
+
+  def setLatestFuncName(self, val):
+    self.__latestFuncName = val
 
   def setLatestType(self, latestType):
     self.__latestType = latestType
@@ -108,6 +139,18 @@ class Scope:
 
   def setLatestExpValue(self, val):
     self.__latestExpValue = val
+
+  def setQuadCont(self, val):
+    self.__quadCont = val
+
+  def setNumParams(self, val):
+    self.__numParams = val
+
+  def setNumLocalVars(self, val):
+    self.__numLocalVars = val
+
+  def setCurrentFunctionParams(self, val):
+    self.__currentFunctionParams.append(val)
 
   # methods
   def addVariable(self, varName, varType, dimensions, isParam):
@@ -156,6 +199,19 @@ class Scope:
     elif varName in globalScope.getScopeVariables():
       return globalScope.__scopeVariables[varName]
 
+  def sawCalledFunction(self, funcName):
+    globalScope = SymbolTable.instantiate().getGlobalScope()
+    if not funcName in globalScope.getScopeFunctions():
+      raise Exception('ERROR! FUNCTION with identifier:', funcName, 'is not defined in this program')
+    
+    quadruple.saveQuad('era', funcName, None, None)
+    functionParams = globalScope.__scopeFunctions[funcName].__scopeVariables
+    for item, val in functionParams.items():
+      if val.getIsParam():
+        self.setCurrentFunctionParams(val)
+    
+    self.__latestFuncName = funcName
+    return globalScope.__scopeFunctions[funcName]
 
   def doesClassExist(self, className, varName):
     globalScope = SymbolTable.instantiate().getGlobalScope()
@@ -171,6 +227,15 @@ class Scope:
     
     return currentClass.__scopeVariables[varName]
 
+  def countVars(self):
+    for item, val in self.__scopeVariables.items():
+      if val.getIsParam():
+        self.__numParams += 1
+      else :
+        self.__numLocalVars += 1
+    
+    self.__quadCont = quadruple.quadCounter
+    # print(self.__numParams, self.__numLocalVars, self.__quadCont)
 
   def __repr__(self):
     return "{\n type: %s \n context: %s \n}" % (self.getScopeType(), self.getContext())
@@ -199,7 +264,6 @@ class SymbolTable:
     return self.__globalScope["global"]
 
   def getStack(self):
-    print(self.__classStack[-1])
     return self.__classStack[-1]
 
   def setCurrentScope(self, val):
@@ -210,7 +274,6 @@ class SymbolTable:
 
   def setStackPush(self, value):
     self.__classStack.append(value)
-    print(self.__classStack[-1])
 
   def setStackPop(self,):
     self.__classStack.pop()
@@ -229,7 +292,6 @@ class SymbolTable:
   # if its in a class function, exit to local class
   def exitScope(self):
     if (self.getCurrentScope().getContext() == 'classFunction'):
-      print(self.getStack())
       self.setCurrentScope(self.__globalScope["global"].getScopeClasses()[self.getStack()])
     elif (self.getCurrentScope().getContext() == 'function'):
       self.setCurrentScope(self.__globalScope["global"])
