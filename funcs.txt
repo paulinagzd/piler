@@ -1,0 +1,43 @@
+program viendo;
+var ints globales[1];
+var ints globs[12][12];
+var boos matriz[12][12];
+var str strinn, stru;
+var cha c;
+/* Este programa es
+demostracion */
+
+func int hola(boo you) {
+  var str ha;
+  var int i;
+  var boo e;
+  var flt a;
+  a = 20 + 10.5 * (8 - 1 / 2)
+  e = 2 == 2
+}
+
+class Animal: {        /* comentario en medio de la nada */
+  att: 
+    var int estatura;
+    var flts horario[1], comidas[2][2];
+
+  met:
+    func void cambiarEstatura() {
+      print(2*2)
+    }
+};
+
+var cha aqui;
+
+func boo adios(cha si) {
+  var str uuuu;
+  var int o;
+  var flt w, oo;
+  w = 80.1
+  o = 12 * 5
+  oo = 60/5 
+}
+
+int main() {
+
+}

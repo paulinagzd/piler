@@ -55,6 +55,7 @@ reserved = {
   'file' : 'FILE',
   'dataframe' : 'DATAFRAME',
   'return' : 'RETURN',
+  'main' : 'MAIN',
 }
 
 # terminals and regEx
@@ -163,24 +164,43 @@ lexer = lex.lex()
 # grammar
 ################################################
 
-# PROGRAMA
-def p_programa(p):
+# program
+def p_program(p):
   '''
-  programa : PROGRAM ID saw_program SEMICOLON bloque
-           | PROGRAM ID saw_program SEMICOLON dec bloque
+  program : PROGRAM ID SEMICOLON program_content main
+  '''
+  p[0] = tuple(p[1:])
+
+def p_program_content(p):
+  '''
+  program_content : dec program_content
+                  | class program_content
+                  | function program_content
+                  | empty
   '''
   p[0] = tuple(p[1:])
 
 ################################################
-# FUNCION
-def p_funcion(p):
+# function
+def p_main(p):
   '''
-  funcion : FUNCTION func1 ID saw_id saw_function OPAREN param CPAREN bloque
+  main : INT MAIN saw_main OPAREN CPAREN block scope_end
   '''
   p[0] = tuple(p[1:])
 
+def p_functions(p): # function declarations in a FIXED PLACE (such as class methods)
+  '''
+  functions : function functions
+            | empty
+  '''
 
-def p_funcion1(p):
+def p_function(p):
+  '''
+  function : FUNCTION func1 ID saw_id saw_function OPAREN param CPAREN block scope_end
+  '''
+  p[0] = tuple(p[1:])
+
+def p_function1(p):
   '''
   func1 : simple
         | VOID saw_type
@@ -193,7 +213,6 @@ def p_param(p):
   param : param2 param1
         | empty
   '''
-
   p[0] = tuple(p[1:])
 
 
@@ -204,72 +223,62 @@ def p_param1(p):
   '''
   p[0] = tuple(p[1:])
 
-
-
 def p_param2(p): ####### OJO
   '''
   param2 : simple ID saw_id saw_variable_param
-         | multiple ID saw_id OBRACKET CSTINT CBRACKET saw_dimension tipo3 saw_variable_param
+         | multiple ID saw_id OBRACKET CSTINT CBRACKET saw_dimension type3 saw_variable_param
   '''
   p[0] = tuple(p[1:])
 
 ################################################
-# CLASE
-def p_clase(p):
+# class
+def p_class(p):
   '''
-    clase : CLASS ID saw_id saw_class COLON clase_bloque SEMICOLON
-  '''
-  p[0] = tuple(p[1:])
-
-def p_clase_bloque(p):
-  ''' 
-  clase_bloque :  OCURLY ATTRIBUTES COLON clase_bloque1 METHODS COLON clase_metodos_bloque class_scope_end CCURLY
+  class : CLASS ID saw_id saw_class COLON class_block class_scope_end SEMICOLON
   '''
   p[0] = tuple(p[1:])
 
-def p_clase_bloque1(p):
+def p_class_block(p):
   ''' 
-  clase_bloque1 : dec
-                | empty
-  '''  
-  p[0] = p[1] 
-
-def p_clase_metodos_bloque(p):
-  ''' 
-  clase_metodos_bloque : funcion clase_metodos_bloque
-                       | empty
+  class_block :  OCURLY ATTRIBUTES COLON decs METHODS COLON functions CCURLY
   '''
   p[0] = tuple(p[1:])
 
 ################################################
 # CICLO WHILE
-def p_ciclo_while(p):
+def p_while_loop(p):
   '''
-  ciclo_while : WHILE saw_while cond2 THEN bloque_ciclo SEMICOLON saw_while_end
+  while_loop : WHILE saw_while cond2 THEN block SEMICOLON saw_while_end
   '''
   p[0] = tuple(p[1:])
 
 ################################################
 # CICLO FOR
-def p_ciclo_for(p):
+def p_for_loop(p):
   '''
-  ciclo_for : FOR OPAREN variable FROM ciclo_for1 TO ciclo_for1 BY ciclo_for1 CPAREN THEN bloque_ciclo SEMICOLON
+  for_loop : FOR OPAREN variable FROM for_loop1 TO for_loop1 BY for_loop1 CPAREN THEN block SEMICOLON
   '''
   p[0] = tuple(p[1:])
 
 
-def p_ciclo_for1(p):
+def p_for_loop1(p):
   '''
-  ciclo_for1 : CSTINT
-             | variable
+  for_loop1 : CSTINT
+            | variable
   '''
   p[0] = tuple(p[1:])
 
  ################################################
 # DECLARACION VARS
+def p_decs(p):
+  '''
+  decs : dec decs1
+  '''
+  p[0] = tuple(p[1:])
+
 def p_dec(p):
   '''
-  dec : VAR tipo SEMICOLON dec1
+  dec : VAR type SEMICOLON dec1
   '''
   p[0] = tuple(p[1:])
 
@@ -280,38 +289,44 @@ def p_dec1(p):
   '''
   p[0] = p[1]
 
+def p_decs1(p):
+  '''
+  decs1 : decs
+        | empty
+  '''
+  p[0] = p[1]
 ################################################
-# TIPO
-def p_tipo(p):
+# type
+def p_type(p):
   '''
-  tipo : compuesto ID saw_id saw_variable tipo1
-       | simple ID saw_id saw_variable tipo1
-       | multiple ID saw_id OBRACKET CSTINT CBRACKET saw_dimension tipo3 saw_variable tipo2
+  type : compound ID saw_id saw_variable type1
+       | simple ID saw_id saw_variable type1
+       | multiple ID saw_id OBRACKET CSTINT CBRACKET saw_dimension type3 saw_variable type2
   '''
   p[0] = tuple(p[1:])
 
-def p_tipo1(p):
+def p_type1(p):
   '''
-  tipo1 : COMMA ID saw_id saw_variable tipo1
+  type1 : COMMA ID saw_id saw_variable type1
         | empty
   '''
   p[0] = tuple(p[1:])
 
-def p_tipo2(p):
+def p_type2(p):
   '''
-  tipo2 : COMMA ID saw_id OBRACKET CSTINT CBRACKET saw_dimension tipo3 saw_variable
+  type2 : COMMA ID saw_id OBRACKET CSTINT CBRACKET saw_dimension type3 saw_variable
         | empty
   '''
   p[0] = tuple(p[1:])
 
-def p_tipo3(p):
+def p_type3(p):
   '''
-  tipo3 : OBRACKET CSTINT CBRACKET saw_dimension
+  type3 : OBRACKET CSTINT CBRACKET saw_dimension
         | empty
   '''
   p[0] = tuple(p[1:])
 
-def p_tipo_simple(p):
+def p_type_simple(p):
   '''
   simple : INT saw_type
          | FLOAT saw_type
@@ -321,7 +336,7 @@ def p_tipo_simple(p):
   '''
   p[0] = p[1]
 
-def p_tipo_multiple(p):
+def p_type_multiple(p):
   '''
   multiple : INTS saw_type
            | FLOATS saw_type
@@ -331,19 +346,20 @@ def p_tipo_multiple(p):
   '''
   p[0] = p[1]
 
-def p_tipo_compuesto(p):
+def p_type_compound(p):
   '''
-  compuesto : ID saw_type
+  compound : ID saw_type
             | DATAFRAME saw_type
             | FILE saw_type
   ''' 
   p[0] = p[1]
 
 ################################################
-# BLOQUE
-def p_bloque(p):
+# block
+def p_block(p):
   '''
-  bloque : OCURLY b1 CCURLY scope_end
+  block : OCURLY b1 CCURLY
+        | OCURLY decs count_vars b1 CCURLY
   '''
   p[0] = tuple(p[1:])
 
@@ -354,78 +370,52 @@ def p_b1(p):
   '''
   p[0] = tuple(p[1:])
 
-# BLOQUE CICLO
-def p_bloque_ciclo(p):
-  '''
-  bloque_ciclo : OCURLY bc1 CCURLY
-  '''
-
-def p_bc1(p):
-  '''
-  bc1 : estatuto_ciclo bc1
-      | empty
-  '''
-
 ################################################
 # ESTATUTO
 def p_estatuto(p):
   '''
-  estatuto : asignacion
+  estatuto : assign
            | llamada
-           | condicion
-           | escritura
-           | leer
-           | ciclo_while
-           | ciclo_for
-           | ternaria
-           | bloque
-           | funcion
-           | clase
-           | dec
+           | conditional
+           | write
+           | read
+           | while_loop
+           | for_loop
+           | ternary
+           | RETURN exp
   '''
   p[0] = p[1]
 
-def p_estatuto_ciclo(p):
+def p_estatuto_redux(p): # TERNARY ONE LINERS
   '''
-  estatuto_ciclo : asignacion
-                 | condicion
-                 | escritura
-                 | leer
-                 | ciclo_while
-                 | ciclo_for
-                 | dec
-  '''
-  p[0] = p[1]
-
-def p_estatuto_redux(p):
-  '''
-  estatuto_redux : asignacion
+  estatuto_redux : assign
                  | llamada
-                 | escritura
-                 | leer
-                 | ternaria
+                 | write
+                 | read
+                 | ternary
+                 | RETURN exp
   '''
   p[0] = tuple(p[1:])
 
 ################################################
-# ASIGNACION
-def p_asignacion(p):
+# assign
+def p_assign(p):
   '''
-  asignacion : variable saw_var_factor AS saw_asig exp
+  assign : variable saw_var_factor AS saw_asig exp
   '''
   p[0] = tuple(p[1:])
 
 ################################################
-# CONDICIONAL
-def p_condicion(p):
+# conditional
+def p_conditional(p):
   '''
-  condicion : IF cond2 THEN bloque_ciclo cond1 SEMICOLON bc_end
+  conditional : IF cond2 THEN block cond1 SEMICOLON bc_end
   '''
   p[0] = tuple(p[1:])
 
 def p_cond1(p):
   '''
-  cond1 : ELSE saw_else bloque_ciclo
+  cond1 : ELSE saw_else block
         | empty
   '''
   p[0] = tuple(p[1:])
@@ -437,18 +427,18 @@ def p_cond2(p):
   p[0] = tuple(p[1:])
 
 ################################################
-# condicion ternaria
-def p_ternaria(p):
+# conditional ternary
+def p_ternary(p):
   '''
-  ternaria : exp QUESTION estatuto_redux COLON estatuto_redux SEMICOLON
+  ternary : exp QUESTION estatuto_redux COLON estatuto_redux SEMICOLON
   '''
   p[0] = tuple(p[1:])
 
 ################################################
-# ESCRITURA
-def p_escritura(p):
+# write
+def p_write(p):
   '''
-  escritura : PRINT saw_print OPAREN exp e1 CPAREN saw_print_end
+  write : PRINT saw_print OPAREN exp e1 CPAREN saw_print_end
   '''
   p[0] = tuple(p[1:])
 
@@ -460,10 +450,10 @@ def p_e1(p):
   p[0] = tuple(p[1:])
 
 ################################################
-# LEER
-def p_leer(p):
+# read
+def p_read(p):
   '''
-  leer  : READ saw_read OPAREN variable saw_read_exp l1 CPAREN saw_read_end
+  read  : READ saw_read OPAREN variable saw_read_exp l1 CPAREN saw_read_end
   '''
   p[0] = tuple(p[1:])
 
@@ -507,15 +497,15 @@ def p_variable2(p):
   p[0] = tuple(p[1:])
 
 ################################################
-# LLAMADA FUNCION
-def p_llamada_funcion(p):
+# LLAMADA function
+def p_llamada_function(p):
   '''
   llamada : ID saw_id OPAREN exp llamada1 CPAREN
           | ID saw_id OPAREN CPAREN
   '''
   p[0] = tuple(p[1:])
 
-def p_llamada_funcion1(p):
+def p_llamada_function1(p):
   '''
   llamada1 : COMMA exp llamada1
            | empty
@@ -662,8 +652,9 @@ def p_error(p):
   
 ################################################
 # AUX RULES FOR SYMBOL TABLE
-def p_saw_program(p):
-  ''' saw_program : '''
+def p_saw_main(p):
+  ''' saw_main : '''
+  p[0] = tuple(p[1:])
 
 def p_saw_class(p):
   ''' saw_class : '''
@@ -827,6 +818,10 @@ def p_saw_while(p):
 def p_saw_while_end(p):
   ''' saw_while_end : '''
   condHelpers.exitWhile()
+
+def p_count_vars(p):
+  ''' count_vars : '''
+  symbolTable.getCurrentScope().countVars()
 
 parser = yacc.yacc()
 
