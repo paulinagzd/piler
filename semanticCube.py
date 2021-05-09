@@ -1,7 +1,5 @@
 ERROR_MESSAGE = 'TYPE MISMATCH'
 
-# TODO VOID HANDLING IF NEEDED Y CONECTARLE LOGICA
-
 SemanticCube = {
   '+': {
     'int': {

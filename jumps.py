@@ -1,4 +1,3 @@
-from symbolTable import SymbolTable
 class Jumps:
   isAlive = None
 
