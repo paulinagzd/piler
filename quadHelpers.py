@@ -1,6 +1,7 @@
 from semanticCube import SemanticCube
 from symbolTable import SymbolTable
 from quad import Quad
+import condHelpers
 
 quadruple = Quad.instantiate()
 symbolTable = SymbolTable.instantiate()
@@ -22,7 +23,29 @@ def getTypeIfVariable(operand):
     return operand.getVarType()
   else:
     return getType(operand)
-     
+
+def expression_evaluation(p):
+  if not quadruple.pOper or quadruple.pOper[-1] == '=' or quadruple.pOper[-1] == 'print':
+    if not quadruple.pOper:
+      if p[-2] == 'if' or p[-3] == 'while':
+        condHelpers.enterCond()
+      else:
+        p[0] = quadruple.pilaO.pop()
+        print('EVALUACION EXPRESION:', p[0])
+      # symbolTable.getCurrentScope().setLatestExpValue(p[0])
+    elif quadruple.pOper[-1] == '=':
+      right_operand = quadruple.pilaO.pop() # this should be a value
+      left_operand = quadruple.pilaO.pop() # this should be an id
+      right_type = getType(right_operand)
+      left_var = symbolTable.getCurrentScope().sawCalledVariable(symbolTable.getCurrentScope().getLatestName())
+      left_type = left_var.getVarType()      
+      if right_type == left_type:
+        quadruple.saveQuad('=', right_operand, None ,left_operand)
+      quadruple.pOper.pop()
+    elif quadruple.pOper[-1] == 'print':
+      print_operand = quadruple.pilaO.pop() # this should be the value to print
+      quadruple.saveQuad('print', None, None, print_operand)
+
 def check_multdiv_operator(quadruple):
   workingStack = quadruple.getWorkingStack()
   if workingStack:
