@@ -6,10 +6,12 @@ from symbolTable import SymbolTable
 from semanticCube import SemanticCube
 from quad import Quad
 from jumps import Jumps
+from memory import Memory
 
 symbolTable = SymbolTable.instantiate()
 quadruple = Quad.instantiate()
 jumps = Jumps.instantiate()
+callStack = []
 pointer = None
 
 # reserved words
@@ -456,6 +458,8 @@ def p_llamada_funcion(p):
   llamada : ID saw_id OPAREN exp llamada1 CPAREN
           | ID saw_id OPAREN CPAREN
   '''
+  current, functionCall = symbolTable.getCurrentScope().sawCalledFunction(symbolTable.getCurrentScope().getLatestName())
+  callStack = functionCall
 
 def p_llamada_funcion1(p):
   '''

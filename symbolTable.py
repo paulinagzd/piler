@@ -1,4 +1,6 @@
 from quad import Quad
+from memory import Memory
+from functionCall  import FunctionCall
 quadruple = Quad.instantiate()
 
 class Variable:
@@ -8,6 +10,7 @@ class Variable:
     self.__dimensions = dimensions
     self.__isParam = isParam
     self.__value = None
+    self.__dir = None
 
   # getters
   def getVarName(self):
@@ -24,6 +27,9 @@ class Variable:
 
   def getIsParam(self):
     return self.__isParam
+  
+  def getDir(self):
+    return self.__dir
 
   # setters
   def setVarName(self, varName):
@@ -41,6 +47,9 @@ class Variable:
   def setIsParam(self, value):
     self.__isParam = value
 
+  def setDir(self, value):
+    self.__dir = value
+
   def __repr__(self):
     return "{\n name: %s \n type: %s \n dimensions: %s \n value: %s \n isParam: %s \n}" % (self.getVarName(), self.getVarType(), self.getDimensions(), self.getValue(), self.getIsParam())
 
@@ -49,6 +58,7 @@ class ParameterTable:
   def __init__(self, params):
     isAlive = self
     self = params
+
 class Scope:
   # SCOPE: what a block contains.
   # Global scopes contain variables, functions, and classes
@@ -204,14 +214,22 @@ class Scope:
     if not funcName in globalScope.getScopeFunctions():
       raise Exception('ERROR! FUNCTION with identifier:', funcName, 'is not defined in this program')
     
+    #build memory object and set the
+    functionCallMemory = Memory()
+    functionCallMemory.setFuncName(funcName)
+
     quadruple.saveQuad('era', funcName, None, None)
     functionParams = globalScope.__scopeFunctions[funcName].__scopeVariables
     for item, val in functionParams.items():
       if val.getIsParam():
         self.setCurrentFunctionParams(val)
+        functionCallMemory.setLocal(val)
+      else:
+        functionCallMemory.setGlobal(val)
+      
     
     self.__latestFuncName = funcName
-    return globalScope.__scopeFunctions[funcName]
+    return globalScope.__scopeFunctions[funcName], functionCallMemory
 
   def doesClassExist(self, className, varName):
     globalScope = SymbolTable.instantiate().getGlobalScope()

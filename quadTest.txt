@@ -2,6 +2,11 @@ program aritmetica;
 var int a;
 var int b;
 {
+    func int cuadrado(int valor) {
+        b = valor * valor
+    }
+
+    cuadrado(3)
     a = 8 * (7 - 4) + 5
     a = 9
     if (a == 2) then {
