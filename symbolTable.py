@@ -224,10 +224,11 @@ class Scope:
       if val.getIsParam():
         self.setCurrentFunctionParams(val)
         functionCallMemory.setLocal(val)
-      else:
-        functionCallMemory.setGlobal(val)
       
-    
+    globalVariables = globalScope.__scopeVariables
+    for item, val in globalVariables.items():
+      functionCallMemory.setGlobal(val)
+      
     self.__latestFuncName = funcName
     return globalScope.__scopeFunctions[funcName], functionCallMemory
 

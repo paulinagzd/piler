@@ -17,8 +17,8 @@ class Memory:
         }
 
     def setGlobal(self, var):
-        self.__global[var.getVarType].append(var.getValue)
-        dir = len(self.__global[var.getVarType]) - 1
+        self.__global[var.getVarType()].append(var.getValue())
+        dir = len(self.__global[var.getVarType()]) - 1
         var.setDir(dir)
 
     def setLocal(self, var):
