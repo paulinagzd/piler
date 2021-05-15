@@ -459,7 +459,7 @@ def p_llamada_funcion(p):
           | ID saw_id OPAREN CPAREN
   '''
   current, functionCall = symbolTable.getCurrentScope().sawCalledFunction(symbolTable.getCurrentScope().getLatestName())
-  callStack = functionCall
+  callStack.append(functionCall)
 
 def p_llamada_funcion1(p):
   '''
