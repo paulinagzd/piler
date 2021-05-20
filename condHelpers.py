@@ -33,3 +33,10 @@ def exitWhile():
   quadruple.saveQuad('goto', None, None, ret)
   fill(end, quadruple.quadCounter)
 
+def saveForMain():
+  jumps.setStackPush(quadruple.quadCounter)
+  quadruple.saveQuad("GOTO", None, None, TBD())
+
+def enterMain():
+  ret = jumps.setStackPop() 
+  fill(ret, quadruple.quadCounter)

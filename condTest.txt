@@ -3,7 +3,7 @@ var int a;
 var int b;
 var int c;
 var int e;
-{ 
+func int one() { 
     b = 2
     c = 1
     e = 1
@@ -12,5 +12,11 @@ var int e;
       a = b - c
       b = b + e
     };
+
+    b == a ? print(a) : print(b);
     c = a + b
+}
+
+int main() {
+
 }
