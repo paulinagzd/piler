@@ -19,7 +19,7 @@ def verifyParamMatch(cont):
   incoming = quadruple.pilaO.pop()
   incoming_type = quadHelpers.getTypeIfVariable(incoming)
   original = symbolTable.getCurrentScope().getCurrentFunctionParams()[cont]
-  print('INCOMING: ',incoming, 'OG: ',original)
+  print('INCOMING: ',incoming, incoming_type, 'ORIGINAL PARAM: ',original)
   if incoming_type != original.getVarType():
     raise Exception("ERROR! Parameter mismatch")
   else:

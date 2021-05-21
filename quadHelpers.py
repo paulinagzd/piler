@@ -1,6 +1,7 @@
 from semanticCube import SemanticCube
 from symbolTable import SymbolTable
 from quad import Quad
+import condHelpers
 
 quadruple = Quad.instantiate()
 symbolTable = SymbolTable.instantiate()
@@ -13,7 +14,10 @@ def getType(operand):
   elif isinstance(operand,int):
     return 'int'
   elif isinstance(operand, str):
-    return 'str'
+    if len(operand) == 1:
+      return 'cha'
+    else:
+      return 'str'
   elif isinstance(operand, dict):
     return list(operand.values())[0]
 
@@ -50,6 +54,8 @@ def check_multdiv_operator(quadruple):
         quadruple.saveQuad(operator,left_operand,right_operand,{tvalue: result_Type})
       else:
         raise Exception('ERROR! Type Mismatch') #type mismatch
+    # else:
+      # print(workingStack[-1])
 
 def check_plusminus_operator(quadruple):
   workingStack = quadruple.getWorkingStack()
@@ -163,4 +169,30 @@ def check_or_operator(quadruple):
       else:
         raise Exception('ERROR! Type Mismatch') #type mismatch
 
+def expression_evaluation(p):
+  if not quadruple.pOper or quadruple.pOper[-1] == '=' or quadruple.pOper[-1] == 'print':
+    if not quadruple.pOper:
+      if p[-2] == 'if' or p[-3] == 'while':
+        condHelpers.enterCond()
+      else:
+        print(quadruple.pilaO[-1])
+        p[0] = quadruple.pilaO[-1]
+        print('EVALUACION EXPRESION:', p[0])
+        # print(quadruple.pilaO[-2])
+        symbolTable.getCurrentScope().setLatestExpValue(p[0])
+    elif quadruple.pOper[-1] == '=':
+      right_operand = quadruple.pilaO.pop() # this should be a value
+      left_operand = quadruple.pilaO.pop() # this should be an id
+      right_type = getType(right_operand)
+      left_var = symbolTable.getCurrentScope().sawCalledVariable(symbolTable.getCurrentScope().getLatestName())
+      left_type = left_var.getVarType()      
+      if right_type == left_type:
+        quadruple.saveQuad('=', right_operand, None ,left_operand)
+      quadruple.pOper.pop()
+    elif quadruple.pOper[-1] == 'print':
+      print_operand = quadruple.pilaO.pop() # this should be the value to print
+      quadruple.saveQuad('print', None, None, print_operand)
+    else:
+      print("WILLIBOOL?")
+      print(p[0])
 
