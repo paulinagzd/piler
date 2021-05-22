@@ -152,6 +152,9 @@ class Scope:
   def setCurrentFunctionParams(self, val):
     self.__currentFunctionParams.append(val)
 
+  def clearCurrentFunctionParams(self):
+    self.__currentFunctionParams = []
+
   # methods
   def addVariable(self, varName, varType, dimensions, isParam):
     if varName in self.getScopeVariables():
