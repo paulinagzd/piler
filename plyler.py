@@ -579,7 +579,7 @@ def p_error(p):
   
 ################################################
 # AUX RULES FOR SYMBOL TABLE
-def p_saw_progsawram(p):
+def p_saw_program(p):
   ''' saw_program : '''
   condHelpers.saveForMain()
 
