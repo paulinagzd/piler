@@ -147,7 +147,7 @@ def t_CSTCHAR(t):
   return t
 
 def t_CSTSTRING(t):
-  r'("(\\"|[^"])*")|(\'(\\\'|[^\'])*\')' # escaping quotes
+  r'("(\\"|[^"])*") | (\'(\\\'|[^\'])*\')' # escaping quotes
   t.value = str(t.value)
   return t
 
@@ -781,6 +781,7 @@ def p_increment_cont(p):
 def p_generate_gosub(p):
   ''' generate_gosub : '''
   quadruple.saveQuad('gosub', symbolTable.getCurrentScope().getLatestFuncName(), None, None)
+  symbolTable.getCurrentScope().clearCurrentFunctionParams()
   global cont
   cont = 0
 

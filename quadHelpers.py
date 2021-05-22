@@ -14,7 +14,7 @@ def getType(operand):
   elif isinstance(operand,int):
     return 'int'
   elif isinstance(operand, str):
-    if len(operand) == 1:
+    if len(operand) == 3 and operand[0] == '\'':
       return 'cha'
     else:
       return 'str'
