@@ -1,3 +1,4 @@
+from vm import VM
 from symbolTable import SymbolTable
 from quad import Quad
 from jumps import Jumps
@@ -21,6 +22,8 @@ while True:
       correctFile.close()
       if parser.parse(curr) == 'SUCCESS':
         print("SUCCESSFULLY COMPILED!")
+        print("BEGGINING EXECUTION...") # a.out
+        virtualMachine = VM(quadruple.quads)
       # symbolTable.printingAll()
       quadruple.print()
       symbolTable.reset()

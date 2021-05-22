@@ -3,6 +3,27 @@ from jumps import TBD
 
 class Quad:
   isAlive = None
+  operCodes = {
+    '+': 1,
+    '-': 2,
+    '*': 3,
+    '/': 4,
+    '=': 5,
+    '<': 6,
+    '>': 7,
+    '<=': 8,
+    '>=': 9,
+    '==': 10,
+    '!=': 11,
+    'print': 12,
+    'read': 13,
+    'goto': 14,
+    'gotoF': 15,
+    'gotoV': 16,
+    'gosub': 17,
+    'endfunc': 18,
+    'end': 19
+  }
 
   def __init__(self):
       Quad.isAlive = self
@@ -18,7 +39,8 @@ class Quad:
     return Quad.isAlive
 
   def saveQuad(self, operator, leftOperand, rightOperand, tvalue):
-    q = QuadContainer(self.quadCounter, operator, leftOperand, rightOperand, tvalue)
+    codeNumber = self.operCodes[operator]
+    q = QuadContainer(self.quadCounter, codeNumber, leftOperand, rightOperand, tvalue) # left and right operand contain ADDRESSES
     self.quads[self.quadCounter] = q
     self.quadCounter += 1
 

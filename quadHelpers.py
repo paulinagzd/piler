@@ -51,7 +51,11 @@ def check_multdiv_operator(quadruple):
         # elif operator == '/':
         #   tvalue = left_operand / right_operand
         #   quadruple.pilaO.append(tvalue)
-        quadruple.saveQuad(operator,left_operand,right_operand,{tvalue: result_Type})
+
+
+        # Saving the operator code instead of the operator itself
+        operatorCode = quadruple.operCodes[operator]
+        quadruple.saveQuad(operatorCode,left_operand,right_operand,{tvalue: result_Type})
       else:
         raise Exception('ERROR! Type Mismatch') #type mismatch
     # else:
@@ -80,6 +84,8 @@ def check_plusminus_operator(quadruple):
         # elif operator == '-':
         #   tvalue = left_operand - right_operand
         #   quadruple.pilaO.append(tvalue)
+
+        
         quadruple.saveQuad(operator,left_operand,right_operand,{tvalue: result_Type})
       else:
         raise Exception('ERROR! Type Mismatch') #type mismatch

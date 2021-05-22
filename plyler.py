@@ -780,7 +780,7 @@ def p_increment_cont(p):
 
 def p_generate_gosub(p):
   ''' generate_gosub : '''
-  quadruple.saveQuad('GOSUB', symbolTable.getCurrentScope().getLatestFuncName(), None, None)
+  quadruple.saveQuad('gosub', symbolTable.getCurrentScope().getLatestFuncName(), None, None)
   global cont
   cont = 0
 
