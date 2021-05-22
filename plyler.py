@@ -169,7 +169,8 @@ lexer = lex.lex()
 # program
 def p_program(p):
   '''
-  program : PROGRAM ID SEMICOLON saw_program program_content main saw_program_end
+  program : PROGRAM ID saw_program program_content main saw_program_end
+          | PROGRAM ID SEMICOLON saw_program program_content main saw_program_end
   '''
 
 def p_program_content(p):
@@ -355,7 +356,7 @@ def p_estatuto(p):
            | while_loop
            | for_loop
            | ternary
-           | RETURN exp
+           | return_exp
   '''
 
 def p_estatuto_redux(p): # TERNARY ONE LINERS
@@ -365,7 +366,13 @@ def p_estatuto_redux(p): # TERNARY ONE LINERS
                  | write
                  | read
                  | ternary
-                 | RETURN exp
+                 | return_exp
+  '''
+
+def p_return_exp(p):
+  '''
+  return_exp : RETURN exp
+             | RETURN exp SEMICOLON
   '''
 
 ################################################
@@ -373,6 +380,7 @@ def p_estatuto_redux(p): # TERNARY ONE LINERS
 def p_assign(p):
   '''
   assign : variable saw_var_factor AS saw_asig exp
+         | variable saw_var_factor AS saw_asig exp SEMICOLON
   '''
 
 ################################################
@@ -405,6 +413,7 @@ def p_ternary(p):
 def p_write(p):
   '''
   write : PRINT saw_print OPAREN exp e1 CPAREN saw_print_end
+        | PRINT saw_print OPAREN exp e1 CPAREN SEMICOLON saw_print_end
   '''
 
 def p_e1(p):
@@ -417,7 +426,8 @@ def p_e1(p):
 # read
 def p_read(p):
   '''
-  read  : READ saw_read OPAREN variable saw_read_exp l1 CPAREN saw_read_end
+  read : READ saw_read OPAREN variable saw_read_exp l1 CPAREN saw_read_end
+       | READ saw_read OPAREN variable saw_read_exp l1 CPAREN SEMICOLON saw_read_end
   '''
 
 def p_l1(p):
@@ -458,7 +468,9 @@ def p_variable2(p):
 # function_call
 def p_function_call(p):
   '''
-  function_call : ID saw_id verify_func OPAREN exp verify_param function_call1 CPAREN generate_gosub
+  function_call : ID saw_id verify_func OPAREN exp verify_param function_call1 CPAREN SEMICOLON generate_gosub
+                | ID saw_id verify_func OPAREN exp verify_param function_call1 CPAREN generate_gosub
+                | ID saw_id verify_func OPAREN CPAREN SEMICOLON generate_gosub
                 | ID saw_id verify_func OPAREN CPAREN generate_gosub
   '''
 
@@ -472,7 +484,8 @@ def p_function_call1(p):
 # SUPER EXP
 def p_exp(p):
   '''
-  exp : texp exp1 check_or_operator
+  exp : texp exp1 SEMICOLON check_or_operator
+      | texp exp1 check_or_operator
   '''
   quadHelpers.expression_evaluation(p)
 
@@ -579,7 +592,7 @@ def p_error(p):
   
 ################################################
 # AUX RULES FOR SYMBOL TABLE
-def p_saw_progsawram(p):
+def p_saw_program(p):
   ''' saw_program : '''
   condHelpers.saveForMain()
 
