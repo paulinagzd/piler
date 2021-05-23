@@ -23,5 +23,14 @@ def verifyParamMatch(cont):
   if incoming_type != original.getVarType():
     raise Exception("ERROR! Parameter mismatch")
   else:
-    quadruple.saveQuad('PARAM', incoming, None, cont + 1)
+    quadruple.saveQuad('param', incoming, None, cont + 1)
     return cont
+  
+
+# def endingFunction():
+#   print("ENDING FUNCTION")
+#   print(symbolTable.getCurrentScope().getScopeName(), symbolTable.getCurrentScope().getLatestExpValue())
+#   if symbolTable.getCurrentScope().getScopeType() != symbolTable.getCurrentScope().getLatestExpValue():
+#     raise Exception('ERROR!', symbolTable.getCurrentScope().getScopeName(), 'function must return  value of type', symbolTable.getCurrentScope().getScopeType())
+#   else:
+#     quadruple.saveQuad("endfunc", None, None, None)

@@ -1,10 +1,13 @@
 program patito; 
 var int a, b;
 var flt f;
+var str sttttt;
+
 
 func int uno(int a) {
   a = a+b*a
   print(a, b, a+b) 
+  return a
 }
 
 func int dos(int a, int b, flt g) { 
@@ -24,6 +27,7 @@ int main()
   b=a+1
   print(a, b)
   f=3.14
+  sttttt = "hello there world"
   uno(2)
   dos(a+b*2, b, f*3) 
   print(a,b,f*2+1)

@@ -355,7 +355,7 @@ def p_estatuto(p):
            | while_loop
            | for_loop
            | ternary
-           | RETURN exp
+           | RETURN exp saw_return_value
   '''
 
 def p_estatuto_redux(p): # TERNARY ONE LINERS
@@ -365,7 +365,7 @@ def p_estatuto_redux(p): # TERNARY ONE LINERS
                  | write
                  | read
                  | ternary
-                 | RETURN exp
+                 | RETURN exp saw_return_value
   '''
 
 ################################################
@@ -585,7 +585,7 @@ def p_saw_program(p):
 
 def p_saw_program_end(p):
   ''' saw_program_end : '''
-  quadruple.saveQuad("END", None, None, None)
+  quadruple.saveQuad("end", None, None, None)
 
 def p_saw_main(p):
   ''' saw_main : '''
@@ -641,6 +641,7 @@ def p_saw_asig(p):
 def p_saw_end_value(p):
   ''' saw_end_value : '''
   quadruple.pilaO.append(p[-1])
+  symbolTable.getCurrentScope().addConstant(p[-1], quadHelpers.getType(p[-1]))
 
 def p_saw_plusminus_operator(p):
   ''' saw_plusminus_operator  : '''
@@ -710,6 +711,7 @@ def p_saw_function(p):
 def p_saw_function_end(p):
   ''' saw_function_end : '''
   quadruple.saveQuad("endfunc", None, None, None)
+  # moduleHelpers.endingFunction()
 
 def p_scope_end(p):
   ''' scope_end : '''
@@ -788,6 +790,10 @@ def p_generate_gosub(p):
 def p_saw_cond(p):
   ''' saw_cond : '''
   condHelpers.enterCond()
+
+def p_saw_return_value(p):
+  ''' saw_return_value : '''
+  # symbolTable.getCurrentScope().setLatestReturnValue()
 
 parser = yacc.yacc()
 

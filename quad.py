@@ -21,8 +21,10 @@ class Quad:
     'gotoF': 15,
     'gotoV': 16,
     'gosub': 17,
-    'endfunc': 18,
-    'end': 19
+    'era': 18,
+    'param': 19,
+    'endfunc': 20,
+    'end': 21
   }
 
   def __init__(self):

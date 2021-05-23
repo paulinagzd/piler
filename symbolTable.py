@@ -1,12 +1,17 @@
 from quad import Quad
 quadruple = Quad.instantiate()
 
+# class Constant:
+#   def __init__(self, value, virtualAddress):
+#     self.__value = value
+#     self.__virtualAddress = virtualAddress
 class Variable:
   def __init__(self, varName, varType, dimensions, isParam):
     self.__varName = varName
     self.__varType = varType
     self.__dimensions = dimensions
     self.__isParam = isParam
+    # self.__virtualAddress = virtualAddress
     self.__value = None
 
   # getters
@@ -55,12 +60,14 @@ class Scope:
   # Class local scopes contain variables and functions (empty scopeClasses objects)
   # Function local scopes contain variables (empty scopeFunctions and scopeClasses objects)
 
-  def __init__(self, type, context):
+  def __init__(self, type, name, context):
     self.__scopeType = type # Will be used to validate if local or global
+    self.__scopeName = name
     self.__context = context
     self.__scopeFunctions = {}
     self.__scopeVariables = {}
     self.__scopeClasses = {}
+    self.__scopeConstants = {}
     self.__latestName = None
     self.__latestFuncName = None
     self.__latestType = None
@@ -70,11 +77,15 @@ class Scope:
     self.__quadCont = 0
     self.__numParams = 0
     self.__numLocalVars = 0
+    self.__latestReturnValue = None
     self.__currentFunctionParams = []
 
   # getters
   def getScopeType(self):
     return self.__scopeType
+
+  def getScopeName(self):
+    return self.__scopeName
 
   def getContext(self):
     return self.__context
@@ -87,6 +98,9 @@ class Scope:
 
   def getScopeClasses(self):
     return self.__scopeClasses
+
+  def getScopeConstants(self):
+    return self.__scopeConstants
 
   def getLatestName(self):
     return self.__latestName
@@ -114,6 +128,9 @@ class Scope:
 
   def getCurrentFunctionParams(self):
     return self.__currentFunctionParams 
+
+  def getLatestReturnValue(self):
+    return self.__latestReturnValue
 
   # setters
   def setScopeType(self, scopeType):
@@ -154,6 +171,9 @@ class Scope:
 
   def clearCurrentFunctionParams(self):
     self.__currentFunctionParams = []
+    
+  def setLatestReturnValue(self):
+    self.__latestReturnValue = self.__latestExpValue
 
   # methods
   def addVariable(self, varName, varType, dimensions, isParam):
@@ -164,6 +184,10 @@ class Scope:
     self.__scopeVariables[varName] = Variable(varName, varType, dimensions, isParam)
     self.resetLatestDimension()
 
+  def addConstant(self, value, type):
+    globalScope = SymbolTable.instantiate().getGlobalScope()
+    print(value, type)
+    globalScope.__scopeConstants[value] = 1 #TODO VIRTUAL ADDRESS
 
   def addFunction(self, funcName, funcType):
     if funcName in self.getScopeFunctions():
@@ -176,7 +200,7 @@ class Scope:
       keyword = 'classFunction'
     else:
       keyword = 'function' # remove UnboundLocalError
-    self.__scopeFunctions[funcName] = Scope(funcType, keyword)
+    self.__scopeFunctions[funcName] = Scope(funcType, funcName, keyword)
     SymbolTable.instantiate().setCurrentScope(self.__scopeFunctions[funcName])
     
   def addClass(self, className):
@@ -185,7 +209,7 @@ class Scope:
       # return False
 
     classType = 'class'
-    self.__scopeClasses[className] = Scope(classType, classType)
+    self.__scopeClasses[className] = Scope(classType, className, classType)
     SymbolTable.instantiate().setStackPush(className)
     SymbolTable.instantiate().setCurrentScope(self.__scopeClasses[className])
 
@@ -212,7 +236,7 @@ class Scope:
     for item, val in functionParams.items():
       if val.getIsParam():
         self.setCurrentFunctionParams(val)
-    
+      
     self.__latestFuncName = funcName
     return globalScope.__scopeFunctions[funcName]
 
@@ -250,7 +274,7 @@ class SymbolTable:
     SymbolTable.isAlive = self
     self.__globalScope = {}
     keyword = "global"
-    self.__globalScope["global"] = Scope(keyword, keyword)
+    self.__globalScope["global"] = Scope(keyword, keyword, keyword)
     self.__currentScope = self.__globalScope["global"]
     self.__classStack = []
 
@@ -269,8 +293,8 @@ class SymbolTable:
   def getStack(self):
     return self.__classStack[-1]
 
-  def setCurrentScope(self, val):
-    self.__currentScope = val
+  # def setCurrentScope(self, val):
+  #   self.__currentScope = val
 
   def setCurrentScope(self, val):
     self.__currentScope = val
@@ -306,6 +330,10 @@ class SymbolTable:
     for key, val in self.__globalScope.items():
       print(key, ': ', val)
 
+      print('\n \n GLOBAL CONSTANTS')
+      for aaa, aaaa in val.getScopeConstants().items():
+        print(aaa, ': ', aaaa)
+
       print('\n \n GLOBAL VARIABLES')
       for i, ii in val.getScopeVariables().items():
         print(i, ': ', ii)
@@ -339,7 +367,7 @@ class SymbolTable:
   def reset(self):
     self.__globalScope = {}
     keyword = "global"
-    self.__globalScope["global"] = Scope(keyword, keyword)
+    self.__globalScope["global"] = Scope(keyword, keyword, keyword)
     self.__currentScope = self.__globalScope["global"]
     self.__classStack = []
 

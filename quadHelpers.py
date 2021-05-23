@@ -45,6 +45,7 @@ def check_multdiv_operator(quadruple):
       if result_Type != 'TYPE MISMATCH':
         tvalue = "t{}".format(quadruple.quadCounter)
         quadruple.pilaO.append({tvalue: result_Type})
+        symbolTable.getCurrentScope().setLatestExpValue(result_Type)
         # if operator == '*':
         #   tvalue = left_operand * right_operand
         #   quadruple.pilaO.append(tvalue)
@@ -54,8 +55,7 @@ def check_multdiv_operator(quadruple):
 
 
         # Saving the operator code instead of the operator itself
-        operatorCode = quadruple.operCodes[operator]
-        quadruple.saveQuad(operatorCode,left_operand,right_operand,{tvalue: result_Type})
+        quadruple.saveQuad(operator,left_operand,right_operand,{tvalue: result_Type})
       else:
         raise Exception('ERROR! Type Mismatch') #type mismatch
     # else:
@@ -78,6 +78,8 @@ def check_plusminus_operator(quadruple):
       if result_Type != 'TYPE MISMATCH':
         tvalue = "t{}".format(quadruple.quadCounter)
         quadruple.pilaO.append({tvalue: result_Type})
+        symbolTable.getCurrentScope().setLatestExpValue(result_Type)
+
         # if operator == '+':
         #   tvalue = left_operand + right_operand
         #   quadruple.pilaO.append(tvalue)
@@ -127,6 +129,8 @@ def check_relational_operator(quadruple):
         tvalue = "t{}".format(quadruple.quadCounter)
         quadruple.pilaO.append({tvalue: result_Type})
         quadruple.saveQuad(operator,left_operand,right_operand,{tvalue: result_Type})
+        symbolTable.getCurrentScope().setLatestExpValue(result_Type)
+
       else:
         raise Exception('ERROR! Type Mismatch') #type mismatch
 
@@ -149,6 +153,7 @@ def check_and_operator(quadruple):
         # tvalue = left_operand and right_operand
         # quadruple.pilaO.append(tvalue)
         quadruple.saveQuad(operator,left_operand,right_operand,{tvalue: result_Type})
+        symbolTable.getCurrentScope().setLatestExpValue(result_Type)
       else:
         raise Exception('ERROR! Type Mismatch') #type mismatch
 
@@ -172,6 +177,7 @@ def check_or_operator(quadruple):
         # tvalue = left_operand or right_operand
         # quadruple.pilaO.append(tvalue)
         quadruple.saveQuad(operator,left_operand,right_operand,{tvalue: result_Type})
+        symbolTable.getCurrentScope().setLatestExpValue(result_Type)
       else:
         raise Exception('ERROR! Type Mismatch') #type mismatch
 
