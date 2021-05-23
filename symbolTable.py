@@ -1,10 +1,7 @@
 from quad import Quad
+from vm import memSpace
 quadruple = Quad.instantiate()
 
-# class Constant:
-#   def __init__(self, value, virtualAddress):
-#     self.__value = value
-#     self.__virtualAddress = virtualAddress
 class Variable:
   def __init__(self, varName, varType, dimensions, isParam):
     self.__varName = varName
@@ -186,8 +183,18 @@ class Scope:
 
   def addConstant(self, value, type):
     globalScope = SymbolTable.instantiate().getGlobalScope()
-    print(value, type)
-    globalScope.__scopeConstants[value] = 1 #TODO VIRTUAL ADDRESS
+
+    if type in self.getScopeConstants():
+      constantTypePointer = globalScope.__scopeConstants[type]
+      if value in constantTypePointer:
+        pass
+      else:
+        offset = len(constantTypePointer)
+        constantTypePointer[value] = memSpace['constants'][type] + offset
+    else:
+      globalScope.__scopeConstants[type] = {}
+      constantTypePointer =  globalScope.__scopeConstants[type]
+      constantTypePointer[value] = memSpace['constants'][type] #TODO VIRTUAL ADDRESS
 
   def addFunction(self, funcName, funcType):
     if funcName in self.getScopeFunctions():
