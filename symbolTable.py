@@ -1,15 +1,25 @@
 from quad import Quad
-from vm import memSpace
+from vm import memSpace, MemSpaceContainer
 quadruple = Quad.instantiate()
 
+class Constant:
+  def __init__(self, memPointer):
+    self.__virtualAddress = memPointer.getInitialAddress() + memPointer.getOffset()
+    memPointer.setOffset()
+
+  def __repr__(self):
+    return "%s" % (self.__virtualAddress)
 class Variable:
-  def __init__(self, varName, varType, dimensions, isParam):
+  def __init__(self, varName, varType, dimensions, isParam, memPointer):
     self.__varName = varName
     self.__varType = varType
     self.__dimensions = dimensions
     self.__isParam = isParam
-    # self.__virtualAddress = virtualAddress
+    self.__virtualAddress = memPointer.getInitialAddress() + memPointer.getOffset()
     self.__value = None
+    #incrementing offset when variable is created in memory
+    # print("MEMPOINTER", memPointer.getInitialAddress(), memPointer.getOffset())
+    memPointer.setOffset()
 
   # getters
   def getVarName(self):
@@ -44,7 +54,7 @@ class Variable:
     self.__isParam = value
 
   def __repr__(self):
-    return "{\n name: %s \n type: %s \n dimensions: %s \n value: %s \n isParam: %s \n}" % (self.getVarName(), self.getVarType(), self.getDimensions(), self.getValue(), self.getIsParam())
+    return "{\n name: %s \n type: %s \n dimensions: %s \n value: %s \n isParam: %s \n virtualAddress: %s \n}" % (self.getVarName(), self.getVarType(), self.getDimensions(), self.getValue(), self.getIsParam(), self.__virtualAddress)
 
 class ParameterTable:
   isAlive = None
@@ -178,28 +188,42 @@ class Scope:
       raise Exception('ERROR! Variable with identifier:', varName, 'already exists!')
       # return False
 
-    self.__scopeVariables[varName] = Variable(varName, varType, dimensions, isParam)
+    if SymbolTable.instantiate().getCurrentScope().getContext() == 'global':
+      memPointer = memSpace['global'][varType]['real']
+      # print("ADDINGVARIABLE", varName, SymbolTable.instantiate().getCurrentScope().getContext())
+      self.__scopeVariables[varName] = Variable(varName, varType, dimensions, isParam, memPointer)
+    elif SymbolTable.instantiate().getCurrentScope().getContext() == 'function':
+      memPointer = memSpace['local'][varType]['real']
+      # print("ADDINGVARIABLE", varName, SymbolTable.instantiate().getCurrentScope().getContext())
+      self.__scopeVariables[varName] = Variable(varName, varType, dimensions, isParam, memPointer)
+    else:
+      # print("ELSESCOPETYPE", SymbolTable.instantiate().getCurrentScope().getContext())
+      #TODO for CLASSES AND OBJECTS
+      pass
     self.resetLatestDimension()
 
+  # addConstant
+  # What: adds constant values with virtual memory address to Constant class
+  # Parameters: The value and data type of this constant
+  # Returns an updated __scopeConstants object for the global scope/whole program
+  # When is it used: Every time a constant value is read on the sample programs
   def addConstant(self, value, type):
     globalScope = SymbolTable.instantiate().getGlobalScope()
 
-    if type in self.getScopeConstants():
+    if type in globalScope.getScopeConstants():
       constantTypePointer = globalScope.__scopeConstants[type]
-      if value in constantTypePointer:
-        pass
-      else:
-        offset = len(constantTypePointer)
-        constantTypePointer[value] = memSpace['constants'][type] + offset
+      if not value in constantTypePointer:
+        memPointer = memSpace['constants'][type]
+        constantTypePointer[value] = {Constant(memPointer)}
     else:
       globalScope.__scopeConstants[type] = {}
-      constantTypePointer =  globalScope.__scopeConstants[type]
-      constantTypePointer[value] = memSpace['constants'][type] #TODO VIRTUAL ADDRESS
+      constantTypePointer = globalScope.__scopeConstants[type]
+      memPointer = memSpace['constants'][type]
+      constantTypePointer[value] = {Constant(memPointer)}
 
   def addFunction(self, funcName, funcType):
     if funcName in self.getScopeFunctions():
       raise Exception('ERROR! Function with identifier: ', funcName, 'already exists!')
-      # return False
 
     if (SymbolTable.instantiate().getCurrentScope().getScopeType() == 'global'):
       keyword = 'function'
@@ -223,6 +247,10 @@ class Scope:
 
   def sawCalledVariable(self, varName):
     globalScope = SymbolTable.instantiate().getGlobalScope()
+    # print("HEREHEREHERE")
+    # print("HEREHEREHERE")
+    # print("HEREHEREHERE", varName, SymbolTable.instantiate().getCurrentScope().getScopeVariables())
+
     if not varName in self.getScopeVariables() and not varName in globalScope.getScopeVariables():
       raise Exception('ERROR! Variable with identifier:', varName, 'is not defined in this scope')
       # return False
@@ -345,31 +373,31 @@ class SymbolTable:
       for i, ii in val.getScopeVariables().items():
         print(i, ': ', ii)
 
-      print('\n \n GLOBAL FUNCTIONS')
-      for j, jj in val.getScopeFunctions().items():
-        print(j, ': ', jj)
+      # print('\n \n GLOBAL FUNCTIONS')
+      # for j, jj in val.getScopeFunctions().items():
+      #   print(j, ': ', jj)
 
-        print('\n \n FUNCTION VARIABLES')
-        for m, mm in jj.getScopeVariables().items():
-          print(m, ': ', mm)
-        print('---------------------------------')
+      #   print('\n \n FUNCTION VARIABLES')
+      #   for m, mm in jj.getScopeVariables().items():
+      #     print(m, ': ', mm)
+      #   print('---------------------------------')
 
 
-      print('\n \n CLASSES')
-      for k, kk in val.getScopeClasses().items():
-        print(k, ': ', kk)
+      # print('\n \n CLASSES')
+      # for k, kk in val.getScopeClasses().items():
+      #   print(k, ': ', kk)
 
-        print('\n \n CLASS VARS')
-        for n, nn in kk.getScopeVariables().items():
-          print(n, ': ', nn)
+      #   print('\n \n CLASS VARS')
+      #   for n, nn in kk.getScopeVariables().items():
+      #     print(n, ': ', nn)
 
-        print('\n \n CLASS FUNCTIONS')
-        for o, oo in kk.getScopeFunctions().items():
-          print(o, ': ', oo)
+      #   print('\n \n CLASS FUNCTIONS')
+      #   for o, oo in kk.getScopeFunctions().items():
+      #     print(o, ': ', oo)
         
-          for x, xx in oo.getScopeVariables().items():
-            print(x, ': ', xx)
-          print('---------------------------------')
+      #     for x, xx in oo.getScopeVariables().items():
+      #       print(x, ': ', xx)
+      #     print('---------------------------------')
   
   def reset(self):
     self.__globalScope = {}

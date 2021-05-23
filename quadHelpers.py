@@ -187,9 +187,9 @@ def expression_evaluation(p):
       if p[-2] == 'if' or p[-3] == 'while':
         condHelpers.enterCond()
       else:
-        print(quadruple.pilaO[-1])
+        # print(quadruple.pilaO[-1])
         p[0] = quadruple.pilaO[-1]
-        print('EVALUACION EXPRESION:', p[0])
+        # print('EVALUACION EXPRESION:', p[0])
         # print(quadruple.pilaO[-2])
         symbolTable.getCurrentScope().setLatestExpValue(p[0])
     elif quadruple.pOper[-1] == '=':

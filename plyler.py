@@ -625,6 +625,7 @@ def p_saw_called_var(p):
   ''' saw_called_var : '''
   current = symbolTable.getCurrentScope()
   global pointer
+  # print("CALLINGSAWCALLEDVAR", current.getLatestName())
   pointer = current.sawCalledVariable(current.getLatestName())
 
 def p_saw_called_var_from_class(p):
@@ -737,6 +738,7 @@ def p_saw_read_exp(p):
   ''' saw_read_exp : '''
   if quadruple.pOper[-1] == 'read':
     current = symbolTable.getCurrentScope()
+    # print("CALLINGSAWCALLEDVAR", current.getLatestName())
     read_operand = current.sawCalledVariable(current.getLatestName())
     quadruple.saveQuad('read', None, None, read_operand)
 

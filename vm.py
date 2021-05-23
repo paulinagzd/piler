@@ -2,60 +2,115 @@ from quad import Quad
 
 quadruple = Quad.instantiate()
 
+class MemSpaceContainer:
+  def __init__(self, initialAddress):
+    self.__initialAddress = initialAddress
+    self.__offset = 0
+
+  def getInitialAddress(self):
+    return self.__initialAddress
+
+  def getOffset(self):
+    return self.__offset
+  
+  def setOffset(self):
+    self.__offset += 1
+
+# this is the main directory for memory addresses separated by scope
+# elements contain their offset for when assigning new variables
 memSpace = {
   'global': {
     'int': {
-      'real': 5000,
-      'temp': 7000,
+      'real': MemSpaceContainer(5000),
+      'temp': MemSpaceContainer(6000),
+    },
+    'ints': {
+      'real': MemSpaceContainer(7000),
+      'temp': MemSpaceContainer(8000),
     },
     'flt': {
-      'real': 9000,
-      'temp': 11000,
+      'real': MemSpaceContainer(9000),
+      'temp': MemSpaceContainer(10000),
+    },
+    'flts': {
+      'real': MemSpaceContainer(11000),
+      'temp': MemSpaceContainer(12000),
     },
     'cha': {
-      'real': 13000,
-      'temp': 15000,
+      'real': MemSpaceContainer(13000),
+      'temp': MemSpaceContainer(14000),
+    },
+    'chas': {
+      'real': MemSpaceContainer(15000),
+      'temp': MemSpaceContainer(16000),
     },
     'boo': {
-      'real': 17000,
-      'temp': 19000,
+      'real': MemSpaceContainer(17000),
+      'temp': MemSpaceContainer(18000),
+    }, 
+    'boos': {
+      'real': MemSpaceContainer(19000),
+      'temp': MemSpaceContainer(20000),
     }, 
     'str': {
-      'real': 21000,
-      'temp': 23000,
+      'real': MemSpaceContainer(21000),
+      'temp': MemSpaceContainer(22000),
+    },
+    'strs': {
+      'real': MemSpaceContainer(23000),
+      'temp': MemSpaceContainer(24000),
     },
   }, 
   'local': {
     'int': {
-      'real': 25000,
-      'temp': 27000,
+      'real': MemSpaceContainer(25000),
+      'temp': MemSpaceContainer(26000),
+    },
+    'ints': {
+      'real': MemSpaceContainer(27000),
+      'temp': MemSpaceContainer(28000),
     },
     'flt': {
-      'real': 29000,
-      'temp': 31000,
+      'real': MemSpaceContainer(29000),
+      'temp': MemSpaceContainer(30000),
+    },
+    'flts': {
+      'real': MemSpaceContainer(31000),
+      'temp': MemSpaceContainer(32000),
     },
     'cha': {
-      'real': 33000,
-      'temp': 35000,
+      'real': MemSpaceContainer(33000),
+      'temp': MemSpaceContainer(34000),
+    },
+    'chas': {
+      'real': MemSpaceContainer(35000),
+      'temp': MemSpaceContainer(36000),
     },
     'boo': {
-      'real': 37000,
-      'temp': 39000,
+      'real': MemSpaceContainer(37000),
+      'temp': MemSpaceContainer(38000),
     }, 
+    'boos': {
+      'real': MemSpaceContainer(39000),
+      'temp': MemSpaceContainer(40000),
+    },
     'str': {
-      'real': 41000,
-      'temp': 43000,
+      'real': MemSpaceContainer(41000),
+      'temp': MemSpaceContainer(42000),
+    },
+    'strs': {
+      'real': MemSpaceContainer(43000),
+      'temp': MemSpaceContainer(44000),
     },
   },
   'constants': {
-    'int': 45000,
-    'flt': 47000,
-    'cha': 49000,
-    'boo': 51000, 
-    'str': 53000,
+    'int': MemSpaceContainer(45000),
+    'flt': MemSpaceContainer(47000),
+    'cha': MemSpaceContainer(49000),
+    'boo': MemSpaceContainer(51000), 
+    'str': MemSpaceContainer(53000),
   }
 }
-
 
 class VM:
   def __init__(self, quadList):
