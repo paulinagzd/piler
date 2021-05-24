@@ -35,7 +35,7 @@ def exitWhile():
 
 def saveForMain():
   jumps.setStackPush(quadruple.quadCounter)
-  quadruple.saveQuad("GOTO", None, None, TBD())
+  quadruple.saveQuad("goto", None, None, TBD())
 
 def enterMain():
   ret = jumps.setStackPop() 

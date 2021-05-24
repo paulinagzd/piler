@@ -355,7 +355,7 @@ def p_estatuto(p):
            | while_loop
            | for_loop
            | ternary
-           | RETURN exp
+           | RETURN exp saw_return_value
   '''
 
 def p_estatuto_redux(p): # TERNARY ONE LINERS
@@ -365,7 +365,7 @@ def p_estatuto_redux(p): # TERNARY ONE LINERS
                  | write
                  | read
                  | ternary
-                 | RETURN exp
+                 | RETURN exp saw_return_value
   '''
 
 ################################################
@@ -579,13 +579,13 @@ def p_error(p):
   
 ################################################
 # AUX RULES FOR SYMBOL TABLE
-def p_saw_progsawram(p):
+def p_saw_program(p):
   ''' saw_program : '''
   condHelpers.saveForMain()
 
 def p_saw_program_end(p):
   ''' saw_program_end : '''
-  quadruple.saveQuad("END", None, None, None)
+  quadruple.saveQuad("end", None, None, None)
 
 def p_saw_main(p):
   ''' saw_main : '''
@@ -625,6 +625,7 @@ def p_saw_called_var(p):
   ''' saw_called_var : '''
   current = symbolTable.getCurrentScope()
   global pointer
+  # print("CALLINGSAWCALLEDVAR", current.getLatestName())
   pointer = current.sawCalledVariable(current.getLatestName())
 
 def p_saw_called_var_from_class(p):
@@ -641,6 +642,7 @@ def p_saw_asig(p):
 def p_saw_end_value(p):
   ''' saw_end_value : '''
   quadruple.pilaO.append(p[-1])
+  symbolTable.getCurrentScope().addConstant(p[-1], quadHelpers.getType(p[-1]))
 
 def p_saw_plusminus_operator(p):
   ''' saw_plusminus_operator  : '''
@@ -710,6 +712,7 @@ def p_saw_function(p):
 def p_saw_function_end(p):
   ''' saw_function_end : '''
   quadruple.saveQuad("endfunc", None, None, None)
+  # moduleHelpers.endingFunction()
 
 def p_scope_end(p):
   ''' scope_end : '''
@@ -735,6 +738,7 @@ def p_saw_read_exp(p):
   ''' saw_read_exp : '''
   if quadruple.pOper[-1] == 'read':
     current = symbolTable.getCurrentScope()
+    # print("CALLINGSAWCALLEDVAR", current.getLatestName())
     read_operand = current.sawCalledVariable(current.getLatestName())
     quadruple.saveQuad('read', None, None, read_operand)
 
@@ -780,7 +784,7 @@ def p_increment_cont(p):
 
 def p_generate_gosub(p):
   ''' generate_gosub : '''
-  quadruple.saveQuad('GOSUB', symbolTable.getCurrentScope().getLatestFuncName(), None, None)
+  quadruple.saveQuad('gosub', symbolTable.getCurrentScope().getLatestFuncName(), None, None)
   symbolTable.getCurrentScope().clearCurrentFunctionParams()
   global cont
   cont = 0
@@ -788,6 +792,10 @@ def p_generate_gosub(p):
 def p_saw_cond(p):
   ''' saw_cond : '''
   condHelpers.enterCond()
+
+def p_saw_return_value(p):
+  ''' saw_return_value : '''
+  # symbolTable.getCurrentScope().setLatestReturnValue()
 
 parser = yacc.yacc()
 

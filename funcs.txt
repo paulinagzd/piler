@@ -15,6 +15,7 @@ func int hola(boo you) {
   a = 20 + 10.5 * (8 - 1 / 2)
   /* e = 2 == 2 */
   e = False
+  return 1
 }
 /*
 class Animal: { 
@@ -37,6 +38,7 @@ func boo adios(cha si) {
   w = 80.1
   o = 12 * 5
   oo = 60/5 
+  return False
 }
 
 int main() {
