@@ -283,7 +283,7 @@ def p_type(p):
   '''
   type : compound ID saw_id saw_variable type1
        | simple ID saw_id saw_variable type1
-       | multiple ID saw_id OBRACKET CSTINT CBRACKET saw_dimension type3 saw_variable type2
+       | multiple ID saw_id OBRACKET CSTINT saw_declared_dim CBRACKET type3 saw_variable type2
   '''
 
 def p_type1(p):
@@ -294,13 +294,13 @@ def p_type1(p):
 
 def p_type2(p):
   '''
-  type2 : COMMA ID saw_id OBRACKET CSTINT CBRACKET saw_dimension type3 saw_variable
+  type2 : COMMA ID saw_id OBRACKET CSTINT saw_declared_dim CBRACKET type3 saw_variable
         | empty
   '''
 
 def p_type3(p):
   '''
-  type3 : OBRACKET CSTINT CBRACKET saw_dimension
+  type3 : OBRACKET CSTINT saw_declared_dim CBRACKET
         | empty
   '''
 
@@ -438,13 +438,13 @@ def p_boolean(p):
 def p_variable(p):
   '''
   variable : ID saw_id saw_called_var
-           | ID saw_id OBRACKET exp CBRACKET saw_dimension variable1 saw_called_var
+           | ID saw_id OBRACKET is_dim exp CBRACKET saw_dimension variable1 saw_called_var
            | ID saw_id variable2
   '''
 
 def p_variable1(p):
   '''
-  variable1 : OBRACKET exp CBRACKET saw_dimension
+  variable1 : OBRACKET is_dim exp CBRACKET saw_dimension
             | empty
   '''
 
@@ -618,14 +618,13 @@ def p_saw_variable_param(p):
 
 def p_saw_dimension(p):
   ''' saw_dimension : '''
-  current = symbolTable.getCurrentScope()
-  current.setLatestDimension()
+  # current = symbolTable.getCurrentScope()
+  # current.setLatestDimension()
 
 def p_saw_called_var(p):
   ''' saw_called_var : '''
   current = symbolTable.getCurrentScope()
   global pointer
-  # print("CALLINGSAWCALLEDVAR", current.getLatestName())
   pointer = current.sawCalledVariable(current.getLatestName())
 
 def p_saw_called_var_from_class(p):
@@ -792,6 +791,14 @@ def p_generate_gosub(p):
 def p_saw_cond(p):
   ''' saw_cond : '''
   condHelpers.enterCond()
+
+def p_saw_declared_dim(p):
+  ''' saw_declared_dim : '''
+  current = symbolTable.getCurrentScope()
+  current.setLatestDimension(p[-1])
+
+def p_is_dim(p):
+  ''' is_dim : '''
 
 def p_saw_return_value(p):
   ''' saw_return_value : '''

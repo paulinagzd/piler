@@ -2,6 +2,27 @@ from quad import Quad
 from vm import memSpace, MemSpaceContainer
 quadruple = Quad.instantiate()
 
+class DimensionNode:
+  def __init__(self, dim, lim, temp):
+    self.__dim = dim
+    self.__r = (lim + 1) * temp
+    self.__lim = lim
+
+  def getDim(self):
+    return self.__dim
+
+  def getLim(self):
+    return self.__lim
+
+  def getR(self):
+    return self.__r
+
+  def setR(self, val):
+    self.__r = val
+  
+  def __repr__(self):
+    return "lSup: %s m or k = %s" % (self.__lim, self.__r)
+
 class Constant:
   def __init__(self, memPointer):
     self.__virtualAddress = memPointer.getInitialAddress() + memPointer.getOffset()
@@ -10,16 +31,20 @@ class Constant:
   def __repr__(self):
     return "%s" % (self.__virtualAddress)
 class Variable:
-  def __init__(self, varName, varType, dimensions, isParam, memPointer):
+  def __init__(self, varName, varType, dimensions, dimensionNodes, offset, isParam, memPointer):
     self.__varName = varName
     self.__varType = varType
     self.__dimensions = dimensions
+    self.__dimensionNodes = dimensionNodes
     self.__isParam = isParam
     self.__virtualAddress = memPointer.getInitialAddress() + memPointer.getOffset()
     self.__value = None
-    #incrementing offset when variable is created in memory
-    # print("MEMPOINTER", memPointer.getInitialAddress(), memPointer.getOffset())
-    memPointer.setOffset()
+
+    # incrementing offset when variable is created in memory
+    if dimensions > 0:
+      memPointer.setDimensionalOffset(int(offset))
+    else:  
+      memPointer.setOffset()
 
   # getters
   def getVarName(self):
@@ -30,6 +55,9 @@ class Variable:
 
   def getDimensions(self):
     return self.__dimensions
+
+  def getDimensionNodes(self):
+    return self.__dimensionNodes
 
   def getValue(self):
     return self.__value
@@ -54,7 +82,10 @@ class Variable:
     self.__isParam = value
 
   def __repr__(self):
-    return "{\n name: %s \n type: %s \n dimensions: %s \n value: %s \n isParam: %s \n virtualAddress: %s \n}" % (self.getVarName(), self.getVarType(), self.getDimensions(), self.getValue(), self.getIsParam(), self.__virtualAddress)
+    if self.__dimensions > 0:
+      return "{\n name: %s \n type: %s \n dimensions: %s array: %s \n value: %s \n isParam: %s \n virtualAddress: %s \n}" % (self.getVarName(), self.getVarType(), self.getDimensions(), self.getDimensionNodes(), self.getValue(), self.getIsParam(), self.__virtualAddress)
+    else:
+      return "{\n name: %s \n type: %s \n dimensions: %s \n value: %s \n isParam: %s \n virtualAddress: %s \n}" % (self.getVarName(), self.getVarType(), self.getDimensions(), self.getValue(), self.getIsParam(), self.__virtualAddress)
 
 class ParameterTable:
   isAlive = None
@@ -86,6 +117,7 @@ class Scope:
     self.__numLocalVars = 0
     self.__latestReturnValue = None
     self.__currentFunctionParams = []
+    self.__dimensionNodes = []
 
   # getters
   def getScopeType(self):
@@ -155,8 +187,10 @@ class Scope:
   def setLatestType(self, latestType):
     self.__latestType = latestType
            
-  def setLatestDimension(self):
+  def setLatestDimension(self, lim):
     self.__latestDimension += 1
+    temp = 1 if self.__latestDimension == 1 else self.__dimensionNodes[0].getR()
+    self.__dimensionNodes.append(DimensionNode(self.__latestDimension, lim, temp))
 
   def resetLatestDimension(self):
     self.__latestDimension = 0
@@ -186,20 +220,29 @@ class Scope:
   def addVariable(self, varName, varType, dimensions, isParam):
     if varName in self.getScopeVariables():
       raise Exception('ERROR! Variable with identifier:', varName, 'already exists!')
-      # return False
 
+    # if it has dimensions it needs to complete the dimensionNodes
+    offset = 0
+    if dimensions > 0:
+      size = self.__dimensionNodes[0].getR()
+      for dimNode in self.__dimensionNodes:
+        mDim = dimNode.getR() / (dimNode.getLim() + 1)
+        dimNode.setR(int(mDim))
+        offset = offset + dimNode.getLim() * mDim
+      self.__dimensionNodes[-1].setR(0)
+
+    # adding the variable depending on the scope it's in
     if SymbolTable.instantiate().getCurrentScope().getContext() == 'global':
       memPointer = memSpace['global'][varType]['real']
-      # print("ADDINGVARIABLE", varName, SymbolTable.instantiate().getCurrentScope().getContext())
-      self.__scopeVariables[varName] = Variable(varName, varType, dimensions, isParam, memPointer)
+      self.__scopeVariables[varName] = Variable(varName, varType, dimensions, self.__dimensionNodes, offset, isParam, memPointer)
     elif SymbolTable.instantiate().getCurrentScope().getContext() == 'function':
       memPointer = memSpace['local'][varType]['real']
-      # print("ADDINGVARIABLE", varName, SymbolTable.instantiate().getCurrentScope().getContext())
-      self.__scopeVariables[varName] = Variable(varName, varType, dimensions, isParam, memPointer)
+      self.__scopeVariables[varName] = Variable(varName, varType, dimensions, self.__dimensionNodes, offset, isParam, memPointer)
     else:
-      # print("ELSESCOPETYPE", SymbolTable.instantiate().getCurrentScope().getContext())
       #TODO for CLASSES AND OBJECTS
       pass
+    
+    self.__dimensionNodes = []
     self.resetLatestDimension()
 
   # addConstant
@@ -237,7 +280,6 @@ class Scope:
   def addClass(self, className):
     if className in self.getScopeClasses():
       raise Exception('ERROR! Class with identifier:', className, 'already exists!')
-      # return False
 
     classType = 'class'
     self.__scopeClasses[className] = Scope(classType, className, classType)
@@ -247,13 +289,8 @@ class Scope:
 
   def sawCalledVariable(self, varName):
     globalScope = SymbolTable.instantiate().getGlobalScope()
-    # print("HEREHEREHERE")
-    # print("HEREHEREHERE")
-    # print("HEREHEREHERE", varName, SymbolTable.instantiate().getCurrentScope().getScopeVariables())
-
     if not varName in self.getScopeVariables() and not varName in globalScope.getScopeVariables():
       raise Exception('ERROR! Variable with identifier:', varName, 'is not defined in this scope')
-      # return False
     
     self.resetLatestDimension()
     if varName in self.getScopeVariables():

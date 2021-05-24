@@ -1,6 +1,8 @@
 program viendo;
 var ints globales[1];
-var ints globs[12][12];
+var ints matrizIntDesplazada[12][12];
+var ints globs[3][2];
+var int nu;
 var boos matriz[12][12];
 var str strinn, stru;
 var cha c;
