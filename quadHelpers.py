@@ -230,7 +230,6 @@ def dimensionQuad():
   else:
     current.setLatestDimension(-1)
     quadruple.pilaDim.pop()
-    print("A VER MI DIMENSION", current.getLatestDimension())
     quadruple.pilaDim.append(current.getLatestDimension())
 
 def endDim():
