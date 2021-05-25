@@ -7,6 +7,7 @@ class DimensionNode:
     self.__dim = dim
     self.__r = (lim + 1) * temp
     self.__lim = lim
+    self.__offset = 0
 
   def getDim(self):
     return self.__dim
@@ -17,9 +18,15 @@ class DimensionNode:
   def getR(self):
     return self.__r
 
+  def getOffset(self):
+    return self.__offset
+
   def setR(self, val):
     self.__r = val
   
+  def setOffset(self, val):
+    self.__offset = val
+
   def __repr__(self):
     return "lSup: %s m or k = %s" % (self.__lim, self.__r)
 
@@ -64,6 +71,9 @@ class Variable:
 
   def getIsParam(self):
     return self.__isParam
+
+  def getVirtualAddress(self):
+    return self.__virtualAddress
 
   # setters
   def setVarName(self, varName):
@@ -189,8 +199,9 @@ class Scope:
            
   def setLatestDimension(self, lim):
     self.__latestDimension += 1
-    temp = 1 if self.__latestDimension == 1 else self.__dimensionNodes[0].getR()
-    self.__dimensionNodes.append(DimensionNode(self.__latestDimension, lim, temp))
+    if lim != -1:
+      temp = 1 if self.__latestDimension == 1 else self.__dimensionNodes[0].getR()
+      self.__dimensionNodes.append(DimensionNode(self.__latestDimension, lim, temp))
 
   def resetLatestDimension(self):
     self.__latestDimension = 0
@@ -229,6 +240,7 @@ class Scope:
         mDim = dimNode.getR() / (dimNode.getLim() + 1)
         dimNode.setR(int(mDim))
         offset = offset + dimNode.getLim() * mDim
+        dimNode.setOffset(int(offset))
       self.__dimensionNodes[-1].setR(0)
 
     # adding the variable depending on the scope it's in
@@ -325,6 +337,21 @@ class Scope:
       # return False
     
     return currentClass.__scopeVariables[varName]
+
+  def verifyDim(self):
+    globalScope = SymbolTable.instantiate().getGlobalScope()
+    if not self.__latestName in self.__scopeVariables and not self.__latestName in globalScope.getScopeVariables():
+      raise Exception('ERROR! Variable with identifier:', self.__latestName, 'is not defined in this scope')
+
+    if self.__latestName in self.__scopeVariables:
+      varPointer = self.__scopeVariables
+    elif self.__latestName in globalScope.getScopeVariables():
+      varPointer = globalScope.getScopeVariables()
+
+    if varPointer[self.__latestName].getDimensions() == 0:
+      raise Exception('ERROR! Variable with identifier:', self.__latestName, 'is one dimensional')
+  
+    return varPointer[self.__latestName]
 
   def countVars(self):
     for item, val in self.__scopeVariables.items():

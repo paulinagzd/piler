@@ -438,7 +438,7 @@ def p_boolean(p):
 def p_variable(p):
   '''
   variable : ID saw_id saw_called_var
-           | ID saw_id OBRACKET is_dim exp CBRACKET saw_dimension variable1 saw_called_var
+           | ID saw_id OBRACKET is_dim exp CBRACKET saw_dimension variable1 end_dim saw_called_var
            | ID saw_id variable2
   '''
 
@@ -799,6 +799,11 @@ def p_saw_declared_dim(p):
 
 def p_is_dim(p):
   ''' is_dim : '''
+  quadHelpers.dimensionQuad()
+
+def p_end_dim(p):
+  ''' end_dim : '''
+  quadHelpers.endDim()
 
 def p_saw_return_value(p):
   ''' saw_return_value : '''

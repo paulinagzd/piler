@@ -31,6 +31,7 @@ class Quad:
       Quad.isAlive = self
       self.pOper = []
       self.pilaO = []
+      self.pilaDim = []
       self.quads = {}
       self.quadCounter = 1
 
@@ -41,8 +42,9 @@ class Quad:
     return Quad.isAlive
 
   def saveQuad(self, operator, leftOperand, rightOperand, tvalue):
-    codeNumber = self.operCodes[operator]
-    q = QuadContainer(self.quadCounter, codeNumber, leftOperand, rightOperand, tvalue) # left and right operand contain ADDRESSES
+    # codeNumber = self.operCodes[operator]
+    # q = QuadContainer(self.quadCounter, codeNumber, leftOperand, rightOperand, tvalue) # left and right operand contain ADDRESSES
+    q = QuadContainer(self.quadCounter, operator, leftOperand, rightOperand, tvalue) # left and right operand contain ADDRESSES
     self.quads[self.quadCounter] = q
     self.quadCounter += 1
 
@@ -64,6 +66,7 @@ class Quad:
   def reset(self):
     self.pOper = []
     self.pilaO = []
+    self.pilaDim = []
     self.quads = {}
     self.quadCounter = 1
 

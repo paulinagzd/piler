@@ -6,6 +6,8 @@ import condHelpers
 quadruple = Quad.instantiate()
 symbolTable = SymbolTable.instantiate()
 
+varPointer = None
+
 def getType(operand):
   if operand == 'True' or operand == 'False':
     return 'boo'
@@ -187,10 +189,7 @@ def expression_evaluation(p):
       if p[-2] == 'if' or p[-3] == 'while':
         condHelpers.enterCond()
       else:
-        # print(quadruple.pilaO[-1])
         p[0] = quadruple.pilaO[-1]
-        # print('EVALUACION EXPRESION:', p[0])
-        # print(quadruple.pilaO[-2])
         symbolTable.getCurrentScope().setLatestExpValue(p[0])
     elif quadruple.pOper[-1] == '=':
       right_operand = quadruple.pilaO.pop() # this should be a value
@@ -204,7 +203,44 @@ def expression_evaluation(p):
     elif quadruple.pOper[-1] == 'print':
       print_operand = quadruple.pilaO.pop() # this should be the value to print
       quadruple.saveQuad('print', None, None, print_operand)
-    else:
-      print("WILLIBOOL?")
-      print(p[0])
+    elif quadruple.pOper[-1] == '[':
+      lsPointer = quadruple.pilaDim[-1].getDimensionNodes()
+      currentDim = quadruple.pilaDim[-1]["dim"]
+      quadruple.saveQuad("verify", quadruple.pilaO[-1], 0, lsPointer[currentDim].getLim())
+      if currentDim > 1:
+        tvalue = "t{}".format(quadruple.quadCounter)
+        left_operand = quadruple.pilaO.pop()
+        right_operand = quadruple.pilaO.pop()
+        quadruple.saveQuad("+", left_operand, right_operand, tvalue)
+      if len(lsPointer) > 1:
+        aux = quadruple.pilaO.pop()
+        quadruple.saveQuad("*", aux, lsPointer.getR(), tvalue)
+
+def dimensionQuad():
+  quadruple.pilaO.append(symbolTable.getCurrentScope().getLatestName())
+  idVar = quadruple.pilaO.pop()
+  current = symbolTable.getCurrentScope()
+  global varPointer
+  varPointer = current.verifyDim()
+  current.setLatestDimension(-1) # imaginary limit
+  if current.getLatestDimension() == 1:
+    quadruple.pilaDim.append({"id": varPointer, "dim": current.getLatestDimension()})
+    dimNode = varPointer.getDimensionNodes()
+    quadruple.pOper.append('[')
+  else:
+    current.setLatestDimension(-1)
+    quadruple.pilaDim.pop()
+    print("A VER MI DIMENSION", current.getLatestDimension())
+    quadruple.pilaDim.append(current.getLatestDimension())
+
+def endDim():
+  tvalue = "t{}".format(quadruple.quadCounter)
+  current = symbolTable.getCurrentScope()
+  aux = quadruple.pilaO.pop()
+  global varPointer
+  varPointerDimNodes = varPointer.getDimensionNodes()
+  quadruple.saveQuad("+", aux, varPointerDimNodes[current.getLatestDimension()-1].getOffset(), tvalue)
+  quadruple.saveQuad("+", "t{}".format(quadruple.quadCounter - 1), varPointer.getVirtualAddress(), tvalue)
+  quadruple.pilaO.append(tvalue) # to change to address
+  quadruple.pOper.pop() # eliminates fake bottom
 
