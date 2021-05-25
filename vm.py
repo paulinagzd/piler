@@ -113,46 +113,62 @@ memSpace = {
 }
 
 class VM:
-  def __init__(self, quadList):
+  def __init__(self, quadList, ):
     self.__quadList = quadList
     self.__nextPointer = 1
+    self.__callStack = []
+  
+  # Call Stack access
+  def pushCallStack(self, functionCall):
+    self.__callStack.append(functionCall)
+
+  def popCallStack(self):
+    if self.__callStack:
+      return self.__callStack.pop()
+
+  def topCallStack(self):
+    if self.__callStack:
+      return self.__callStack[-1]
 
   # Processing Operations
-  def add(self):
+  def add(self, leftDir, rightDir, resultDir):
+    leftValue = 
+    rightValue = 
+    MainMemory[resultDir] = leftValue + rightValue
     return False
 
-  def subtract(self):
+  def subtract(self, leftDir, rightDir, resultDir):
     return False
 
-  def multiply(self):
+  def multiply(self, leftDir, rightDir, resultDir):
     return False
 
-  def divide(self):
-    return False  
+  def divide(self, leftDir, rightDir, resultDir):
+    return False
 
   def assign(self):
     return False
 
-  def lt(self):
+  def lt(self, leftDir, rightDir, resultDir):
     return False
       
-  def gt(self):
+  def gt(self, leftDir, rightDir, resultDir):
     return False
       
-  def le(self):
+  def le(self, leftDir, rightDir, resultDir):
     return False
       
-  def ge(self):
+  def ge(self, leftDir, rightDir, resultDir):
     return False
       
-  def equal(self):
+  def equal(self, leftDir, rightDir, resultDir):
     return False
       
-  def notEqual(self):
+  def notEqual(self, leftDir, rightDir, resultDir):
     return False
 
-  def printLine(self):
-    return False
+  def printLine(self, resultDir):
+    print()
 
   def readLine(self):
     return False
@@ -177,61 +193,88 @@ class VM:
 
   def endFunc(self):
     return False
+  
+  def ver(self):
+    return False
+  
+  def funcReturn(self):
+    return False
+
+  def end(self):
+    print("---SUCCESSFUL EXECUTION---")
     
   #MAIN VM PROGRAM
-  def driverProgram(self):
-    operCode = quadList[nextPointer][0]
-    while (operCode != 21):
+  def execute(self):
+    operCode = self.__quadList[self.__nextPointer][0]
+    while (operCode < 23):
+      currentQuad = self.__quadList[self.__nextPointer]
       if operCode == 1: #sumar
-        self.add()
+        self.add(currentQuad[1], currentQuad[2], currentQuad[3])
+        self.__nextPointer += 1
+      
+      elif operCode == 2: #restar
+        self.subtract(currentQuad[1], currentQuad[2], currentQuad[3])
+        self.__nextPointer += 1
 
-      elif operCode == 2:
-        self.subtract()
+      elif operCode == 3: #multiplicar
+        self.multiply(currentQuad[1], currentQuad[2], currentQuad[3])
+        self.__nextPointer += 1
 
-      elif operCode == 3:
-        self.multiply()
+      elif operCode == 4: #dividir
+        self.divide(currentQuad[1], currentQuad[2], currentQuad[3])
+        self.__nextPointer += 1
 
-      elif operCode == 4:
-        self.divide()
-
-      elif operCode == 5:
+      elif operCode == 5: 
         self.assign()
 
       elif operCode == 6:
-        self.lt()
+        self.lt(currentQuad[1], currentQuad[2], currentQuad[3])
+        self.__nextPointer += 1
 
       elif operCode == 7:
-        self.gt()
+        self.gt(currentQuad[1], currentQuad[2], currentQuad[3])
+        self.__nextPointer += 1
 
       elif operCode == 8:
-        self.le()
+        self.le(currentQuad[1], currentQuad[2], currentQuad[3])
+        self.__nextPointer += 1
 
       elif operCode == 9:
-        self.ge()
+        self.ge(currentQuad[1], currentQuad[2], currentQuad[3])
+        self.__nextPointer += 1
 
       elif operCode == 10:
-        self.equal()
+        self.equal(currentQuad[1], currentQuad[2], currentQuad[3])
+        self.__nextPointer += 1
 
       elif operCode == 11:
-        self.notEqual()
+        self.notEqual(currentQuad[1], currentQuad[2], currentQuad[3])
+        self.__nextPointer += 1
 
       elif operCode == 12:
         self.printLine()
+        self.__nextPointer += 1
 
       elif operCode == 13:
         self.readLine()
+        self.__nextPointer += 1
       
       elif operCode == 14:
         self.goto()
+        self.__nextPointer = currentQuad[3]
       
       elif operCode == 15:
         self.gotoF()
+        # add boolean logic
+        self.__nextPointer = currentQuad[3]
       
       elif operCode == 16:
         self.gotoV()
+        self.__nextPointer = currentQuad[3]
         
       elif operCode == 17:
         self.goSub()
+        self.__nextPointer = currentQuad[3]
 
       elif operCode == 18:
         self.era()
@@ -242,6 +285,16 @@ class VM:
       elif operCode == 20:
         self.endFunc()
       
+      elif operCode == 21:
+        self.ver()
+      
+      elif operCode == 22:
+        self.funcReturn()
+      
+      operCode = self.__quadList[self.__nextPointer][0]
+    
+    self.end()
+     
 # works like a Memory SCOPE, divided in G, L, T, C, and Objs      
 class MemoryContainer:
   isAlive = None

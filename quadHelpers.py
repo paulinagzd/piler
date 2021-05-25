@@ -46,16 +46,13 @@ def check_multdiv_operator(quadruple):
         tvalue = "t{}".format(quadruple.quadCounter)
         quadruple.pilaO.append({tvalue: result_Type})
         symbolTable.getCurrentScope().setLatestExpValue(result_Type)
-        # if operator == '*':
-        #   tvalue = left_operand * right_operand
-        #   quadruple.pilaO.append(tvalue)
-        # elif operator == '/':
-        #   tvalue = left_operand / right_operand
-        #   quadruple.pilaO.append(tvalue)
-
 
         # Saving the operator code instead of the operator itself
-        quadruple.saveQuad(operator,left_operand,right_operand,{tvalue: result_Type})
+        operCode = Quad.operCodes[operator]
+        left_operand_dir = 
+        right_operand_dir = 
+        tvalue_dir =
+        quadruple.saveQuad(operCode,left_operand_dir,right_operand_dir,{tvalue: result_Type})
       else:
         raise Exception('ERROR! Type Mismatch') #type mismatch
     # else:
@@ -108,24 +105,6 @@ def check_relational_operator(quadruple):
       symbolTable.getCurrentScope().setLatestType(result_Type)
       
       if result_Type != 'TYPE MISMATCH':
-        # if operator == '>':
-        #   tvalue = left_operand > right_operand
-        #   quadruple.pilaO.append(tvalue)
-        # elif operator == '<':
-        #   tvalue = left_operand < right_operand
-        #   quadruple.pilaO.append(tvalue)
-        # elif operator == '>=':
-        #   tvalue = left_operand >= right_operand
-        #   quadruple.pilaO.append(tvalue)
-        # elif operator == '<=':
-        #   tvalue = left_operand <= right_operand
-        #   quadruple.pilaO.append(tvalue)
-        # elif operator == '==':
-        #   tvalue = left_operand == right_operand
-        #   quadruple.pilaO.append(tvalue)
-        # elif operator == '!=':
-        #   tvalue = left_operand != right_operand
-        #   quadruple.pilaO.append(tvalue)
         tvalue = "t{}".format(quadruple.quadCounter)
         quadruple.pilaO.append({tvalue: result_Type})
         quadruple.saveQuad(operator,left_operand,right_operand,{tvalue: result_Type})

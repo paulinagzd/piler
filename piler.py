@@ -22,8 +22,9 @@ while True:
       correctFile.close()
       if parser.parse(curr) == 'SUCCESS':
         print("SUCCESSFULLY COMPILED!")
-        print("BEGGINING EXECUTION...") # a.out
+        print("---BEGINNING EXECUTION---") # a.out
         virtualMachine = VM(quadruple.quads)
+        virtualMachine.execute()
       symbolTable.printingAll()
       # quadruple.print()
       symbolTable.reset()
