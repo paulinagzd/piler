@@ -195,7 +195,7 @@ def p_functions(p): # function declarations in a FIXED PLACE (such as class meth
 
 def p_function(p):
   '''
-  function : FUNCTION func1 ID saw_id saw_function OPAREN param CPAREN block saw_function_end scope_end
+  function : FUNCTION func1 ID saw_id saw_function OPAREN param CPAREN start_function_temp_count block  end_function_temp_count saw_function_end scope_end
   '''
 
 def p_function1(p):
@@ -549,8 +549,8 @@ def p_saw_var_factor(p):
   '''
   saw_var_factor :
   '''
+  # getting a Variable object
   current = symbolTable.getCurrentScope().sawCalledVariable(symbolTable.getCurrentScope().getLatestName())
-  # print(current)
   quadruple.pilaO.append(current)
 
 ################################################
@@ -641,8 +641,10 @@ def p_saw_asig(p):
 
 def p_saw_end_value(p):
   ''' saw_end_value : '''
-  quadruple.pilaO.append(p[-1])
+  # adding constant values to the global scope
   symbolTable.getCurrentScope().addConstant(p[-1], quadHelpers.getType(p[-1]))
+  current = symbolTable.getGlobalScope().getScopeConstants()[-1]
+  quadruple.pilaO.append(current)
 
 def p_saw_plusminus_operator(p):
   ''' saw_plusminus_operator  : '''
@@ -796,6 +798,16 @@ def p_saw_cond(p):
 def p_saw_return_value(p):
   ''' saw_return_value : '''
   # symbolTable.getCurrentScope().setLatestReturnValue()
+
+def p_start_function_temp_count(p):
+  '''
+  start_function_temp_count : 
+  '''
+  
+def p_end_function_temp_count(p):
+  '''
+  end_function_temp_count : 
+  '''
 
 parser = yacc.yacc()
 

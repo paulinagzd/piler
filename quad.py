@@ -26,7 +26,8 @@ class Quad:
     'endfunc': 20,
     'ver' : 21,
     'return' : 22,
-    'end': 23
+    'era' : 23,
+    'end': 24
   }
 
   def __init__(self):

@@ -7,8 +7,12 @@ class Constant:
     self.__virtualAddress = memPointer.getInitialAddress() + memPointer.getOffset()
     memPointer.setOffset()
 
+  def getVirtualAddress(self):
+    return self.__virtualAddress
+
   def __repr__(self):
     return "%s" % (self.__virtualAddress)
+
 class Variable:
   def __init__(self, varName, varType, dimensions, isParam, memPointer):
     self.__varName = varName
@@ -86,6 +90,18 @@ class Scope:
     self.__numLocalVars = 0
     self.__latestReturnValue = None
     self.__currentFunctionParams = []
+    self.__temps = {
+      'int' : 0,
+      'ints': 0,
+      'flt' : 0,
+      'flts': 0,
+      'boo' : 0,
+      'boos': 0,
+      'cha' : 0,
+      'chas': 0,
+      'str' : 0,
+      'strs': 0,
+    }
 
   # getters
   def getScopeType(self):
@@ -139,6 +155,9 @@ class Scope:
   def getLatestReturnValue(self):
     return self.__latestReturnValue
 
+  def getTemps(self):
+    return self.__temps
+
   # setters
   def setScopeType(self, scopeType):
     self.__scopeType = scopeType
@@ -182,6 +201,14 @@ class Scope:
   def setLatestReturnValue(self):
     self.__latestReturnValue = self.__latestExpValue
 
+  def setTemps(self, key, val):
+    self.__temps[key] = val
+
+  def findConstVA(self, val):
+    globalScope = SymbolTable.instantiate().getGlobalScope()
+    if val in globalScope.getScopeConstants():
+      return globalScope.getScopeConstants()[val].getVirtualAddress()
+
   # methods
   def addVariable(self, varName, varType, dimensions, isParam):
     if varName in self.getScopeVariables():
@@ -221,6 +248,10 @@ class Scope:
       memPointer = memSpace['constants'][type]
       constantTypePointer[value] = {Constant(memPointer)}
 
+  def addTemp(self, type, value):
+    memPointer = memSpace['local'][type]['temp']
+    memPointer[value] = {"TODO VALOR TEMP AQUI"}
+
   def addFunction(self, funcName, funcType):
     if funcName in self.getScopeFunctions():
       raise Exception('ERROR! Function with identifier: ', funcName, 'already exists!')
@@ -247,19 +278,16 @@ class Scope:
 
   def sawCalledVariable(self, varName):
     globalScope = SymbolTable.instantiate().getGlobalScope()
-    # print("HEREHEREHERE")
-    # print("HEREHEREHERE")
-    # print("HEREHEREHERE", varName, SymbolTable.instantiate().getCurrentScope().getScopeVariables())
 
     if not varName in self.getScopeVariables() and not varName in globalScope.getScopeVariables():
       raise Exception('ERROR! Variable with identifier:', varName, 'is not defined in this scope')
-      # return False
     
-    self.resetLatestDimension()
     if varName in self.getScopeVariables():
       return self.__scopeVariables[varName]
     elif varName in globalScope.getScopeVariables():
       return globalScope.__scopeVariables[varName]
+
+    self.resetLatestDimension()
 
   def sawCalledFunction(self, funcName):
     globalScope = SymbolTable.instantiate().getGlobalScope()

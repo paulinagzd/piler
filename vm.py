@@ -1,6 +1,8 @@
 from quad import Quad
+from symbolTable import SymbolTable
 
 quadruple = Quad.instantiate()
+symbolTable = SymbolTable.instantiate()
 
 class MemSpaceContainer:
   def __init__(self, initialAddress):
@@ -113,10 +115,12 @@ memSpace = {
 }
 
 class VM:
-  def __init__(self, quadList, ):
+  def __init__(self, quadList, DirFunc):
     self.__quadList = quadList
     self.__nextPointer = 1
     self.__callStack = []
+    self.__ConstTable = symbolTable.getGlobalScope().getScopeConstants()
+    self.__DirFunc = DirFunc
   
   # Call Stack access
   def pushCallStack(self, functionCall):
@@ -198,6 +202,9 @@ class VM:
     return False
   
   def funcReturn(self):
+    return False
+  
+  def era(self):
     return False
 
   def end(self):
@@ -291,6 +298,9 @@ class VM:
       elif operCode == 22:
         self.funcReturn()
       
+      elif operCode == 23:
+        self.era()
+      
       operCode = self.__quadList[self.__nextPointer][0]
     
     self.end()
@@ -310,7 +320,9 @@ class MemoryContainer:
 
 class MainMemory:
   isAlive = None
-
+  ["global" [reales]  [temp]]
+  ["localFunc1" [varsLocalesMemoria] [tempsGenerados]]
+  [Constantes consts con direcciones de mmeoria]
   def __init__(self):
     MainMemory.isAlive = self
     self.__global = {}
