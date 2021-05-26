@@ -263,13 +263,7 @@ def p_decs(p):
 
 def p_dec(p):
   '''
-  dec : VAR type SEMICOLON dec1
-  '''
-
-def p_dec1(p):
-  '''
-  dec1 : dec
-       | empty
+  dec : VAR type SEMICOLON
   '''
 
 def p_decs1(p):
@@ -325,8 +319,8 @@ def p_type_multiple(p):
 def p_type_compound(p):
   '''
   compound : ID saw_type
-            | DATAFRAME saw_type
-            | FILE saw_type
+           | DATAFRAME saw_type
+           | FILE saw_type
   ''' 
 
 ################################################
