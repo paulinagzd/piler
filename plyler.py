@@ -438,20 +438,20 @@ def p_boolean(p):
 def p_variable(p):
   '''
   variable : ID saw_id saw_called_var
-           | ID saw_id OBRACKET is_dim exp CBRACKET saw_dimension variable1 end_dim saw_called_var
+           | ID saw_id OBRACKET is_dim exp CBRACKET variable1 end_dim saw_called_var
            | ID saw_id variable2
   '''
 
 def p_variable1(p):
   '''
-  variable1 : OBRACKET is_dim exp CBRACKET saw_dimension
+  variable1 : OBRACKET is_dim exp CBRACKET
             | empty
   '''
 
 def p_variable2(p):
   '''
   variable2 : PERIOD ID saw_called_var_from_class
-            | PERIOD ID saw_called_var_from_class OBRACKET exp CBRACKET saw_dimension variable1
+            | PERIOD ID saw_called_var_from_class OBRACKET exp CBRACKET variable1
   '''
 
 ################################################
@@ -618,11 +618,10 @@ def p_saw_variable_param(p):
 
 def p_saw_dimension(p):
   ''' saw_dimension : '''
-  # current = symbolTable.getCurrentScope()
-  # current.setLatestDimension()
 
 def p_saw_called_var(p):
   ''' saw_called_var : '''
+  print("CALLED COMES FIRST")
   current = symbolTable.getCurrentScope()
   global pointer
   pointer = current.sawCalledVariable(current.getLatestName())
@@ -799,7 +798,12 @@ def p_saw_declared_dim(p):
 
 def p_is_dim(p):
   ''' is_dim : '''
-  quadHelpers.dimensionQuad()
+  current = symbolTable.getCurrentScope()
+  print("COMESFROM IS DIM")
+  current.setLatestDimension(-1) # imaginary limit
+  if current.getLatestDimension() == 1:
+    quadruple.pilaO.append(symbolTable.getCurrentScope().getLatestName())
+  quadHelpers.dimensionQuad(current, current.getLatestDimension())
 
 def p_end_dim(p):
   ''' end_dim : '''

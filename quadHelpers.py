@@ -37,6 +37,8 @@ def check_multdiv_operator(quadruple):
       right_type = getTypeIfVariable(right_operand)
       left_operand = quadruple.pilaO.pop()
       left_type = getTypeIfVariable(left_operand)
+      print("TYPEEEEEEE", left_operand, right_operand)
+
       operator = workingStack.pop()
       if quadruple.pOper:
         quadruple.pOper.pop()
@@ -193,6 +195,8 @@ def expression_evaluation(p):
         symbolTable.getCurrentScope().setLatestExpValue(p[0])
     elif quadruple.pOper[-1] == '=':
       right_operand = quadruple.pilaO.pop() # this should be a value
+      while str(type(quadruple.pilaO[-1])) != "<class 'symbolTable.Variable'>":
+        quadruple.pilaO.pop()
       left_operand = quadruple.pilaO.pop() # this should be an id
       right_type = getType(right_operand)
       left_var = symbolTable.getCurrentScope().sawCalledVariable(symbolTable.getCurrentScope().getLatestName())
@@ -203,43 +207,50 @@ def expression_evaluation(p):
     elif quadruple.pOper[-1] == 'print':
       print_operand = quadruple.pilaO.pop() # this should be the value to print
       quadruple.saveQuad('print', None, None, print_operand)
-    elif quadruple.pOper[-1] == '[':
-      lsPointer = quadruple.pilaDim[-1].getDimensionNodes()
-      currentDim = quadruple.pilaDim[-1]["dim"]
-      quadruple.saveQuad("verify", quadruple.pilaO[-1], 0, lsPointer[currentDim].getLim())
-      if currentDim > 1:
-        tvalue = "t{}".format(quadruple.quadCounter)
-        left_operand = quadruple.pilaO.pop()
-        right_operand = quadruple.pilaO.pop()
-        quadruple.saveQuad("+", left_operand, right_operand, tvalue)
-      if len(lsPointer) > 1:
+  elif quadruple.pOper[-1] == '[':
+    lsPointer = quadruple.pilaDim[-1]["id"].getDimensionNodes()
+    currentDim = quadruple.pilaDim[-1]["dim"]
+    quadruple.saveQuad("verify", quadruple.pilaO[-1], 0, lsPointer[currentDim-1].getLim()) # -1 because array index
+    tvalue = "t{}".format(quadruple.quadCounter)
+    if symbolTable.getCurrentScope().getLatestDimension() > 1: # TODO
+    # print("POR QUE ES J", quadruple.pilaO[-1])
         aux = quadruple.pilaO.pop()
-        quadruple.saveQuad("*", aux, lsPointer.getR(), tvalue)
+        quadruple.saveQuad("*", aux, lsPointer[currentDim-1].getR(), {tvalue: 'int'})
+        quadruple.pilaO.append({tvalue: 'int'})
+    if currentDim > 1:
+      left_operand = quadruple.pilaO.pop()
+      right_operand = quadruple.pilaO.pop()
+      quadruple.saveQuad("+", left_operand, right_operand, tvalue)
+      quadruple.pilaO.append({tvalue: 'int'})
 
-def dimensionQuad():
-  quadruple.pilaO.append(symbolTable.getCurrentScope().getLatestName())
-  idVar = quadruple.pilaO.pop()
-  current = symbolTable.getCurrentScope()
+def dimensionQuad(current, currDim):
+  print("CURR DIM IS", currDim)
   global varPointer
-  varPointer = current.verifyDim()
-  current.setLatestDimension(-1) # imaginary limit
-  if current.getLatestDimension() == 1:
-    quadruple.pilaDim.append({"id": varPointer, "dim": current.getLatestDimension()})
+  if currDim == 1:
+    idVar = quadruple.pilaO.pop()
+    varPointer = current.verifyDim(idVar)
+    quadruple.pilaDim.append({"id": varPointer, "dim": currDim})
     dimNode = varPointer.getDimensionNodes()
-    quadruple.pOper.append('[')
+    quadruple.pOper.append('[') # fakeBottom
   else:
-    current.setLatestDimension(-1)
     quadruple.pilaDim.pop()
-    quadruple.pilaDim.append(current.getLatestDimension())
+    quadruple.pilaDim.append({"id": varPointer, "dim": current.getLatestDimension()})
 
 def endDim():
+  print("ENTER ENDDIM")
   tvalue = "t{}".format(quadruple.quadCounter)
   current = symbolTable.getCurrentScope()
   aux = quadruple.pilaO.pop()
   global varPointer
   varPointerDimNodes = varPointer.getDimensionNodes()
-  quadruple.saveQuad("+", aux, varPointerDimNodes[current.getLatestDimension()-1].getOffset(), tvalue)
-  quadruple.saveQuad("+", "t{}".format(quadruple.quadCounter - 1), varPointer.getVirtualAddress(), tvalue)
+  # if current.getLatestDimension() == 1:
+  #   print(current.getLatestDimension()) # se supone que en mi primera direccion
+  quadruple.saveQuad("+", aux, varPointerDimNodes[current.getLatestDimension()-1].getR(), {tvalue: 'int'}) # ojo offset for first ones
+  # else:
+  #   # print("DIMENSION LOCA", current.getLatestDimension())
+  #   quadruple.saveQuad("+", aux, 0, tvalue) # ojo offset for first ones
+  quadruple.saveQuad("+", {"id": "t{}".format(quadruple.quadCounter - 1), "varType": 'int'}, varPointer.getVirtualAddress(), {"t{}".format(quadruple.quadCounter+1), 'int'})
   quadruple.pilaO.append(tvalue) # to change to address
   quadruple.pOper.pop() # eliminates fake bottom
+  current.resetLatestDimension()
 
