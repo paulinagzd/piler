@@ -1,0 +1,6 @@
+program arreglos;
+var int i, j;
+var ints A[11];
+int main () {
+  i = j * A[j+1] + j
+}

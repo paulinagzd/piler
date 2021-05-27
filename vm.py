@@ -16,6 +16,9 @@ class MemSpaceContainer:
   def setOffset(self):
     self.__offset += 1
 
+  def setDimensionalOffset(self, val):
+    self.__offset += val
+
 # this is the main directory for memory addresses separated by scope
 # elements contain their offset for when assigning new variables
 memSpace = {

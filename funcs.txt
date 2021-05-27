@@ -1,6 +1,8 @@
 program viendo;
 var ints globales[1];
-var ints globs[12][12];
+var ints matrizIntDesplazada[12][12];
+var ints globs[3][2];
+var int nu;
 var boos matriz[12][12];
 var str strinn, stru;
 var cha c;
@@ -12,6 +14,9 @@ func int hola(boo you) {
   var int i;
   var boo e;
   var flt a;
+  i = 9
+  globales[0] = 1
+  globs[2*3*1+2][i*5] = 2
   a = 20 + 10.5 * (8 - 1 / 2)
   /* e = 2 == 2 */
   e = False

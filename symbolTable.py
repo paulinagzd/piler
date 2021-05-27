@@ -2,16 +2,48 @@ from quad import Quad
 from vm import memSpace, MemSpaceContainer
 quadruple = Quad.instantiate()
 
+class DimensionNode:
+  def __init__(self, dim, lim, temp):
+    self.__dim = dim
+    self.__r = (lim + 1) * temp
+    self.__lim = lim
+    self.__offset = 0
+
+  def getDim(self):
+    return self.__dim
+
+  def getLim(self):
+    return self.__lim
+
+  def getR(self):
+    return self.__r
+
+  def getOffset(self):
+    return self.__offset
+
+  def setR(self, val):
+    self.__r = val
+  
+  def setOffset(self, val):
+    self.__offset = val
+
+  def __repr__(self):
+    return "lSup: %s m or k = %s" % (self.__lim, self.__r)
 class Variable:
-  def __init__(self, varName, varType, dimensions, isParam, memPointer):
+  def __init__(self, varName, varType, dimensions, dimensionNodes, offset, isParam, memPointer):
     self.__varName = varName
     self.__varType = varType
     self.__dimensions = dimensions
+    self.__dimensionNodes = dimensionNodes
     self.__isParam = isParam
     self.__virtualAddress = memPointer.getInitialAddress() + memPointer.getOffset()
     self.__value = None
-    #incrementing offset when variable is created in memory
-    memPointer.setOffset()
+
+    # incrementing offset when variable is created in memory
+    if dimensions > 0:
+      memPointer.setDimensionalOffset(int(offset))
+    else:  
+      memPointer.setOffset()
 
   # getters
   def getVarName(self):
@@ -22,6 +54,9 @@ class Variable:
 
   def getDimensions(self):
     return self.__dimensions
+
+  def getDimensionNodes(self):
+    return self.__dimensionNodes
 
   def getValue(self):
     return self.__value
@@ -49,7 +84,10 @@ class Variable:
     self.__isParam = value
 
   def __repr__(self):
-    return "{\n name: %s \n type: %s \n dimensions: %s \n value: %s \n isParam: %s \n virtualAddress: %s \n}" % (self.getVarName(), self.getVarType(), self.getDimensions(), self.getValue(), self.getIsParam(), self.__virtualAddress)
+    if self.__dimensions > 0:
+      return "{\n name: %s \n type: %s \n dimensions: %s array: %s \n value: %s \n isParam: %s \n virtualAddress: %s \n}" % (self.getVarName(), self.getVarType(), self.getDimensions(), self.getDimensionNodes(), self.getValue(), self.getIsParam(), self.__virtualAddress)
+    else:
+      return "{\n name: %s \n type: %s \n dimensions: %s \n value: %s \n isParam: %s \n virtualAddress: %s \n}" % (self.getVarName(), self.getVarType(), self.getDimensions(), self.getValue(), self.getIsParam(), self.__virtualAddress)
 
 class ParameterTable:
   isAlive = None
@@ -81,6 +119,7 @@ class Scope:
     self.__numLocalVars = 0
     self.__latestReturnValue = None
     self.__currentFunctionParams = []
+    self.__dimensionNodes = []
     self.__matchingParams = False
 
   # getters
@@ -154,8 +193,11 @@ class Scope:
   def setLatestType(self, latestType):
     self.__latestType = latestType
            
-  def setLatestDimension(self):
-    self.__latestDimension += 1
+  def setLatestDimension(self, lim):
+    self.__latestDimension = self.__latestDimension + 1
+    if lim != -1:
+      temp = 1 if self.__latestDimension == 1 else self.__dimensionNodes[0].getR()
+      self.__dimensionNodes.append(DimensionNode(self.__latestDimension, lim, temp))
 
   def resetLatestDimension(self):
     self.__latestDimension = 0
@@ -189,15 +231,28 @@ class Scope:
     if varName in self.getScopeVariables():
       raise Exception('ERROR! Variable with identifier:', varName, 'already exists!')
 
+    # if it has dimensions it needs to complete the dimensionNodes
+    offset = 0
+    if dimensions > 0:
+      size = self.__dimensionNodes[0].getR()
+      for dimNode in self.__dimensionNodes:
+        mDim = dimNode.getR() / (dimNode.getLim() + 1)
+        dimNode.setR(int(mDim))
+        offset = offset + dimNode.getLim() * mDim
+        dimNode.setOffset(int(offset))
+      self.__dimensionNodes[-1].setR(0)
+
+    # adding the variable depending on the scope it's in
     if SymbolTable.instantiate().getCurrentScope().getContext() == 'global':
       memPointer = memSpace['global'][varType]['real']
-      self.__scopeVariables[varName] = Variable(varName, varType, dimensions, isParam, memPointer)
+      self.__scopeVariables[varName] = Variable(varName, varType, dimensions, self.__dimensionNodes, offset, isParam, memPointer)
     elif SymbolTable.instantiate().getCurrentScope().getContext() == 'function':
       memPointer = memSpace['local'][varType]['real']
-      self.__scopeVariables[varName] = Variable(varName, varType, dimensions, isParam, memPointer)
+      self.__scopeVariables[varName] = Variable(varName, varType, dimensions, self.__dimensionNodes, offset, isParam, memPointer)
     else:
       #TODO for CLASSES AND OBJECTS
       pass
+    self.__dimensionNodes = []
     self.resetLatestDimension()
 
   # addConstant
@@ -250,11 +305,11 @@ class Scope:
     if not varName in self.getScopeVariables() and not varName in globalScope.getScopeVariables():
       raise Exception('ERROR! Variable with identifier:', varName, 'is not defined in this scope')
     
-    self.resetLatestDimension()
     if varName in self.getScopeVariables():
       return self.__scopeVariables[varName]
     elif varName in globalScope.getScopeVariables():
       return globalScope.__scopeVariables[varName]
+    self.resetLatestDimension()
 
   def sawCalledFunction(self, funcName):
     globalScope = SymbolTable.instantiate().getGlobalScope()
@@ -283,6 +338,21 @@ class Scope:
       raise Exception('ERROR! Variable with identifier:', varName, 'is not defined in this scope')
     
     return currentClass.__scopeVariables[varName]
+
+  def verifyDim(self, varName):
+    globalScope = SymbolTable.instantiate().getGlobalScope()
+    if not varName in self.__scopeVariables and not varName in globalScope.getScopeVariables():
+      raise Exception('ERROR! Variable with identifier:', varName, 'is not defined in this scope')
+
+    if varName in self.__scopeVariables:
+      varPointer = self.__scopeVariables
+    elif varName in globalScope.getScopeVariables():
+      varPointer = globalScope.getScopeVariables()
+
+    if varPointer[varName].getDimensions() == 0:
+      raise Exception('ERROR! Variable with identifier:', varName, 'is one dimensional')
+  
+    return varPointer[varName]
 
   def countVars(self):
     for item, val in self.__scopeVariables.items():

@@ -7,47 +7,49 @@ import condHelpers
 quadruple = Quad.instantiate()
 symbolTable = SymbolTable.instantiate()
 
+varPointer = None
+
 def getTypeV2(operand):
   if operand >= 5000 and operand < 6999:
     return 'int'
   elif operand >= 7000 and operand < 8999:
-    return 'ints'
+    return 'int'
   elif operand >= 9000 and operand < 10999:
     return 'flt'
   elif operand >= 11000 and operand < 12999:
-    return 'flts'
+    return 'flt'
   elif operand >= 13000 and operand < 14999:
     return 'cha'
   elif operand >= 15000 and operand < 16999:
-    return 'chas'
+    return 'cha'
   elif operand >= 17000 and operand < 18999:
     return 'boo'
   elif operand >= 19000 and operand < 20999:
-    return 'boos'
+    return 'boo'
   elif operand >= 21000 and operand < 22999:
     return 'str'
   elif operand >= 23000 and operand < 24999:
-    return 'strs'
+    return 'str'
   elif operand >= 25000 and operand < 26999:
     return 'int'
   elif operand >= 27000 and operand < 28999:
-    return 'ints'
+    return 'int'
   elif operand >= 29000 and operand < 30999:
     return 'flt'
   elif operand >= 31000 and operand < 32999:
-    return 'flts'
+    return 'flt'
   elif operand >= 33000 and operand < 34999:
     return 'cha'
   elif operand >= 35000 and operand < 36999:
-    return 'chas'
+    return 'cha'
   elif operand >= 37000 and operand < 38999:
     return 'boo'
   elif operand >= 39000 and operand < 40999:
-    return 'boos'
+    return 'boo'
   elif operand >= 41000 and operand < 42999:
     return 'str'
   elif operand >= 43000 and operand < 44999:
-    return 'strs' 
+    return 'str' 
   elif operand >= 45000 and operand < 46999:
     return 'int'
   elif operand >= 47000 and operand < 48999:
@@ -301,7 +303,10 @@ def expression_evaluation(p):
         p[0] = quadruple.pilaO[-1]
         symbolTable.getCurrentScope().setLatestExpValue(p[0])
     elif quadruple.pOper[-1] == '=':
+      # print("ASIGNACION", quadruple.pilaO[-1], quadruple.pilaO[-2], quadruple.pilaO[-3], quadruple.pilaO[-4])
       right_operand = quadruple.pilaO.pop() # this should be a value
+      # while str(type(quadruple.pilaO[-1])) != "<class 'symbolTable.Variable'>":
+      #   quadruple.pilaO.pop()
       left_operand = quadruple.pilaO.pop() # this should be an id
       right_type = getTypeV2(right_operand)
       left_type = getTypeV2(left_operand)   
@@ -311,6 +316,30 @@ def expression_evaluation(p):
     elif quadruple.pOper[-1] == 'print' and not symbolTable.getCurrentScope().getMatchingParams():
       print_operand = quadruple.pilaO.pop() # this should be the value to print
       quadruple.saveQuad('print', -1, -1, print_operand)
+  elif quadruple.pOper[-1] == '$':
+    lsPointer = quadruple.pilaDim[-1]["id"].getDimensionNodes()
+    currentDim = quadruple.pilaDim[-1]["dim"]
+    quadruple.saveQuad("verify", quadruple.pilaO[-1], 0, lsPointer[currentDim-1].getLim()) # -1 because array index
+    keyword = ''
+    if symbolTable.getCurrentScope().getContext() == 'global':
+      keyword = 'global'
+    else:
+      keyword = 'local'
+    currType = getTypeV2(quadruple.pilaO[-1])
+    tempAddressPointer = memSpace[keyword][currType]['temp']
+    tempAddress = tempAddressPointer.getInitialAddress() + tempAddressPointer.getOffset()
+    if len(lsPointer) > currentDim: 
+      aux = quadruple.pilaO.pop()
+      quadruple.saveQuad("*", aux, lsPointer[currentDim-1].getR(), tempAddress)
+      quadruple.pilaO.append(tempAddress)
+      tempAddressPointer.setOffset()
+    if currentDim > 1:
+      left_operand = quadruple.pilaO.pop()
+      right_operand = quadruple.pilaO.pop()
+      tempAddress = tempAddressPointer.getInitialAddress() + tempAddressPointer.getOffset()
+      quadruple.saveQuad("+", left_operand, right_operand, tempAddress)
+      quadruple.pilaO.append(tempAddress)
+      tempAddressPointer.setOffset()
   elif quadruple.pOper[-1] == 'return':
     expValue = quadruple.pilaO.pop()
     expValueType = getTypeV2(expValue)
@@ -319,4 +348,25 @@ def expression_evaluation(p):
     quadruple.saveQuad('return', -1, -1, expValue)
     quadruple.pOper.pop()
 
-
+def endDim(var):
+  current = symbolTable.getCurrentScope()
+  aux = quadruple.pilaO.pop()
+  varPointerDimNodes = var.getDimensionNodes()
+  keyword = ''
+  if symbolTable.getCurrentScope().getContext() == 'global':
+    keyword = 'global'
+  else:
+    keyword = 'local'
+  currType = getTypeV2(quadruple.pilaO[-1])
+  tempAddressPointer = memSpace[keyword][currType]['temp']
+  tempAddress = tempAddressPointer.getInitialAddress() + tempAddressPointer.getOffset()
+  quadruple.saveQuad("+", aux, varPointerDimNodes[var.getDimensions()-1].getR(), tempAddress) # ojo offset for first ones
+  tempAddressPointer.setOffset()
+  tempAddress2 = tempAddressPointer.getInitialAddress() + tempAddressPointer.getOffset()
+  quadruple.saveQuad("+", tempAddress, var.getVirtualAddress(), tempAddress2)
+  tempAddressPointer.setOffset()
+  quadruple.pilaO.append(tempAddress2)
+  quadruple.pOper.pop() # eliminates fake bottom
+  quadruple.pilaDim.pop()
+  current.resetLatestDimension()
+  return True
