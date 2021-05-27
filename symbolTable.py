@@ -29,14 +29,6 @@ class DimensionNode:
 
   def __repr__(self):
     return "lSup: %s m or k = %s" % (self.__lim, self.__r)
-
-class Constant:
-  def __init__(self, memPointer):
-    self.__virtualAddress = memPointer.getInitialAddress() + memPointer.getOffset()
-    memPointer.setOffset()
-
-  def __repr__(self):
-    return "%s" % (self.__virtualAddress)
 class Variable:
   def __init__(self, varName, varType, dimensions, dimensionNodes, offset, isParam, memPointer):
     self.__varName = varName
@@ -128,6 +120,7 @@ class Scope:
     self.__latestReturnValue = None
     self.__currentFunctionParams = []
     self.__dimensionNodes = []
+    self.__matchingParams = False
 
   # getters
   def getScopeType(self):
@@ -181,6 +174,9 @@ class Scope:
   def getLatestReturnValue(self):
     return self.__latestReturnValue
 
+  def getMatchingParams(self):
+    return self.__matchingParams
+
   # setters
   def setScopeType(self, scopeType):
     self.__scopeType = scopeType
@@ -228,6 +224,9 @@ class Scope:
   def setLatestReturnValue(self):
     self.__latestReturnValue = self.__latestExpValue
 
+  def setMatchingParams(self, val):
+    self.__matchingParams = val
+
   # methods
   def addVariable(self, varName, varType, dimensions, isParam):
     if varName in self.getScopeVariables():
@@ -269,12 +268,14 @@ class Scope:
       constantTypePointer = globalScope.__scopeConstants[type]
       if not value in constantTypePointer:
         memPointer = memSpace['constants'][type]
-        constantTypePointer[value] = {Constant(memPointer)}
+        constantTypePointer[value] = memPointer.getInitialAddress() + memPointer.getOffset()
+        memPointer.setOffset()
     else:
       globalScope.__scopeConstants[type] = {}
       constantTypePointer = globalScope.__scopeConstants[type]
       memPointer = memSpace['constants'][type]
-      constantTypePointer[value] = {Constant(memPointer)}
+      constantTypePointer[value] = memPointer.getInitialAddress() + memPointer.getOffset()
+      memPointer.setOffset()
 
   def addFunction(self, funcName, funcType):
     if funcName in self.getScopeFunctions():
@@ -301,6 +302,7 @@ class Scope:
 
   def sawCalledVariable(self, varName):
     globalScope = SymbolTable.instantiate().getGlobalScope()
+
     if not varName in self.getScopeVariables() and not varName in globalScope.getScopeVariables():
       raise Exception('ERROR! Variable with identifier:', varName, 'is not defined in this scope')
     
@@ -315,8 +317,10 @@ class Scope:
     if not funcName in globalScope.getScopeFunctions():
       raise Exception('ERROR! FUNCTION with identifier:', funcName, 'is not defined in this program')
     
-    quadruple.saveQuad('era', funcName, None, None)
+    quadruple.saveQuad('era', funcName, -1, -1)
+
     functionParams = globalScope.__scopeFunctions[funcName].__scopeVariables
+    self.setMatchingParams(True)
     for item, val in functionParams.items():
       if val.getIsParam():
         self.setCurrentFunctionParams(val)
@@ -328,13 +332,11 @@ class Scope:
     globalScope = SymbolTable.instantiate().getGlobalScope()
     if not className in globalScope.getScopeClasses():
       raise Exception('ERROR! Class with identifier: ', className, 'is not defined in this scope')
-      # return False
     
     currentClass = globalScope.__scopeClasses[className]
 
     if not varName in currentClass.getScopeVariables():
       raise Exception('ERROR! Variable with identifier:', varName, 'is not defined in this scope')
-      # return False
     
     return currentClass.__scopeVariables[varName]
 
@@ -361,7 +363,6 @@ class Scope:
         self.__numLocalVars += 1
     
     self.__quadCont = quadruple.quadCounter
-    # print(self.__numParams, self.__numLocalVars, self.__quadCont)
 
   def __repr__(self):
     return "{\n type: %s \n context: %s \n}" % (self.getScopeType(), self.getContext())

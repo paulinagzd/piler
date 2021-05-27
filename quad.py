@@ -24,7 +24,8 @@ class Quad:
     'era': 18,
     'param': 19,
     'endfunc': 20,
-    'end': 21
+    'end': 21,
+    'return': 22
   }
 
   def __init__(self):
@@ -47,6 +48,7 @@ class Quad:
     q = QuadContainer(self.quadCounter, operator, leftOperand, rightOperand, tvalue) # left and right operand contain ADDRESSES
     self.quads[self.quadCounter] = q
     self.quadCounter += 1
+    # print(q)
 
   def getWorkingStack(self):
     workingStack = []
