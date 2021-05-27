@@ -349,7 +349,7 @@ def p_estatuto(p):
            | while_loop
            | for_loop
            | ternary
-           | RETURN exp saw_return_value
+           | RETURN saw_return_value exp
   '''
 
 def p_estatuto_redux(p): # TERNARY ONE LINERS
@@ -359,7 +359,7 @@ def p_estatuto_redux(p): # TERNARY ONE LINERS
                  | write
                  | read
                  | ternary
-                 | RETURN exp saw_return_value
+                 | RETURN saw_return_value exp
   '''
 
 ################################################
@@ -398,12 +398,18 @@ def p_ternary(p):
 # write
 def p_write(p):
   '''
-  write : PRINT saw_print OPAREN exp e1 CPAREN saw_print_end
+  write : PRINT saw_print OPAREN write_option e1 CPAREN saw_print_end
+  '''
+
+def p_write_option(p):
+  '''
+  write_option : exp
+               | function_call
   '''
 
 def p_e1(p):
   '''
-  e1 : COMMA exp e1
+  e1 : COMMA write_option e1
      | empty
   '''
 
@@ -544,8 +550,7 @@ def p_saw_var_factor(p):
   saw_var_factor :
   '''
   current = symbolTable.getCurrentScope().sawCalledVariable(symbolTable.getCurrentScope().getLatestName())
-  # print(current)
-  quadruple.pilaO.append(current)
+  quadruple.pilaO.append(current.getVirtualAddress())
 
 ################################################
 #VARCST
@@ -579,7 +584,7 @@ def p_saw_program(p):
 
 def p_saw_program_end(p):
   ''' saw_program_end : '''
-  quadruple.saveQuad("end", None, None, None)
+  quadruple.saveQuad("end", -1, -1, -1)
 
 def p_saw_main(p):
   ''' saw_main : '''
@@ -619,7 +624,6 @@ def p_saw_called_var(p):
   ''' saw_called_var : '''
   current = symbolTable.getCurrentScope()
   global pointer
-  # print("CALLINGSAWCALLEDVAR", current.getLatestName())
   pointer = current.sawCalledVariable(current.getLatestName())
 
 def p_saw_called_var_from_class(p):
@@ -635,8 +639,12 @@ def p_saw_asig(p):
 
 def p_saw_end_value(p):
   ''' saw_end_value : '''
-  quadruple.pilaO.append(p[-1])
-  symbolTable.getCurrentScope().addConstant(p[-1], quadHelpers.getType(p[-1]))
+  constType = quadHelpers.getTypeConstant(p[-1])
+  symbolTable.getCurrentScope().addConstant(p[-1], constType)
+  tempAddressPointer = symbolTable.getGlobalScope().getScopeConstants()[constType]
+  curr = p[-1]
+  tempAddress = tempAddressPointer[curr]
+  quadruple.pilaO.append(tempAddress)
 
 def p_saw_plusminus_operator(p):
   ''' saw_plusminus_operator  : '''
@@ -705,8 +713,7 @@ def p_saw_function(p):
 
 def p_saw_function_end(p):
   ''' saw_function_end : '''
-  quadruple.saveQuad("endfunc", None, None, None)
-  # moduleHelpers.endingFunction()
+  quadruple.saveQuad("endfunc", -1, -1, -1)
 
 def p_scope_end(p):
   ''' scope_end : '''
@@ -732,9 +739,8 @@ def p_saw_read_exp(p):
   ''' saw_read_exp : '''
   if quadruple.pOper[-1] == 'read':
     current = symbolTable.getCurrentScope()
-    # print("CALLINGSAWCALLEDVAR", current.getLatestName())
     read_operand = current.sawCalledVariable(current.getLatestName())
-    quadruple.saveQuad('read', None, None, read_operand)
+    quadruple.saveQuad('read', -1, -1, read_operand)
 
 def p_saw_read_end(p):
   ''' saw_read_end : '''
@@ -774,12 +780,10 @@ def p_increment_cont(p):
   ''' increment_cont : '''
   global cont
   cont = moduleHelpers.incrementParamCounter(cont)
-  print("CONTINMAIN: ", cont)
 
 def p_generate_gosub(p):
   ''' generate_gosub : '''
-  quadruple.saveQuad('gosub', symbolTable.getCurrentScope().getLatestFuncName(), None, None)
-  symbolTable.getCurrentScope().clearCurrentFunctionParams()
+  moduleHelpers.generateGoSub()
   global cont
   cont = 0
 
@@ -789,7 +793,7 @@ def p_saw_cond(p):
 
 def p_saw_return_value(p):
   ''' saw_return_value : '''
-  # symbolTable.getCurrentScope().setLatestReturnValue()
+  quadruple.pOper.append(p[-1])
 
 parser = yacc.yacc()
 
