@@ -848,7 +848,7 @@ def p_is_dim(p):
     quadruple.pOper.append('$') #fake bottom 
 
 def p_is_second_dim(p):
-  ''' is_second_dim : '''s
+  ''' is_second_dim : '''
   # global aux
   for i in quadruple.pilaDim:
     if i["id"] == quadruple.pilaArr[-1]:
