@@ -33,6 +33,7 @@ class Quad:
       self.pOper = []
       self.pilaO = []
       self.pilaDim = []
+      self.pilaArr = []
       self.quads = {}
       self.quadCounter = 1
 

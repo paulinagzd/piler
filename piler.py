@@ -24,7 +24,7 @@ while True:
         print("SUCCESSFULLY COMPILED!")
         print("BEGGINING EXECUTION...") # a.out
         virtualMachine = VM(quadruple.quads)
-      # symbolTable.printingAll()
+      symbolTable.printingAll()
       quadruple.print()
       symbolTable.reset()
       quadruple.reset()
