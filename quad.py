@@ -49,19 +49,19 @@ class Quad:
     q = QuadContainer(self.quadCounter, operator, leftOperand, rightOperand, tvalue) # left and right operand contain ADDRESSES
     self.quads[self.quadCounter] = q
     self.quadCounter += 1
-    # print(q)
+    print(q)
 
   def getWorkingStack(self):
     workingStack = []
     if '(' not in self.pOper:
       workingStack = self.pOper[0:]
       return workingStack
-    elif self.pOper[-1] == '(':
+    elif self.pOper[-1] == '(' or self.pOper[-1] == '{':
       return workingStack
     else:
       for i in range(len(self.pOper)-2, -1, -1):
         index = i
-        if self.pOper[i] == '(':
+        if self.pOper[i] == '(' or self.pOper[i] == '{':
           break
       workingStack = self.pOper[index + 1:]
       return workingStack

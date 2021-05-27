@@ -9,14 +9,14 @@ func int fact(int j) {
   if (j == 1) then {
     return (j)
   } else {
-    return (j * fact(j-1))
+    return (j * {fact(1 -j)})
   };
 }
 
 func void inicia(int y) {
   var int x;
   x = -1
-  while(x < 11) {
+  while (x < 11) then {
     Arreglo[x] = y * x
     x = x + 1
   };

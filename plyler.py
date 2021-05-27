@@ -84,6 +84,7 @@ tokens = [
   'COLON',
   'SEMICOLON',
   'QUESTION',
+  'EXCLAMATION',
   'AND',
   'OR',
   'AS',
@@ -110,6 +111,7 @@ t_COMMA = r'\,'
 t_COLON = r'\:'
 t_SEMICOLON = r'\;'
 t_QUESTION = r'\?'
+t_EXCLAMATION = r'\!'
 t_AND = r'\&\&'
 t_OR = r'\|\|'
 t_AS = r'\='
@@ -464,6 +466,12 @@ def p_function_call1(p):
                  | empty
   '''
 
+# def p_special(p):
+#   '''
+#   special : verify_func OPAREN exp verify_param function_call1 CPAREN generate_gosub
+#           | verify_func OPAREN CPAREN generate_gosub
+#           | 
+#   '''
 ################################################
 # SUPER EXP
 def p_exp(p):
@@ -542,8 +550,9 @@ def p_factor(p):
   '''
   factor : OPAREN saw_oparen exp CPAREN saw_cparen check_multdiv_operator
          | varcst check_multdiv_operator
+         | negative check_multdiv_operator
          | variable saw_var_factor check_multdiv_operator
-         | function_call
+         | OCURLY saw_oparen saw_func_factor function_call CCURLY saw_cparen check_multdiv_operator
   '''
 
 def p_saw_var_factor(p):
@@ -559,6 +568,19 @@ def p_saw_var_factor(p):
     current = symbolTable.getCurrentScope().sawCalledVariable(symbolTable.getCurrentScope().getLatestName())
     quadruple.pilaO.append(current.getVirtualAddress())
 
+def p_saw_func_factor(p):
+  '''
+  saw_func_factor :
+  '''
+  print("SAW FUNC FACTOR")
+  # global aux
+  # if aux:
+  #   quadruple.pilaArr.pop()
+  #   aux = False
+  #   pass
+  # else:
+  #   current = symbolTable.getCurrentScope().sawCalledFunction(symbolTable.getCurrentScope().getLatestName())
+  #   quadruple.pilaO.append(current.getVirtualAddress())
 ################################################
 #VARCST
 def p_varcst(p):
@@ -570,6 +592,10 @@ def p_varcst(p):
          | boolean
   '''
 
+def p_negative(p):
+  '''
+  negative : MINUS varcst
+  '''
 ################################################
 # EMPTY
 def p_empty(p):
@@ -822,13 +848,11 @@ def p_is_dim(p):
     quadruple.pOper.append('$') #fake bottom 
 
 def p_is_second_dim(p):
-  ''' is_second_dim : '''
+  ''' is_second_dim : '''s
   # global aux
   for i in quadruple.pilaDim:
     if i["id"] == quadruple.pilaArr[-1]:
       i["dim"] = 2
-
-
 
 def p_end_dim(p):
   ''' end_dim : '''
@@ -846,48 +870,23 @@ parser = yacc.yacc()
 
 # lexer.input(
 #   '''
-#  program viendo;
-# var ints globales[1];
-# var ints globs[12][12];
-# var boos matriz[12][12];
-# var str strinn, stru;
-# var cha c;
-# /* Este programa es
-# demostracion */
+#  program patito;
+# var int i, j, p;
+# var ints Arreglo[12];
+# var ints Matriz[12][8];
 
-# func int hola(boo you) {
-#   var str ha;
+# func int fact(int j) {
 #   var int i;
-#   var boo e;
-#   var flt a;
-#   a = 20 + 10.5 * (8 - 1 / 2)
-#   e = 2 == 2
-# }
-
-# class Animal: {        /* comentario en medio de la nada */
-#   att: 
-#     var int estatura;
-#     var flts horario[1], comidas[2][2];
-
-#   met:
-#     func void cambiarEstatura() {
-#       print(2*2)
-#     }
-# };
-
-# var cha aqui;
-
-# func boo adios(cha si) {
-#   var str uuuu;
-#   var int o;
-#   var flt w, oo;
-#   w = 80.1
-#   o = 12 * 5
-#   oo = 60/5 
+#   i = j + (p - j * 2 + j)
+#   if (j == 1) then {
+#     return (j)
+#   } else {
+#     return (j * {fact(j-1)})
+#   };
 # }
 
 # int main() {
-#   hola(True)
+#   i = 0
 # }
 #   '''
 # )
