@@ -1,6 +1,7 @@
 from symbolTable import SymbolTable
 from quad import Quad, QuadContainer
 from jumps import Jumps, TBD
+import quadHelpers
 
 quadruple = Quad.instantiate()
 symbolTable = SymbolTable.instantiate()
@@ -10,15 +11,15 @@ def fill(end, cont):
   quadruple.quads[end].setJump(cont)
 
 def enterCond():
-  if symbolTable.getCurrentScope().getLatestType() != 'boo':
+  res = quadruple.pilaO.pop()
+  resType = quadHelpers.getTypeV2(res)
+  if resType != 'boo':
     raise Exception("ERROR! Conditional must have boolean value")
-  else:
-    res = quadruple.pilaO.pop()
-    quadruple.saveQuad('gotoF', res, None, TBD())
-    jumps.setStackPush(quadruple.quadCounter - 1)
+  quadruple.saveQuad('gotoF', res, -1, TBD())
+  jumps.setStackPush(quadruple.quadCounter - 1)
 
 def enterElse():
-  quadruple.saveQuad('goto', None, None, TBD())
+  quadruple.saveQuad('goto', -1, -1, TBD())
   falseValue = jumps.setStackPop()
   jumps.setStackPush(quadruple.quadCounter - 1)
   fill(falseValue, quadruple.quadCounter)
@@ -30,12 +31,12 @@ def exitIf():
 def exitWhile():
   end = jumps.setStackPop()
   ret = jumps.setStackPop()
-  quadruple.saveQuad('goto', None, None, ret)
+  quadruple.saveQuad('goto', -1, -1, ret)
   fill(end, quadruple.quadCounter)
 
 def saveForMain():
   jumps.setStackPush(quadruple.quadCounter)
-  quadruple.saveQuad("goto", None, None, TBD())
+  quadruple.saveQuad("goto", -1, -1, TBD())
 
 def enterMain():
   ret = jumps.setStackPop() 
