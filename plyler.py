@@ -21,6 +21,7 @@ quadruple = Quad.instantiate()
 jumps = Jumps.instantiate()
 
 pointer = None
+aux = None
 cont = 0
 
 # reserved words
@@ -438,13 +439,13 @@ def p_boolean(p):
 def p_variable(p):
   '''
   variable : ID saw_id saw_called_var
-           | ID saw_id OBRACKET is_dim exp CBRACKET variable1 end_dim saw_called_var
+           | ID saw_id_arr OBRACKET is_dim exp CBRACKET variable1 end_dim saw_called_var
            | ID saw_id variable2
   '''
 
 def p_variable1(p):
   '''
-  variable1 : OBRACKET is_dim exp CBRACKET
+  variable1 : OBRACKET is_second_dim exp CBRACKET
             | empty
   '''
 
@@ -603,6 +604,16 @@ def p_saw_id(p):
   ''' saw_id : '''
   symbolTable.getCurrentScope().setLatestName(p[-1])
 
+def p_saw_id_arr(p):
+  ''' saw_id_arr : '''
+  symbolTable.getCurrentScope().setLatestName(p[-1])
+  current = symbolTable.getCurrentScope()
+  global pointer
+  global aux
+  pointer = current.sawCalledVariable(current.getLatestName())
+  aux = pointer
+  quadruple.pilaO.append(pointer.getVirtualAddress())
+
 def p_saw_variable(p):
   ''' saw_variable : '''
   current = symbolTable.getCurrentScope()
@@ -620,7 +631,6 @@ def p_saw_dimension(p):
 
 def p_saw_called_var(p):
   ''' saw_called_var : '''
-  print("CALLED COMES FIRST")
   current = symbolTable.getCurrentScope()
   global pointer
   pointer = current.sawCalledVariable(current.getLatestName())
@@ -798,15 +808,27 @@ def p_saw_declared_dim(p):
 def p_is_dim(p):
   ''' is_dim : '''
   current = symbolTable.getCurrentScope()
-  print("COMESFROM IS DIM")
-  current.setLatestDimension(-1) # imaginary limit
-  if current.getLatestDimension() == 1:
-    quadruple.pilaO.append(symbolTable.getCurrentScope().getLatestName())
-  quadHelpers.dimensionQuad(current, current.getLatestDimension())
+  global pointer
+  pointer = current.sawCalledVariable(current.getLatestName())
+  if pointer.getDimensions() > 0:
+    dim = 1
+    quadruple.pilaDim.append({"id": pointer, "dim": dim})
+    # print("POINTER", pointer)
+    quadruple.pOper.append('$') #fake bottom 
+
+def p_is_second_dim(p):
+  ''' is_second_dim : '''
+  global aux
+  for i in quadruple.pilaDim:
+    if i["id"] == aux:
+      i["dim"] = 2
+
+
 
 def p_end_dim(p):
   ''' end_dim : '''
-  quadHelpers.endDim()
+  global aux
+  quadHelpers.endDim(aux)
 
 def p_saw_return_value(p):
   ''' saw_return_value : '''

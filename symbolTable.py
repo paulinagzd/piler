@@ -195,7 +195,6 @@ class Scope:
            
   def setLatestDimension(self, lim):
     self.__latestDimension = self.__latestDimension + 1
-    print("SETTING LATEST DIMENSION IT IS NOW", self.__latestDimension)
     if lim != -1:
       temp = 1 if self.__latestDimension == 1 else self.__dimensionNodes[0].getR()
       self.__dimensionNodes.append(DimensionNode(self.__latestDimension, lim, temp))
