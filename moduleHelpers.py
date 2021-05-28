@@ -41,5 +41,5 @@ def generateGoSub():
     tempAddressPointer = memSpace[keyword][funcType]['temp']
     tempAddress = tempAddressPointer.getInitialAddress() + tempAddressPointer.getOffset()
     quadruple.pilaO.append(tempAddress)
-    quadruple.saveQuad('=', symbolTable.getCurrentScope().getLatestFuncName(), -1, -1) #temp address
+    quadruple.saveQuad('=', symbolTable.getCurrentScope().getLatestFuncName(), -1, tempAddress) #temp address
     tempAddressPointer.setOffset() # TODO, will I need more space? or not

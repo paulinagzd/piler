@@ -451,6 +451,11 @@ class SymbolTable:
     elif (self.getCurrentScope().getContext() == 'function'):
       self.setCurrentScope(self.__globalScope["global"])
 
+    temps = memSpace["local"]
+    for i, j in temps.items():
+      j['real'].resetOffset()
+      j['temp'].resetOffset()
+
   def exitClassScope(self):
     self.setCurrentScope(self.__globalScope["global"])
 
@@ -466,31 +471,31 @@ class SymbolTable:
       for i, ii in val.getScopeVariables().items():
         print(i, ': ', ii)
 
-      # print('\n \n GLOBAL FUNCTIONS')
-      # for j, jj in val.getScopeFunctions().items():
-      #   print(j, ': ', jj)
+      print('\n \n GLOBAL FUNCTIONS')
+      for j, jj in val.getScopeFunctions().items():
+        print(j, ': ', jj)
 
-      #   print('\n \n FUNCTION VARIABLES')
-      #   for m, mm in jj.getScopeVariables().items():
-      #     print(m, ': ', mm)
-      #   print('---------------------------------')
+        print('\n \n FUNCTION VARIABLES')
+        for m, mm in jj.getScopeVariables().items():
+          print(m, ': ', mm)
+        print('---------------------------------')
 
 
-      # print('\n \n CLASSES')
-      # for k, kk in val.getScopeClasses().items():
-      #   print(k, ': ', kk)
+      print('\n \n CLASSES')
+      for k, kk in val.getScopeClasses().items():
+        print(k, ': ', kk)
 
-      #   print('\n \n CLASS VARS')
-      #   for n, nn in kk.getScopeVariables().items():
-      #     print(n, ': ', nn)
+        print('\n \n CLASS VARS')
+        for n, nn in kk.getScopeVariables().items():
+          print(n, ': ', nn)
 
-      #   print('\n \n CLASS FUNCTIONS')
-      #   for o, oo in kk.getScopeFunctions().items():
-      #     print(o, ': ', oo)
+        print('\n \n CLASS FUNCTIONS')
+        for o, oo in kk.getScopeFunctions().items():
+          print(o, ': ', oo)
         
-      #     for x, xx in oo.getScopeVariables().items():
-      #       print(x, ': ', xx)
-      #     print('---------------------------------')
+          for x, xx in oo.getScopeVariables().items():
+            print(x, ': ', xx)
+          print('---------------------------------')
   
   def reset(self):
     self.__globalScope = {}

@@ -1,9 +1,10 @@
 program mat;
 var int i;
-var ints A[9];
+var ints A[8];
 var int j;
-var ints B[5][6];
+var ints B[4][6];
 var int k;
 int main() {
-  B[i+j][i*(k+j)] = 18
+  /* A[i+j*k] = j + B[i*j][k - i] * A[k] */
+  /* B[i+j][A[i] * k] = i + j */
 }

@@ -1,34 +1,29 @@
-program patito; 
-var int a, b;
-var flt f;
-var str sttttt;
+program pelos; 
+var int i, j, k;
 
-
-func int uno(int a) {
-  a = a+b*a
-  print(a, b, a+b) 
-  return a
+func int uno(int j) {
+  i = j + (k - j * 2 + j)
+  if ( j > 0) then {
+    return {uno(i - j)}
+  } else {
+    return (i + k)
+  };  
 }
 
-func int dos(int a, int b, flt g) { 
-  var int i;
-  i=b
-  while (i>0) then { 
-    a=a+b*i+b
-    a = {uno(i*2)}
-    print(a)
-    i = i - 1
+func void dos(int i, int j) { 
+  var int x, y;
+  x = i + j
+  if (x > j * k) then { 
+    print({uno(x - k)})
+  } else {
+    print({uno(j)})
   };
 }
 
 int main()
 {
-  a=3
-  b=a+1
-  print(a, b)
-  f=3.14
-  sttttt = "hello there world"
-  b = {uno(2)}
-  a = {dos(a+b*2, b, f*3)}
-  print(a,b,f*2+1)
+  read(k)
+  i = 5
+  j = i * 2 + i
+  dos(j - i, j)
 }

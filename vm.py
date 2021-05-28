@@ -33,6 +33,9 @@ class MemSpaceContainer:
   def setOffset(self):
     self.__offset += 1
 
+  def resetOffset(self):
+    self.__offset = 0
+
   def setDimensionalOffset(self, val):
     self.__offset += val
 
@@ -133,12 +136,12 @@ memSpace = {
 }
 
 class VM:
-  def __init__(self, quadList, DirFunc):
+  def __init__(self, quadList, dirFunc):
     self.__quadList = quadList
     self.__nextPointer = 1
     self.__callStack = []
-    self.__ConstTable = symbolTable.getGlobalScope().getScopeConstants()
-    self.__DirFunc = DirFunc
+    self.__constTable = dirFunc.getScopeConstants()
+    self.__dirFunc = dirFunc
   
   # Call Stack access
   def pushCallStack(self, functionCall):
@@ -375,3 +378,5 @@ class MainMemory:
     if MainMemory.isAlive is None:
       MainMemory()
     return MainMemory.isAlive
+
+# def mainFunc()
