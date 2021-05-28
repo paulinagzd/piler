@@ -27,6 +27,9 @@ class DimensionNode:
   def setOffset(self, val):
     self.__offset = val
 
+  def getVirtualAddress(self):
+    return self.__virtualAddress
+
   def __repr__(self):
     return "lSup: %s m or k = %s" % (self.__lim, self.__r)
 class Variable:
@@ -119,6 +122,18 @@ class Scope:
     self.__numLocalVars = 0
     self.__latestReturnValue = None
     self.__currentFunctionParams = []
+    self.__temps = {
+      'int' : 0,
+      'ints': 0,
+      'flt' : 0,
+      'flts': 0,
+      'boo' : 0,
+      'boos': 0,
+      'cha' : 0,
+      'chas': 0,
+      'str' : 0,
+      'strs': 0,
+    }
     self.__dimensionNodes = []
     self.__matchingParams = False
 
@@ -174,6 +189,9 @@ class Scope:
   def getLatestReturnValue(self):
     return self.__latestReturnValue
 
+  def getTemps(self):
+    return self.__temps
+    
   def getMatchingParams(self):
     return self.__matchingParams
 
@@ -223,6 +241,14 @@ class Scope:
   def setLatestReturnValue(self):
     self.__latestReturnValue = self.__latestExpValue
 
+  def setTemps(self, key, val):
+    self.__temps[key] = val
+
+  def findConstVA(self, val):
+    globalScope = SymbolTable.instantiate().getGlobalScope()
+    if val in globalScope.getScopeConstants():
+      return globalScope.getScopeConstants()[val].getVirtualAddress()
+      
   def setMatchingParams(self, val):
     self.__matchingParams = val
 
@@ -276,6 +302,10 @@ class Scope:
       constantTypePointer[value] = memPointer.getInitialAddress() + memPointer.getOffset()
       memPointer.setOffset()
 
+  def addTemp(self, type, value):
+    memPointer = memSpace['local'][type]['temp']
+    memPointer[value] = {"TODO VALOR TEMP AQUI"}
+
   def addFunction(self, funcName, funcType):
     if funcName in self.getScopeFunctions():
       raise Exception('ERROR! Function with identifier: ', funcName, 'already exists!')
@@ -309,6 +339,8 @@ class Scope:
       return self.__scopeVariables[varName]
     elif varName in globalScope.getScopeVariables():
       return globalScope.__scopeVariables[varName]
+    self.resetLatestDimension()
+
     self.resetLatestDimension()
 
   def sawCalledFunction(self, funcName):
@@ -392,9 +424,6 @@ class SymbolTable:
   def getStack(self):
     return self.__classStack[-1]
 
-  # def setCurrentScope(self, val):
-  #   self.__currentScope = val
-
   def setCurrentScope(self, val):
     self.__currentScope = val
 
@@ -422,6 +451,11 @@ class SymbolTable:
     elif (self.getCurrentScope().getContext() == 'function'):
       self.setCurrentScope(self.__globalScope["global"])
 
+    temps = memSpace["local"]
+    for i, j in temps.items():
+      j['real'].resetOffset()
+      j['temp'].resetOffset()
+
   def exitClassScope(self):
     self.setCurrentScope(self.__globalScope["global"])
 
@@ -437,31 +471,31 @@ class SymbolTable:
       for i, ii in val.getScopeVariables().items():
         print(i, ': ', ii)
 
-      # print('\n \n GLOBAL FUNCTIONS')
-      # for j, jj in val.getScopeFunctions().items():
-      #   print(j, ': ', jj)
+      print('\n \n GLOBAL FUNCTIONS')
+      for j, jj in val.getScopeFunctions().items():
+        print(j, ': ', jj)
 
-      #   print('\n \n FUNCTION VARIABLES')
-      #   for m, mm in jj.getScopeVariables().items():
-      #     print(m, ': ', mm)
-      #   print('---------------------------------')
+        print('\n \n FUNCTION VARIABLES')
+        for m, mm in jj.getScopeVariables().items():
+          print(m, ': ', mm)
+        print('---------------------------------')
 
 
-      # print('\n \n CLASSES')
-      # for k, kk in val.getScopeClasses().items():
-      #   print(k, ': ', kk)
+      print('\n \n CLASSES')
+      for k, kk in val.getScopeClasses().items():
+        print(k, ': ', kk)
 
-      #   print('\n \n CLASS VARS')
-      #   for n, nn in kk.getScopeVariables().items():
-      #     print(n, ': ', nn)
+        print('\n \n CLASS VARS')
+        for n, nn in kk.getScopeVariables().items():
+          print(n, ': ', nn)
 
-      #   print('\n \n CLASS FUNCTIONS')
-      #   for o, oo in kk.getScopeFunctions().items():
-      #     print(o, ': ', oo)
+        print('\n \n CLASS FUNCTIONS')
+        for o, oo in kk.getScopeFunctions().items():
+          print(o, ': ', oo)
         
-      #     for x, xx in oo.getScopeVariables().items():
-      #       print(x, ': ', xx)
-      #     print('---------------------------------')
+          for x, xx in oo.getScopeVariables().items():
+            print(x, ': ', xx)
+          print('---------------------------------')
   
   def reset(self):
     self.__globalScope = {}

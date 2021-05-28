@@ -24,8 +24,10 @@ class Quad:
     'era': 18,
     'param': 19,
     'endfunc': 20,
-    'end': 21,
-    'return': 22
+    'ver' : 21,
+    'return' : 22,
+    'era' : 23,
+    'end': 24
   }
 
   def __init__(self):
@@ -49,7 +51,7 @@ class Quad:
     q = QuadContainer(self.quadCounter, operator, leftOperand, rightOperand, tvalue) # left and right operand contain ADDRESSES
     self.quads[self.quadCounter] = q
     self.quadCounter += 1
-    print(q)
+    # print(q)
 
   def getWorkingStack(self):
     workingStack = []
@@ -70,6 +72,7 @@ class Quad:
     self.pOper = []
     self.pilaO = []
     self.pilaDim = []
+    self.pilaArr = []
     self.quads = {}
     self.quadCounter = 1
 

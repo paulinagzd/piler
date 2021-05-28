@@ -186,24 +186,6 @@ def check_relational_operator(quadruple):
       symbolTable.getCurrentScope().setLatestType(result_Type)
       
       if result_Type != 'TYPE MISMATCH':
-        # if operator == '>':
-        #   tvalue = left_operand > right_operand
-        #   quadruple.pilaO.append(tvalue)
-        # elif operator == '<':
-        #   tvalue = left_operand < right_operand
-        #   quadruple.pilaO.append(tvalue)
-        # elif operator == '>=':
-        #   tvalue = left_operand >= right_operand
-        #   quadruple.pilaO.append(tvalue)
-        # elif operator == '<=':
-        #   tvalue = left_operand <= right_operand
-        #   quadruple.pilaO.append(tvalue)
-        # elif operator == '==':
-        #   tvalue = left_operand == right_operand
-        #   quadruple.pilaO.append(tvalue)
-        # elif operator == '!=':
-        #   tvalue = left_operand != right_operand
-        #   quadruple.pilaO.append(tvalue)
         tvalue = "t{}".format(quadruple.quadCounter)
         # get next temp memory depending on type
         keyword = ''
@@ -364,6 +346,7 @@ def endDim(var):
   tempAddressPointer.setOffset()
   tempAddress2 = tempAddressPointer.getInitialAddress() + tempAddressPointer.getOffset()
   quadruple.saveQuad("+", tempAddress, var.getVirtualAddress(), tempAddress2)
+  quadruple.pilaO.pop() # gets rid of dirBase
   tempAddressPointer.setOffset()
   quadruple.pilaO.append(tempAddress2)
   quadruple.pOper.pop() # eliminates fake bottom

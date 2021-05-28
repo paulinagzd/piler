@@ -172,7 +172,7 @@ lexer = lex.lex()
 # program
 def p_program(p):
   '''
-  program : PROGRAM ID SEMICOLON saw_program program_content main saw_program_end
+  program : PROGRAM ID SEMICOLON saw_program program_content main
   '''
 
 def p_program_content(p):
@@ -187,7 +187,7 @@ def p_program_content(p):
 # function
 def p_main(p):
   '''
-  main : INT MAIN saw_main OPAREN CPAREN block saw_function_end scope_end
+  main : INT MAIN saw_main OPAREN CPAREN block scope_end
   '''
 
 def p_functions(p): # function declarations in a FIXED PLACE (such as class methods)
@@ -198,7 +198,7 @@ def p_functions(p): # function declarations in a FIXED PLACE (such as class meth
 
 def p_function(p):
   '''
-  function : FUNCTION func1 ID saw_id saw_function OPAREN param CPAREN block saw_function_end scope_end
+  function : FUNCTION func1 ID saw_id saw_function OPAREN param CPAREN start_function_temp_count block  end_function_temp_count saw_function_end scope_end
   '''
 
 def p_function1(p):
@@ -222,7 +222,7 @@ def p_param1(p):
 def p_param2(p): ####### OJO
   '''
   param2 : simple ID saw_id saw_variable_param
-         | multiple ID saw_id OBRACKET CSTINT CBRACKET saw_dimension type3 saw_variable_param
+         | multiple ID saw_id OBRACKET CSTINT saw_end_value CBRACKET saw_dimension type3 saw_variable_param
   '''
 
 ################################################
@@ -572,7 +572,7 @@ def p_saw_func_factor(p):
   '''
   saw_func_factor :
   '''
-  print("SAW FUNC FACTOR")
+  # print("SAW FUNC FACTOR")
   # global aux
   # if aux:
   #   quadruple.pilaArr.pop()
@@ -615,9 +615,9 @@ def p_saw_program(p):
   ''' saw_program : '''
   condHelpers.saveForMain()
 
-def p_saw_program_end(p):
-  ''' saw_program_end : '''
-  quadruple.saveQuad("end", -1, -1, -1)
+# def p_saw_program_end(p):
+#   ''' saw_program_end : '''
+#   quadruple.saveQuad("end", -1, -1, -1)
 
 def p_saw_main(p):
   ''' saw_main : '''
@@ -757,7 +757,10 @@ def p_saw_function_end(p):
 
 def p_scope_end(p):
   ''' scope_end : '''
-  symbolTable.exitScope()
+  if symbolTable.getCurrentScope().getContext() == "global":
+    quadruple.saveQuad("end", -1, -1, -1)
+  else:
+    symbolTable.exitScope()
 
 def p_class_scope_end(p):
   ''' class_scope_end : '''
@@ -780,7 +783,7 @@ def p_saw_read_exp(p):
   if quadruple.pOper[-1] == 'read':
     current = symbolTable.getCurrentScope()
     read_operand = current.sawCalledVariable(current.getLatestName())
-    quadruple.saveQuad('read', -1, -1, read_operand)
+    quadruple.saveQuad('read', -1, -1, read_operand.getVirtualAddress())
 
 def p_saw_read_end(p):
   ''' saw_read_end : '''
@@ -835,6 +838,9 @@ def p_saw_declared_dim(p):
   ''' saw_declared_dim : '''
   current = symbolTable.getCurrentScope()
   current.setLatestDimension(p[-1])
+  constType = quadHelpers.getTypeConstant(p[-1])
+  symbolTable.getCurrentScope().addConstant(p[-1], constType)
+  tempAddressPointer = symbolTable.getGlobalScope().getScopeConstants()[constType]
 
 def p_is_dim(p):
   ''' is_dim : '''
@@ -865,6 +871,16 @@ def p_end_dim(p):
 def p_saw_return_value(p):
   ''' saw_return_value : '''
   quadruple.pOper.append(p[-1])
+
+def p_start_function_temp_count(p):
+  '''
+  start_function_temp_count : 
+  '''
+  
+def p_end_function_temp_count(p):
+  '''
+  end_function_temp_count : 
+  '''
 
 parser = yacc.yacc()
 
