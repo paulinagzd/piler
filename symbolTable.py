@@ -521,6 +521,13 @@ class SymbolTable:
             print(x, ': ', xx)
           print('---------------------------------')
   
+  # def buildSkeleton(self):
+  #   tempArr = {}
+  #   globalScope = self.__globalScope["global"]
+  #   for key, val in globalScope.items():
+  #     print(val)
+    
+
   def reset(self):
     self.__globalScope = {}
     keyword = "global"

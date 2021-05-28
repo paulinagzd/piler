@@ -27,6 +27,7 @@ while True:
         virtualMachine.execute()
       # symbolTable.printingAll()
       # quadruple.print()
+      # symbolTable.buildSkeleton()
       symbolTable.reset()
       quadruple.reset()
       resetGlobals()
