@@ -15,7 +15,7 @@ func int dos(int a, int b, flt g) {
   i=b
   while (i>0) then { 
     a=a+b*i+b
-    uno(i*2)
+    a = {uno(i*2)}
     print(a)
     i = i - 1
   };
@@ -28,7 +28,7 @@ int main()
   print(a, b)
   f=3.14
   sttttt = "hello there world"
-  uno(2)
-  dos(a+b*2, b, f*3) 
+  b = {uno(2)}
+  a = {dos(a+b*2, b, f*3)}
   print(a,b,f*2+1)
 }

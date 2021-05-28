@@ -1,0 +1,30 @@
+program patito;
+var int i, j, p;
+var ints Arreglo[12];
+var ints Matriz[12][8];
+
+func int fact(int j) {
+  var int i;
+  i = j + (p - j * 2 + j)
+  if (j == 1) then {
+    return (j)
+  } else {
+    return (j * {fact(1 -j)})
+  };
+}
+
+func void inicia(int y) {
+  var int x;
+  x = -1
+  while (x < 11) then {
+    Arreglo[x] = y * x
+    x = x + 1
+  };
+}
+
+int main() {
+  read(p)
+  j = p * 2
+  i = -1
+  inicia(p * j - 5)
+}

@@ -26,7 +26,7 @@ while True:
         virtualMachine = VM(quadruple.quads)
         virtualMachine.execute()
       symbolTable.printingAll()
-      # quadruple.print()
+      quadruple.print()
       symbolTable.reset()
       quadruple.reset()
 

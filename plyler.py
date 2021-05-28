@@ -21,6 +21,7 @@ quadruple = Quad.instantiate()
 jumps = Jumps.instantiate()
 
 pointer = None
+aux = False
 cont = 0
 
 # reserved words
@@ -47,10 +48,10 @@ reserved = {
   'then' : 'THEN',
   'else' : 'ELSE',
   'while' : 'WHILE',
-  'for' : 'FOR',
-  'from' : 'FROM',
-  'to' : 'TO',
-  'by' : 'BY',
+  # 'for' : 'FOR',
+  # 'from' : 'FROM',
+  # 'to' : 'TO',
+  # 'by' : 'BY',
   'class' : 'CLASS',
   'att' : 'ATTRIBUTES',
   'met' : 'METHODS',
@@ -83,6 +84,7 @@ tokens = [
   'COLON',
   'SEMICOLON',
   'QUESTION',
+  'EXCLAMATION',
   'AND',
   'OR',
   'AS',
@@ -109,6 +111,7 @@ t_COMMA = r'\,'
 t_COLON = r'\:'
 t_SEMICOLON = r'\;'
 t_QUESTION = r'\?'
+t_EXCLAMATION = r'\!'
 t_AND = r'\&\&'
 t_OR = r'\|\|'
 t_AS = r'\='
@@ -243,16 +246,17 @@ def p_while_loop(p):
 
 ################################################
 # CICLO FOR
-def p_for_loop(p):
-  '''
-  for_loop : FOR OPAREN variable FROM for_loop1 TO for_loop1 BY for_loop1 CPAREN THEN block SEMICOLON
-  '''
+# def p_for_loop(p):
+#   '''
+#   for_loop : 
+#   '''
+#   # FOR OPAREN variable FROM for_loop1 TO for_loop1 BY for_loop1 CPAREN THEN block SEMICOLON
 
-def p_for_loop1(p):
-  '''
-  for_loop1 : CSTINT
-            | variable
-  '''
+# def p_for_loop1(p):
+#   '''
+#   for_loop1 : CSTINT
+#             | variable
+#   '''
 
  ################################################
 # DECLARACION VARS
@@ -263,13 +267,7 @@ def p_decs(p):
 
 def p_dec(p):
   '''
-  dec : VAR type SEMICOLON dec1
-  '''
-
-def p_dec1(p):
-  '''
-  dec1 : dec
-       | empty
+  dec : VAR type SEMICOLON
   '''
 
 def p_decs1(p):
@@ -283,7 +281,7 @@ def p_type(p):
   '''
   type : compound ID saw_id saw_variable type1
        | simple ID saw_id saw_variable type1
-       | multiple ID saw_id OBRACKET CSTINT CBRACKET saw_dimension type3 saw_variable type2
+       | multiple ID saw_id OBRACKET CSTINT saw_declared_dim CBRACKET type3 saw_variable type2
   '''
 
 def p_type1(p):
@@ -294,13 +292,13 @@ def p_type1(p):
 
 def p_type2(p):
   '''
-  type2 : COMMA ID saw_id OBRACKET CSTINT CBRACKET saw_dimension type3 saw_variable
+  type2 : COMMA ID saw_id OBRACKET CSTINT saw_declared_dim CBRACKET type3 saw_variable
         | empty
   '''
 
 def p_type3(p):
   '''
-  type3 : OBRACKET CSTINT CBRACKET saw_dimension
+  type3 : OBRACKET CSTINT saw_declared_dim CBRACKET
         | empty
   '''
 
@@ -325,8 +323,8 @@ def p_type_multiple(p):
 def p_type_compound(p):
   '''
   compound : ID saw_type
-            | DATAFRAME saw_type
-            | FILE saw_type
+           | DATAFRAME saw_type
+           | FILE saw_type
   ''' 
 
 ################################################
@@ -353,10 +351,10 @@ def p_estatuto(p):
            | write
            | read
            | while_loop
-           | for_loop
            | ternary
-           | RETURN exp saw_return_value
+           | RETURN saw_return_value exp
   '''
+#            | for_loop
 
 def p_estatuto_redux(p): # TERNARY ONE LINERS
   '''
@@ -365,7 +363,7 @@ def p_estatuto_redux(p): # TERNARY ONE LINERS
                  | write
                  | read
                  | ternary
-                 | RETURN exp saw_return_value
+                 | RETURN saw_return_value exp
   '''
 
 ################################################
@@ -434,24 +432,24 @@ def p_boolean(p):
   '''
 
 ################################################
-# VARIABLE (function_call)
+# VARIABLE (llamada)
 def p_variable(p):
   '''
   variable : ID saw_id saw_called_var
-           | ID saw_id OBRACKET exp CBRACKET saw_dimension variable1 saw_called_var
+           | ID saw_id_arr OBRACKET is_dim exp CBRACKET variable1 end_dim saw_called_var
            | ID saw_id variable2
   '''
 
 def p_variable1(p):
   '''
-  variable1 : OBRACKET exp CBRACKET saw_dimension
+  variable1 : OBRACKET is_second_dim exp CBRACKET
             | empty
   '''
 
 def p_variable2(p):
   '''
   variable2 : PERIOD ID saw_called_var_from_class
-            | PERIOD ID saw_called_var_from_class OBRACKET exp CBRACKET saw_dimension variable1
+            | PERIOD ID saw_called_var_from_class OBRACKET exp CBRACKET variable1
   '''
 
 ################################################
@@ -468,6 +466,12 @@ def p_function_call1(p):
                  | empty
   '''
 
+# def p_special(p):
+#   '''
+#   special : verify_func OPAREN exp verify_param function_call1 CPAREN generate_gosub
+#           | verify_func OPAREN CPAREN generate_gosub
+#           | 
+#   '''
 ################################################
 # SUPER EXP
 def p_exp(p):
@@ -535,24 +539,48 @@ def p_term1(p):
         | empty
   '''
 
+# def term2(p):
+#   '''
+#   term2 : factor
+#   '''
+
 ################################################
 # FACTOR
 def p_factor(p):
   '''
   factor : OPAREN saw_oparen exp CPAREN saw_cparen check_multdiv_operator
          | varcst check_multdiv_operator
+         | negative check_multdiv_operator
          | variable saw_var_factor check_multdiv_operator
-         | function_call
+         | OCURLY saw_oparen saw_func_factor function_call CCURLY saw_cparen check_multdiv_operator
   '''
 
 def p_saw_var_factor(p):
   '''
   saw_var_factor :
   '''
-  # getting a Variable object
-  current = symbolTable.getCurrentScope().sawCalledVariable(symbolTable.getCurrentScope().getLatestName())
-  quadruple.pilaO.append(current)
+  global aux
+  if aux:
+    quadruple.pilaArr.pop()
+    aux = False
+    pass
+  else:
+    current = symbolTable.getCurrentScope().sawCalledVariable(symbolTable.getCurrentScope().getLatestName())
+    quadruple.pilaO.append(current.getVirtualAddress())
 
+def p_saw_func_factor(p):
+  '''
+  saw_func_factor :
+  '''
+  print("SAW FUNC FACTOR")
+  # global aux
+  # if aux:
+  #   quadruple.pilaArr.pop()
+  #   aux = False
+  #   pass
+  # else:
+  #   current = symbolTable.getCurrentScope().sawCalledFunction(symbolTable.getCurrentScope().getLatestName())
+  #   quadruple.pilaO.append(current.getVirtualAddress())
 ################################################
 #VARCST
 def p_varcst(p):
@@ -564,6 +592,10 @@ def p_varcst(p):
          | boolean
   '''
 
+def p_negative(p):
+  '''
+  negative : MINUS varcst
+  '''
 ################################################
 # EMPTY
 def p_empty(p):
@@ -585,7 +617,7 @@ def p_saw_program(p):
 
 def p_saw_program_end(p):
   ''' saw_program_end : '''
-  quadruple.saveQuad("end", None, None, None)
+  quadruple.saveQuad("end", -1, -1, -1)
 
 def p_saw_main(p):
   ''' saw_main : '''
@@ -604,6 +636,15 @@ def p_saw_id(p):
   ''' saw_id : '''
   symbolTable.getCurrentScope().setLatestName(p[-1])
 
+def p_saw_id_arr(p):
+  ''' saw_id_arr : '''
+  symbolTable.getCurrentScope().setLatestName(p[-1])
+  current = symbolTable.getCurrentScope()
+  global pointer
+  pointer = current.sawCalledVariable(current.getLatestName())
+  quadruple.pilaO.append(pointer.getVirtualAddress())
+  quadruple.pilaArr.append(pointer)
+
 def p_saw_variable(p):
   ''' saw_variable : '''
   current = symbolTable.getCurrentScope()
@@ -618,14 +659,11 @@ def p_saw_variable_param(p):
 
 def p_saw_dimension(p):
   ''' saw_dimension : '''
-  current = symbolTable.getCurrentScope()
-  current.setLatestDimension()
 
 def p_saw_called_var(p):
   ''' saw_called_var : '''
   current = symbolTable.getCurrentScope()
   global pointer
-  # print("CALLINGSAWCALLEDVAR", current.getLatestName())
   pointer = current.sawCalledVariable(current.getLatestName())
 
 def p_saw_called_var_from_class(p):
@@ -641,10 +679,12 @@ def p_saw_asig(p):
 
 def p_saw_end_value(p):
   ''' saw_end_value : '''
-  # adding constant values to the global scope
-  symbolTable.getCurrentScope().addConstant(p[-1], quadHelpers.getType(p[-1]))
-  current = symbolTable.getGlobalScope().getScopeConstants()[-1]
-  quadruple.pilaO.append(current)
+  constType = quadHelpers.getTypeConstant(p[-1])
+  symbolTable.getCurrentScope().addConstant(p[-1], constType)
+  tempAddressPointer = symbolTable.getGlobalScope().getScopeConstants()[constType]
+  curr = p[-1]
+  tempAddress = tempAddressPointer[curr]
+  quadruple.pilaO.append(tempAddress)
 
 def p_saw_plusminus_operator(p):
   ''' saw_plusminus_operator  : '''
@@ -713,8 +753,7 @@ def p_saw_function(p):
 
 def p_saw_function_end(p):
   ''' saw_function_end : '''
-  quadruple.saveQuad("endfunc", None, None, None)
-  # moduleHelpers.endingFunction()
+  quadruple.saveQuad("endfunc", -1, -1, -1)
 
 def p_scope_end(p):
   ''' scope_end : '''
@@ -740,9 +779,8 @@ def p_saw_read_exp(p):
   ''' saw_read_exp : '''
   if quadruple.pOper[-1] == 'read':
     current = symbolTable.getCurrentScope()
-    # print("CALLINGSAWCALLEDVAR", current.getLatestName())
     read_operand = current.sawCalledVariable(current.getLatestName())
-    quadruple.saveQuad('read', None, None, read_operand)
+    quadruple.saveQuad('read', -1, -1, read_operand)
 
 def p_saw_read_end(p):
   ''' saw_read_end : '''
@@ -782,12 +820,10 @@ def p_increment_cont(p):
   ''' increment_cont : '''
   global cont
   cont = moduleHelpers.incrementParamCounter(cont)
-  print("CONTINMAIN: ", cont)
 
 def p_generate_gosub(p):
   ''' generate_gosub : '''
-  quadruple.saveQuad('gosub', symbolTable.getCurrentScope().getLatestFuncName(), None, None)
-  symbolTable.getCurrentScope().clearCurrentFunctionParams()
+  moduleHelpers.generateGoSub()
   global cont
   cont = 0
 
@@ -795,9 +831,40 @@ def p_saw_cond(p):
   ''' saw_cond : '''
   condHelpers.enterCond()
 
+def p_saw_declared_dim(p):
+  ''' saw_declared_dim : '''
+  current = symbolTable.getCurrentScope()
+  current.setLatestDimension(p[-1])
+
+def p_is_dim(p):
+  ''' is_dim : '''
+  current = symbolTable.getCurrentScope()
+  global pointer
+  pointer = current.sawCalledVariable(current.getLatestName())
+  if pointer.getDimensions() > 0:
+    dim = 1
+    quadruple.pilaDim.append({"id": pointer, "dim": dim})
+    # print("POINTER", pointer)
+    quadruple.pOper.append('$') #fake bottom 
+
+def p_is_second_dim(p):
+  ''' is_second_dim : '''
+  # global aux
+  for i in quadruple.pilaDim:
+    if i["id"] == quadruple.pilaArr[-1]:
+      i["dim"] = 2
+
+def p_end_dim(p):
+  ''' end_dim : '''
+  # if (quadruple.pilaArr[-1].getDimensions() > 1):
+  #   while quadruple.pilaO[-1] != quadruple.pilaArr[-1].getVirtualAddress():
+  #     quadruple.pilaO.pop()
+  global aux
+  aux = quadHelpers.endDim(quadruple.pilaArr[-1])
+
 def p_saw_return_value(p):
   ''' saw_return_value : '''
-  # symbolTable.getCurrentScope().setLatestReturnValue()
+  quadruple.pOper.append(p[-1])
 
 def p_start_function_temp_count(p):
   '''
@@ -813,48 +880,23 @@ parser = yacc.yacc()
 
 # lexer.input(
 #   '''
-#  program viendo;
-# var ints globales[1];
-# var ints globs[12][12];
-# var boos matriz[12][12];
-# var str strinn, stru;
-# var cha c;
-# /* Este programa es
-# demostracion */
+#  program patito;
+# var int i, j, p;
+# var ints Arreglo[12];
+# var ints Matriz[12][8];
 
-# func int hola(boo you) {
-#   var str ha;
+# func int fact(int j) {
 #   var int i;
-#   var boo e;
-#   var flt a;
-#   a = 20 + 10.5 * (8 - 1 / 2)
-#   e = 2 == 2
-# }
-
-# class Animal: {        /* comentario en medio de la nada */
-#   att: 
-#     var int estatura;
-#     var flts horario[1], comidas[2][2];
-
-#   met:
-#     func void cambiarEstatura() {
-#       print(2*2)
-#     }
-# };
-
-# var cha aqui;
-
-# func boo adios(cha si) {
-#   var str uuuu;
-#   var int o;
-#   var flt w, oo;
-#   w = 80.1
-#   o = 12 * 5
-#   oo = 60/5 
+#   i = j + (p - j * 2 + j)
+#   if (j == 1) then {
+#     return (j)
+#   } else {
+#     return (j * {fact(j-1)})
+#   };
 # }
 
 # int main() {
-#   hola(True)
+#   i = 0
 # }
 #   '''
 # )

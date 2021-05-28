@@ -1,8 +1,23 @@
 from quad import Quad
-from symbolTable import SymbolTable
+# from symbolTable import SymbolTable
+# import quadHelpers
 
-quadruple = Quad.instantiate()
-symbolTable = SymbolTable.instantiate()
+# quadruple = Quad.instantiate()
+# symbolTable = SymbolTable.instantiate()
+
+# quadruple = Quad.instantiate()
+# symbolTable = SymbolTable.instantiate()
+# globalScope = SymbolTable.getGlobalScope()
+
+# def getScopeByFuncName(quad):
+#   if not quad[-1] in globalScope.keys():
+#     raise Exception("Wrong mem address when finding scope")
+#   return globalScope[quad[-1]]
+
+# def assignValueToMemSpace(address, currentScope):
+#   addressType = quadHelpers.getTypeV2(address) # gets if local
+#   # symbolTable[currentScope].getVar
+
 
 class MemSpaceContainer:
   def __init__(self, initialAddress):
@@ -17,6 +32,9 @@ class MemSpaceContainer:
   
   def setOffset(self):
     self.__offset += 1
+
+  def setDimensionalOffset(self, val):
+    self.__offset += val
 
 # this is the main directory for memory addresses separated by scope
 # elements contain their offset for when assigning new variables
@@ -135,10 +153,13 @@ class VM:
       return self.__callStack[-1]
 
   # Processing Operations
-  def add(self, leftDir, rightDir, resultDir):
-    leftValue = 
-    rightValue = 
-    MainMemory[resultDir] = leftValue + rightValue
+  # def add(self, leftDir, rightDir, resultDir):
+  #   leftValue = 
+  #   rightValue = 
+  #   MainMemory[resultDir] = leftValue + rightValue
+  # Finding value by virtual addresses from scopes
+  def add(self):
+    # return findValueOp1 + findValueOp1 value
     return False
 
   def subtract(self, leftDir, rightDir, resultDir):
@@ -320,15 +341,16 @@ class MemoryContainer:
 
 class MainMemory:
   isAlive = None
-  ["global" [reales]  [temp]]
-  ["localFunc1" [varsLocalesMemoria] [tempsGenerados]]
-  [Constantes consts con direcciones de mmeoria]
+  # ["global" [reales]  [temp]]
+  # ["localFunc1" [varsLocalesMemoria] [tempsGenerados]]
+  # [Constantes consts con direcciones de mmeoria]
   def __init__(self):
     MainMemory.isAlive = self
     self.__global = {}
     self.__local = {}
     self.__constants = {}
     self.__classes = {}
+    self.__pointer = None
   
   def getGlobal(self):
     return self.__global
@@ -341,6 +363,12 @@ class MainMemory:
 
   def getClasses(self):
     return self.__classes
+
+  def getPointer(self):
+    return self.__pointer
+  
+  # def setPointer(self):
+
 
   @classmethod
   def instantiate(cls):
