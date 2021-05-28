@@ -1,6 +1,5 @@
 from symbolTable import SymbolTable
 from quad import Quad
-from vm import memSpace
 import quadHelpers
 
 quadruple = Quad.instantiate()
@@ -26,19 +25,30 @@ def verifyParamMatch(cont):
     quadruple.saveQuad('param', incoming, -1, cont + 1)
     return cont
   
-def generateGoSub():
+def generateGoSub(isClass, className):
   currentScope = symbolTable.getCurrentScope()
   quadruple.saveQuad('gosub', currentScope.getLatestFuncName(), -1, -1) #initial address
   currentScope.clearCurrentFunctionParams()
   currentScope.setMatchingParams(False)
   keyword = ''
-  funcType = symbolTable.getGlobalScope().getScopeFunctions()[currentScope.getLatestFuncName()].getScopeType()
+  if isClass:
+    funcType = symbolTable.getGlobalScope().getScopeClasses()[className].getScopeFunctions()[currentScope.getLatestFuncName()].getScopeType()
+  else:
+    if currentScope.getContext() == 'classFunction':
+      funcType = symbolTable.getGlobalScope().getScopeClasses()[symbolTable.getStack()].getScopeFunctions()[currentScope.getLatestFuncName()].getScopeType()
+    else:
+      funcType = symbolTable.getGlobalScope().getScopeFunctions()[currentScope.getLatestFuncName()].getScopeType()
+  pointingScope = symbolTable.getGlobalScope()
+  # need to point either to global or class memory
+  if currentScope.getContext() == 'classFunction':
+    pointingScope = symbolTable.getGlobalScope().getScopeClasses()[symbolTable.getStack()]
+
   if funcType != 'void':
-    if currentScope.getContext() == 'global':
+    if currentScope.getScopeType() == 'global':
       keyword = 'global'
     else:
       keyword = 'local'
-    tempAddressPointer = memSpace[keyword][funcType]['temp']
+    tempAddressPointer = pointingScope.memory.memSpace[keyword][funcType]['temp']
     tempAddress = tempAddressPointer.getInitialAddress() + tempAddressPointer.getOffset()
     quadruple.pilaO.append(tempAddress)
     quadruple.saveQuad('=', symbolTable.getCurrentScope().getLatestFuncName(), -1, tempAddress) #temp address

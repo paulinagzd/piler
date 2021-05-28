@@ -21,6 +21,8 @@ quadruple = Quad.instantiate()
 jumps = Jumps.instantiate()
 
 pointer = None
+classPointer = None
+funcPointer = None
 aux = False
 cont = 0
 
@@ -198,7 +200,7 @@ def p_functions(p): # function declarations in a FIXED PLACE (such as class meth
 
 def p_function(p):
   '''
-  function : FUNCTION func1 ID saw_id saw_function OPAREN param CPAREN start_function_temp_count block  end_function_temp_count saw_function_end scope_end
+  function : FUNCTION func1 ID saw_id saw_function OPAREN param CPAREN start_function_temp_count block end_function_temp_count saw_function_end scope_end
   '''
 
 def p_function1(p):
@@ -449,7 +451,7 @@ def p_variable1(p):
 def p_variable2(p):
   '''
   variable2 : PERIOD ID saw_called_var_from_class
-            | PERIOD ID saw_called_var_from_class OBRACKET exp CBRACKET variable1
+            | PERIOD ID saw_called_var_from_class saw_id_arr_class OBRACKET is_dim exp CBRACKET variable1 end_dim
   '''
 
 ################################################
@@ -458,6 +460,7 @@ def p_function_call(p):
   '''
   function_call : ID saw_id verify_func OPAREN exp verify_param function_call1 CPAREN generate_gosub
                 | ID saw_id verify_func OPAREN CPAREN generate_gosub
+                | ID saw_id function_call2
   '''
 
 def p_function_call1(p):
@@ -466,12 +469,12 @@ def p_function_call1(p):
                  | empty
   '''
 
-# def p_special(p):
-#   '''
-#   special : verify_func OPAREN exp verify_param function_call1 CPAREN generate_gosub
-#           | verify_func OPAREN CPAREN generate_gosub
-#           | 
-#   '''
+def p_function_call2(p):
+  '''
+  function_call2 : PERIOD ID saw_called_func_from_class verify_func OPAREN exp verify_param function_call1 CPAREN generate_gosub_obj
+                 | PERIOD ID saw_called_func_from_class verify_func OPAREN CPAREN generate_gosub_obj
+  '''
+
 ################################################
 # SUPER EXP
 def p_exp(p):
@@ -550,23 +553,27 @@ def p_factor(p):
   '''
   factor : OPAREN saw_oparen exp CPAREN saw_cparen check_multdiv_operator
          | varcst check_multdiv_operator
-         | negative check_multdiv_operator
          | variable saw_var_factor check_multdiv_operator
          | OCURLY saw_oparen saw_func_factor function_call CCURLY saw_cparen check_multdiv_operator
   '''
+#          | negative check_multdiv_operator
 
 def p_saw_var_factor(p):
   '''
   saw_var_factor :
   '''
   global aux
+  global classPointer
   if aux:
     quadruple.pilaArr.pop()
     aux = False
     pass
+  elif classPointer != None and classPointer.getIsObject():
+    quadruple.pilaO.append(classPointer.getVirtualAddress())
   else:
     current = symbolTable.getCurrentScope().sawCalledVariable(symbolTable.getCurrentScope().getLatestName())
     quadruple.pilaO.append(current.getVirtualAddress())
+  classPointer = None
 
 def p_saw_func_factor(p):
   '''
@@ -592,10 +599,10 @@ def p_varcst(p):
          | boolean
   '''
 
-def p_negative(p):
-  '''
-  negative : MINUS varcst
-  '''
+# def p_negative(p):
+#   '''
+#   negative : MINUS varcst
+#   '''
 ################################################
 # EMPTY
 def p_empty(p):
@@ -614,10 +621,6 @@ def p_error(p):
 def p_saw_program(p):
   ''' saw_program : '''
   condHelpers.saveForMain()
-
-# def p_saw_program_end(p):
-#   ''' saw_program_end : '''
-#   quadruple.saveQuad("end", -1, -1, -1)
 
 def p_saw_main(p):
   ''' saw_main : '''
@@ -638,10 +641,20 @@ def p_saw_id(p):
 
 def p_saw_id_arr(p):
   ''' saw_id_arr : '''
-  symbolTable.getCurrentScope().setLatestName(p[-1])
   current = symbolTable.getCurrentScope()
+  current.setLatestName(p[-1])
   global pointer
   pointer = current.sawCalledVariable(current.getLatestName())
+  quadruple.pilaO.append(pointer.getVirtualAddress())
+  quadruple.pilaArr.append(pointer)
+
+def p_saw_id_arr_class(p):
+  ''' saw_id_arr_class : '''
+  current = symbolTable.getCurrentScope()
+  aux = current.getLatestName()
+  symbolTable.getCurrentScope().setLatestName(p[-1])
+  global pointer
+  pointer = current.doesClassExist(aux)
   quadruple.pilaO.append(pointer.getVirtualAddress())
   quadruple.pilaArr.append(pointer)
 
@@ -668,10 +681,19 @@ def p_saw_called_var(p):
 
 def p_saw_called_var_from_class(p):
   ''' saw_called_var_from_class : '''
+  global classPointer
   current = symbolTable.getCurrentScope()
   temp = current.getLatestName()
   current.setLatestName(p[-1])
-  current.doesClassExist(temp, p[-1])
+  classPointer = current.doesClassExist(temp, p[-1], 'var')
+
+def p_saw_called_func_from_class(p):
+  ''' saw_called_func_from_class : '''
+  global funcPointer
+  current = symbolTable.getCurrentScope()
+  temp = current.getLatestName()
+  current.setLatestName(p[-1])
+  funcPointer = current.doesClassExist(temp, p[-1], 'func')
 
 def p_saw_asig(p):
   ''' saw_asig : '''
@@ -811,7 +833,16 @@ def p_count_vars(p):
 
 def p_verify_func(p):
   ''' verify_func : '''
-  symbolTable.getCurrentScope().sawCalledFunction(symbolTable.getCurrentScope().getLatestName())
+  global funcPointer
+  extraParam = ''
+  keyword = ''
+  if funcPointer != None:
+    keyword = 'class'
+    extraParam = funcPointer
+  else:
+    keyword = 'global'
+    extraParam = ''
+  symbolTable.getCurrentScope().sawCalledFunction(symbolTable.getCurrentScope().getLatestName(), keyword, extraParam)
 
 def p_verify_param(p):
   ''' verify_param : '''
@@ -826,7 +857,14 @@ def p_increment_cont(p):
 
 def p_generate_gosub(p):
   ''' generate_gosub : '''
-  moduleHelpers.generateGoSub()
+  moduleHelpers.generateGoSub(False, '')
+  global cont
+  cont = 0
+
+def p_generate_gosub_obj(p):
+  ''' generate_gosub_obj : '''
+  global funcPointer
+  moduleHelpers.generateGoSub(True, funcPointer)
   global cont
   cont = 0
 
@@ -850,21 +888,16 @@ def p_is_dim(p):
   if pointer.getDimensions() > 0:
     dim = 1
     quadruple.pilaDim.append({"id": pointer, "dim": dim})
-    # print("POINTER", pointer)
     quadruple.pOper.append('$') #fake bottom 
 
 def p_is_second_dim(p):
   ''' is_second_dim : '''
-  # global aux
   for i in quadruple.pilaDim:
     if i["id"] == quadruple.pilaArr[-1]:
       i["dim"] = 2
 
 def p_end_dim(p):
   ''' end_dim : '''
-  # if (quadruple.pilaArr[-1].getDimensions() > 1):
-  #   while quadruple.pilaO[-1] != quadruple.pilaArr[-1].getVirtualAddress():
-  #     quadruple.pilaO.pop()
   global aux
   aux = quadHelpers.endDim(quadruple.pilaArr[-1])
 
@@ -881,6 +914,18 @@ def p_end_function_temp_count(p):
   '''
   end_function_temp_count : 
   '''
+def resetGlobals():
+  global pointer
+  global classPointer
+  global funcPointer
+  global aux
+  global cont
+
+  pointer = None
+  classPointer = None
+  funcPointer = None
+  aux = False
+  cont = 0
 
 parser = yacc.yacc()
 

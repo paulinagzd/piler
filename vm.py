@@ -18,6 +18,27 @@ from quad import Quad
 #   addressType = quadHelpers.getTypeV2(address) # gets if local
 #   # symbolTable[currentScope].getVar
 
+# def getTempStart(initialAddress):
+#   return initialAddress + 1000
+
+# globalInt = 5000
+# globalInts = 7000
+# globalFlt = 9000
+# globalFlts = 11000
+# globalCha = 13000
+# globalChas = 15000
+# globalBoo = 17000
+# globalBoos = 19000
+# globalStr = 21000
+# globalStrs = 23000
+
+# localInt = 25000
+# localInts = 27000
+# localFlt = 29000
+# localFlts = 31000
+# localCha = 33000
+# localChas = 7000
+# cont = 0
 
 class MemSpaceContainer:
   def __init__(self, initialAddress):
@@ -41,100 +62,102 @@ class MemSpaceContainer:
 
 # this is the main directory for memory addresses separated by scope
 # elements contain their offset for when assigning new variables
-memSpace = {
-  'global': {
-    'int': {
-      'real': MemSpaceContainer(5000),
-      'temp': MemSpaceContainer(6000),
-    },
-    'ints': {
-      'real': MemSpaceContainer(7000),
-      'temp': MemSpaceContainer(8000),
-    },
-    'flt': {
-      'real': MemSpaceContainer(9000),
-      'temp': MemSpaceContainer(10000),
-    },
-    'flts': {
-      'real': MemSpaceContainer(11000),
-      'temp': MemSpaceContainer(12000),
-    },
-    'cha': {
-      'real': MemSpaceContainer(13000),
-      'temp': MemSpaceContainer(14000),
-    },
-    'chas': {
-      'real': MemSpaceContainer(15000),
-      'temp': MemSpaceContainer(16000),
-    },
-    'boo': {
-      'real': MemSpaceContainer(17000),
-      'temp': MemSpaceContainer(18000),
-    }, 
-    'boos': {
-      'real': MemSpaceContainer(19000),
-      'temp': MemSpaceContainer(20000),
-    }, 
-    'str': {
-      'real': MemSpaceContainer(21000),
-      'temp': MemSpaceContainer(22000),
-    },
-    'strs': {
-      'real': MemSpaceContainer(23000),
-      'temp': MemSpaceContainer(24000),
-    },
-  }, 
-  'local': {
-    'int': {
-      'real': MemSpaceContainer(25000),
-      'temp': MemSpaceContainer(26000),
-    },
-    'ints': {
-      'real': MemSpaceContainer(27000),
-      'temp': MemSpaceContainer(28000),
-    },
-    'flt': {
-      'real': MemSpaceContainer(29000),
-      'temp': MemSpaceContainer(30000),
-    },
-    'flts': {
-      'real': MemSpaceContainer(31000),
-      'temp': MemSpaceContainer(32000),
-    },
-    'cha': {
-      'real': MemSpaceContainer(33000),
-      'temp': MemSpaceContainer(34000),
-    },
-    'chas': {
-      'real': MemSpaceContainer(35000),
-      'temp': MemSpaceContainer(36000),
-    },
-    'boo': {
-      'real': MemSpaceContainer(37000),
-      'temp': MemSpaceContainer(38000),
-    }, 
-    'boos': {
-      'real': MemSpaceContainer(39000),
-      'temp': MemSpaceContainer(40000),
-    },
-    'str': {
-      'real': MemSpaceContainer(41000),
-      'temp': MemSpaceContainer(42000),
-    },
-    'strs': {
-      'real': MemSpaceContainer(43000),
-      'temp': MemSpaceContainer(44000),
-    },
-  },
-  'constants': {
-    'int': MemSpaceContainer(45000),
-    'flt': MemSpaceContainer(47000),
-    'cha': MemSpaceContainer(49000),
-    'boo': MemSpaceContainer(51000), 
-    'str': MemSpaceContainer(53000),
-  }
-}
-
+class MemoryContainer:
+  def __init__(self, name):
+    self.name = name
+    self.memSpace = {
+      'global': {
+        'int': {
+          'real': MemSpaceContainer(5000),
+          'temp': MemSpaceContainer(6000),
+        },
+        'ints': {
+          'real': MemSpaceContainer(7000),
+          'temp': MemSpaceContainer(8000),
+        },
+        'flt': {
+          'real': MemSpaceContainer(9000),
+          'temp': MemSpaceContainer(10000),
+        },
+        'flts': {
+          'real': MemSpaceContainer(11000),
+          'temp': MemSpaceContainer(12000),
+        },
+        'cha': {
+          'real': MemSpaceContainer(13000),
+          'temp': MemSpaceContainer(14000),
+        },
+        'chas': {
+          'real': MemSpaceContainer(15000),
+          'temp': MemSpaceContainer(16000),
+        },
+        'boo': {
+          'real': MemSpaceContainer(17000),
+          'temp': MemSpaceContainer(18000),
+        }, 
+        'boos': {
+          'real': MemSpaceContainer(19000),
+          'temp': MemSpaceContainer(20000),
+        }, 
+        'str': {
+          'real': MemSpaceContainer(21000),
+          'temp': MemSpaceContainer(22000),
+        },
+        'strs': {
+          'real': MemSpaceContainer(23000),
+          'temp': MemSpaceContainer(24000),
+        },
+      }, 
+      'local': {
+        'int': {
+          'real': MemSpaceContainer(25000),
+          'temp': MemSpaceContainer(26000),
+        },
+        'ints': {
+          'real': MemSpaceContainer(27000),
+          'temp': MemSpaceContainer(28000),
+        },
+        'flt': {
+          'real': MemSpaceContainer(29000),
+          'temp': MemSpaceContainer(30000),
+        },
+        'flts': {
+          'real': MemSpaceContainer(31000),
+          'temp': MemSpaceContainer(32000),
+        },
+        'cha': {
+          'real': MemSpaceContainer(33000),
+          'temp': MemSpaceContainer(34000),
+        },
+        'chas': {
+          'real': MemSpaceContainer(35000),
+          'temp': MemSpaceContainer(36000),
+        },
+        'boo': {
+          'real': MemSpaceContainer(37000),
+          'temp': MemSpaceContainer(38000),
+        }, 
+        'boos': {
+          'real': MemSpaceContainer(39000),
+          'temp': MemSpaceContainer(40000),
+        },
+        'str': {
+          'real': MemSpaceContainer(41000),
+          'temp': MemSpaceContainer(42000),
+        },
+        'strs': {
+          'real': MemSpaceContainer(43000),
+          'temp': MemSpaceContainer(44000),
+        },
+      },
+      'constants': {
+        'int': MemSpaceContainer(45000),
+        'flt': MemSpaceContainer(47000),
+        'cha': MemSpaceContainer(49000),
+        'boo': MemSpaceContainer(51000), 
+        'str': MemSpaceContainer(53000),
+      }
+    }
 class VM:
   def __init__(self, quadList, dirFunc):
     self.__quadList = quadList
@@ -330,18 +353,6 @@ class VM:
     self.end()
      
 # works like a Memory SCOPE, divided in G, L, T, C, and Objs      
-class MemoryContainer:
-  isAlive = None
-
-  def __init__(self):
-    MemoryContainer.isAlive = self
-
-  @classmethod
-  def instantiate(cls):
-    if MemoryContainer.isAlive is None:
-      MemoryContainer()
-    return MemoryContainer.isAlive
-
 class MainMemory:
   isAlive = None
   # ["global" [reales]  [temp]]

@@ -4,7 +4,24 @@ var ints A[8];
 var int j;
 var ints B[4][6];
 var int k;
+
+class Clase: {
+  att:
+    var int a;
+    var flt b;
+  
+  met:
+    func void claseFunc(int a, flt b) {
+      var int c;
+      c = 8 - 9
+      b = a + b * 8.17
+      claseFunc(c, b)
+    }
+};
+
 int main() {
+
   /* A[i+j*k] = j + B[i*j][k - i] * A[k] */
-  /* B[i+j][A[i] * k] = i + j */
+  /* B[i+j][A[i] * k] = i + Clase.a */
+  Clase.claseFunc(1, 1.1)
 }
