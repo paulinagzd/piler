@@ -34,6 +34,11 @@ def exitWhile():
   quadruple.saveQuad('goto', -1, -1, ret)
   fill(end, quadruple.quadCounter)
 
+def exitDoWhile():
+  ret = jumps.setStackPop()
+  cond = quadruple.pilaO.pop()
+  quadruple.saveQuad('gotoV', cond, -1, ret)
+
 def saveForMain():
   jumps.setStackPush(quadruple.quadCounter)
   quadruple.saveQuad("goto", -1, -1, TBD())

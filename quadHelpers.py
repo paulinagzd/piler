@@ -1,6 +1,5 @@
 from semanticCube import SemanticCube
 from symbolTable import SymbolTable
-# from vm import getPointingScope(symbolTable.getCurrentScope()).memory.memSpace
 from quad import Quad
 import condHelpers
 
@@ -124,8 +123,6 @@ def check_multdiv_operator(quadruple):
         # Saving the operator code instead of the operator itself
       else:
         raise Exception('ERROR! Type Mismatch') #type mismatch
-    # else:
-      # print(workingStack[-1])
 
 def check_plusminus_operator(quadruple):
   workingStack = quadruple.getWorkingStack()
@@ -165,7 +162,6 @@ def check_plusminus_operator(quadruple):
         quadruple.saveQuad(operator,left_operand,right_operand, tempAddress)
         tempAddressPointer.setOffset()
         
-        # {tvalue: result_Type}
       else:
         raise Exception('ERROR! Type Mismatch') #type mismatch
 
@@ -175,17 +171,11 @@ def check_relational_operator(quadruple):
     operatorSet = {'>','<','==','!=','>=','<='}
     if workingStack[-1] in operatorSet:
       right_operand = quadruple.pilaO.pop() 
-      # print("RIGHTOP", right_operand)
       left_operand = quadruple.pilaO.pop()
-      # print("LEFTOP", left_operand)
       right_type = getTypeV2(right_operand)
-
       left_type = getTypeV2(left_operand)
-      # print("RIGHTTYPE", right_type)
-      # print("LEFTTYPE", left_type)
 
       operator = workingStack.pop()
-      # print("OPERATOR", operator)
       if quadruple.pOper:
         quadruple.pOper.pop()
       result_Type = SemanticCube[operator][left_type][right_type]
@@ -199,7 +189,6 @@ def check_relational_operator(quadruple):
           keyword = 'global'
         else:
           keyword = 'local'
-        #  {tvalue: result_Type}
         tempAddressPointer = getPointingScope(symbolTable.getCurrentScope()).memory.memSpace[keyword][result_Type]['temp']
         tempAddress = tempAddressPointer.getInitialAddress() + tempAddressPointer.getOffset()
         quadruple.pilaO.append(tempAddress)

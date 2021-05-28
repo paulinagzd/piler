@@ -54,6 +54,7 @@ reserved = {
   # 'from' : 'FROM',
   # 'to' : 'TO',
   # 'by' : 'BY',
+  'do' : 'DO',
   'class' : 'CLASS',
   'att' : 'ATTRIBUTES',
   'met' : 'METHODS',
@@ -247,6 +248,13 @@ def p_while_loop(p):
   '''
 
 ################################################
+# CICLO WHILE
+def p_do_while_loop(p):
+  '''
+  do_while_loop : DO saw_while block WHILE cond2 saw_do_while_end SEMICOLON
+  '''
+
+################################################
 # CICLO FOR
 # def p_for_loop(p):
 #   '''
@@ -353,6 +361,7 @@ def p_estatuto(p):
            | write
            | read
            | while_loop
+           | do_while_loop
            | ternary
            | RETURN saw_return_value exp
   '''
@@ -826,6 +835,10 @@ def p_saw_while(p):
 def p_saw_while_end(p):
   ''' saw_while_end : '''
   condHelpers.exitWhile()
+
+def p_saw_do_while_end(p):
+  ''' saw_do_while_end : '''
+  condHelpers.exitDoWhile()
 
 def p_count_vars(p):
   ''' count_vars : '''
