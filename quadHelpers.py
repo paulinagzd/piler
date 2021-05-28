@@ -1,6 +1,6 @@
 from semanticCube import SemanticCube
 from symbolTable import SymbolTable
-from vm import memSpace
+# from vm import getPointingScope(symbolTable.getCurrentScope()).memory.memSpace
 from quad import Quad
 import condHelpers
 
@@ -8,6 +8,13 @@ quadruple = Quad.instantiate()
 symbolTable = SymbolTable.instantiate()
 
 varPointer = None
+
+def getPointingScope(currentScope):
+  # need to point either to global or class memory
+  if currentScope.getContext() == 'classFunction':
+    return symbolTable.getGlobalScope().getScopeClasses()[symbolTable.getStack()]
+  else:
+    return symbolTable.getGlobalScope()
 
 def getTypeV2(operand):
   if operand >= 5000 and operand < 6999:
@@ -101,7 +108,6 @@ def check_multdiv_operator(quadruple):
         #   tvalue = left_operand / right_operand
         #   quadruple.pilaO.append(tvalue)
 
-
         # get next temp memory depending on type
         keyword = ''
         if symbolTable.getCurrentScope().getContext() == 'global':
@@ -109,7 +115,7 @@ def check_multdiv_operator(quadruple):
         else:
           keyword = 'local'
         #  {tvalue: result_Type}
-        tempAddressPointer = memSpace[keyword][result_Type]['temp']
+        tempAddressPointer = getPointingScope(symbolTable.getCurrentScope()).memory.memSpace[keyword][result_Type]['temp']
         tempAddress = tempAddressPointer.getInitialAddress() + tempAddressPointer.getOffset()
         quadruple.pilaO.append(tempAddress)
         symbolTable.getCurrentScope().setLatestExpValue(result_Type)
@@ -152,7 +158,7 @@ def check_plusminus_operator(quadruple):
         else:
           keyword = 'local'
         #  {tvalue: result_Type}
-        tempAddressPointer = memSpace[keyword][result_Type]['temp']
+        tempAddressPointer = getPointingScope(symbolTable.getCurrentScope()).memory.memSpace[keyword][result_Type]['temp']
         tempAddress = tempAddressPointer.getInitialAddress() + tempAddressPointer.getOffset()
         quadruple.pilaO.append(tempAddress)
         symbolTable.getCurrentScope().setLatestExpValue(result_Type)
@@ -194,7 +200,7 @@ def check_relational_operator(quadruple):
         else:
           keyword = 'local'
         #  {tvalue: result_Type}
-        tempAddressPointer = memSpace[keyword][result_Type]['temp']
+        tempAddressPointer = getPointingScope(symbolTable.getCurrentScope()).memory.memSpace[keyword][result_Type]['temp']
         tempAddress = tempAddressPointer.getInitialAddress() + tempAddressPointer.getOffset()
         quadruple.pilaO.append(tempAddress)
         tempAddressPointer.setOffset()
@@ -230,7 +236,7 @@ def check_and_operator(quadruple):
         else:
           keyword = 'local'
 
-        tempAddressPointer = memSpace[keyword][result_Type]['temp']
+        tempAddressPointer = getPointingScope(symbolTable.getCurrentScope()).memory.memSpace[keyword][result_Type]['temp']
         tempAddress = tempAddressPointer.getInitialAddress() + tempAddressPointer.getOffset()
         quadruple.pilaO.append(tempAddress)
         quadruple.saveQuad(operator,left_operand,right_operand, tempAddress)
@@ -266,7 +272,7 @@ def check_or_operator(quadruple):
         else:
           keyword = 'local'
         #  {tvalue: result_Type}
-        tempAddressPointer = memSpace[keyword][result_Type]['temp']
+        tempAddressPointer = getPointingScope(symbolTable.getCurrentScope()).memory.memSpace[keyword][result_Type]['temp']
         tempAddress = tempAddressPointer.getInitialAddress() + tempAddressPointer.getOffset()
         quadruple.pilaO.append(tempAddress)
         quadruple.saveQuad(operator,left_operand,right_operand, tempAddress)
@@ -308,7 +314,7 @@ def expression_evaluation(p):
     else:
       keyword = 'local'
     currType = getTypeV2(quadruple.pilaO[-1])
-    tempAddressPointer = memSpace[keyword][currType]['temp']
+    tempAddressPointer = getPointingScope(symbolTable.getCurrentScope()).memory.memSpace[keyword][currType]['temp']
     tempAddress = tempAddressPointer.getInitialAddress() + tempAddressPointer.getOffset()
     if len(lsPointer) > currentDim: 
       aux = quadruple.pilaO.pop()
@@ -340,7 +346,7 @@ def endDim(var):
   else:
     keyword = 'local'
   currType = getTypeV2(quadruple.pilaO[-1])
-  tempAddressPointer = memSpace[keyword][currType]['temp']
+  tempAddressPointer = getPointingScope(symbolTable.getCurrentScope()).memory.memSpace[keyword][currType]['temp']
   tempAddress = tempAddressPointer.getInitialAddress() + tempAddressPointer.getOffset()
   quadruple.saveQuad("+", aux, varPointerDimNodes[var.getDimensions()-1].getR(), tempAddress) # ojo offset for first ones
   tempAddressPointer.setOffset()

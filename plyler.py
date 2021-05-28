@@ -21,6 +21,7 @@ quadruple = Quad.instantiate()
 jumps = Jumps.instantiate()
 
 pointer = None
+classPointer = None
 aux = False
 cont = 0
 
@@ -437,7 +438,7 @@ def p_variable(p):
   '''
   variable : ID saw_id saw_called_var
            | ID saw_id_arr OBRACKET is_dim exp CBRACKET variable1 end_dim saw_called_var
-           | ID saw_id variable2
+           | ID saw_id_class variable2
   '''
 
 def p_variable1(p):
@@ -449,7 +450,7 @@ def p_variable1(p):
 def p_variable2(p):
   '''
   variable2 : PERIOD ID saw_called_var_from_class
-            | PERIOD ID saw_called_var_from_class OBRACKET exp CBRACKET variable1
+            | PERIOD ID saw_called_var_from_class OBRACKET is_dim exp CBRACKET variable1
   '''
 
 ################################################
@@ -636,6 +637,11 @@ def p_saw_id(p):
   ''' saw_id : '''
   symbolTable.getCurrentScope().setLatestName(p[-1])
 
+def p_saw_id_class(p):
+  ''' saw_id_class : '''
+  global classPointer
+  classPointer = p[-1]
+
 def p_saw_id_arr(p):
   ''' saw_id_arr : '''
   symbolTable.getCurrentScope().setLatestName(p[-1])
@@ -668,10 +674,11 @@ def p_saw_called_var(p):
 
 def p_saw_called_var_from_class(p):
   ''' saw_called_var_from_class : '''
+  global classPointer
   current = symbolTable.getCurrentScope()
   temp = current.getLatestName()
   current.setLatestName(p[-1])
-  current.doesClassExist(temp, p[-1])
+  classPointer = current.doesClassExist(temp, p[-1])
 
 def p_saw_asig(p):
   ''' saw_asig : '''
@@ -850,21 +857,16 @@ def p_is_dim(p):
   if pointer.getDimensions() > 0:
     dim = 1
     quadruple.pilaDim.append({"id": pointer, "dim": dim})
-    # print("POINTER", pointer)
     quadruple.pOper.append('$') #fake bottom 
 
 def p_is_second_dim(p):
   ''' is_second_dim : '''
-  # global aux
   for i in quadruple.pilaDim:
     if i["id"] == quadruple.pilaArr[-1]:
       i["dim"] = 2
 
 def p_end_dim(p):
   ''' end_dim : '''
-  # if (quadruple.pilaArr[-1].getDimensions() > 1):
-  #   while quadruple.pilaO[-1] != quadruple.pilaArr[-1].getVirtualAddress():
-  #     quadruple.pilaO.pop()
   global aux
   aux = quadHelpers.endDim(quadruple.pilaArr[-1])
 

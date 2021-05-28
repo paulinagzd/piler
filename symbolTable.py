@@ -1,5 +1,5 @@
 from quad import Quad
-from vm import memSpace, MemSpaceContainer
+from vm import MemoryContainer
 quadruple = Quad.instantiate()
 
 class DimensionNode:
@@ -137,6 +137,9 @@ class Scope:
     self.__dimensionNodes = []
     self.__matchingParams = False
 
+    if type == 'global' or type == 'class':
+      self.memory = MemoryContainer(type)
+
   # getters
   def getScopeType(self):
     return self.__scopeType
@@ -268,12 +271,19 @@ class Scope:
         dimNode.setOffset(int(offset))
       self.__dimensionNodes[-1].setR(0)
 
-    # adding the variable depending on the scope it's in
-    if SymbolTable.instantiate().getCurrentScope().getContext() == 'global':
-      memPointer = memSpace['global'][varType]['real']
+    # adding the variable depending on the scope it's in, considering classes as global and local memory
+    if self.__context == 'global' or self.__context == 'class':
+      memPointer = self.memory.memSpace['global'][varType]['real']
+      # print("MEMNAME", self.memory.name)
       self.__scopeVariables[varName] = Variable(varName, varType, dimensions, self.__dimensionNodes, offset, isParam, memPointer)
-    elif SymbolTable.instantiate().getCurrentScope().getContext() == 'function':
-      memPointer = memSpace['local'][varType]['real']
+    elif SymbolTable.instantiate().getCurrentScope().getContext() == 'function' or SymbolTable.instantiate().getCurrentScope().getContext() == 'classFunction':
+      globalScope = SymbolTable.instantiate().getGlobalScope()
+      if SymbolTable.instantiate().getCurrentScope().getContext() == 'function':
+        # store in global's memory
+        memPointer = globalScope.memory.memSpace['local'][varType]['real']
+      else:
+        classScope = globalScope.getScopeClasses()[SymbolTable.instantiate().getStack()]
+        memPointer = classScope.memory.memSpace['local'][varType]['real']
       self.__scopeVariables[varName] = Variable(varName, varType, dimensions, self.__dimensionNodes, offset, isParam, memPointer)
     else:
       #TODO for CLASSES AND OBJECTS
@@ -292,19 +302,15 @@ class Scope:
     if type in globalScope.getScopeConstants():
       constantTypePointer = globalScope.__scopeConstants[type]
       if not value in constantTypePointer:
-        memPointer = memSpace['constants'][type]
+        memPointer = globalScope.memory.memSpace['constants'][type]
         constantTypePointer[value] = memPointer.getInitialAddress() + memPointer.getOffset()
         memPointer.setOffset()
     else:
       globalScope.__scopeConstants[type] = {}
       constantTypePointer = globalScope.__scopeConstants[type]
-      memPointer = memSpace['constants'][type]
+      memPointer = globalScope.memory.memSpace['constants'][type]
       constantTypePointer[value] = memPointer.getInitialAddress() + memPointer.getOffset()
       memPointer.setOffset()
-
-  def addTemp(self, type, value):
-    memPointer = memSpace['local'][type]['temp']
-    memPointer[value] = {"TODO VALOR TEMP AQUI"}
 
   def addFunction(self, funcName, funcType):
     if funcName in self.getScopeFunctions():
@@ -450,8 +456,7 @@ class SymbolTable:
       self.setCurrentScope(self.__globalScope["global"].getScopeClasses()[self.getStack()])
     elif (self.getCurrentScope().getContext() == 'function'):
       self.setCurrentScope(self.__globalScope["global"])
-
-    temps = memSpace["local"]
+    temps = self.getCurrentScope().memory.memSpace["local"]
     for i, j in temps.items():
       j['real'].resetOffset()
       j['temp'].resetOffset()
