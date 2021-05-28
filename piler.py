@@ -1,5 +1,5 @@
 from vm import VM
-from symbolTable import SymbolTable
+from symbolTable import SymbolTable, Variable
 from quad import Quad
 from jumps import Jumps
 from plyler import lexer, parser, resetGlobals
@@ -25,7 +25,7 @@ while True:
         print("---BEGINNING EXECUTION---") # a.out
         virtualMachine = VM(quadruple.quads, symbolTable.getGlobalScope())
         virtualMachine.execute()
-      # symbolTable.printingAll()
+      symbolTable.printingAll()
       # quadruple.print()
       # symbolTable.buildSkeleton()
       symbolTable.reset()

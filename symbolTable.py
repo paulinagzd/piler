@@ -118,6 +118,7 @@ class Scope:
     self.__scopeVariables = {}
     self.__scopeClasses = {}
     self.__scopeConstants = {}
+    self.__scopeTemps = {}
     self.__latestName = None
     self.__latestFuncName = None
     self.__latestType = None
@@ -168,6 +169,9 @@ class Scope:
 
   def getScopeConstants(self):
     return self.__scopeConstants
+
+  def getScopeTemps(self):
+    return self.__scopeTemps
 
   def getLatestName(self):
     return self.__latestName
@@ -371,7 +375,6 @@ class Scope:
         else:
           raise Exception('ERROR! FUNCTION with identifier:', funcName, 'is not defined in this program')
     
-    quadruple.saveQuad('era', funcName, -1, -1)
     functionParams = pointer.getScopeFunctions()[funcName].__scopeVariables
     self.setMatchingParams(True)
     for item, val in functionParams.items():
@@ -494,6 +497,11 @@ class SymbolTable:
       print('\n \n GLOBAL VARIABLES')
       for i, ii in val.getScopeVariables().items():
         print(i, ': ', ii)
+      
+      print('\n \n GLOBAL TEMPS')
+      for sd, sdd in val.getScopeTemps().items():
+        print(sd, ': ', sdd)
+      print('---------------------------------')
 
       print('\n \n GLOBAL FUNCTIONS')
       for j, jj in val.getScopeFunctions().items():
@@ -504,6 +512,11 @@ class SymbolTable:
           print(m, ': ', mm)
         print('---------------------------------')
 
+
+        print('\n \n FUNCTION TEMPS')
+        for ad, add in jj.getScopeTemps().items():
+          print(ad, ': ', add)
+        print('---------------------------------')
 
       print('\n \n CLASSES')
       for k, kk in val.getScopeClasses().items():
