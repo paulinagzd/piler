@@ -47,6 +47,7 @@ func boo adios(cha si) {
 }
 
 int main() {
-  hola(True)
-  adios('c')
+  nu = {hola(True)}
+  matriz[3][3*2/1] = {adios('c')}
+  print(nu)
 }

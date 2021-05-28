@@ -33,13 +33,14 @@ class DimensionNode:
   def __repr__(self):
     return "lSup: %s m or k = %s" % (self.__lim, self.__r)
 class Variable:
-  def __init__(self, varName, varType, dimensions, dimensionNodes, offset, isParam, memPointer):
+  def __init__(self, varName, varType, dimensions, dimensionNodes, offset, isParam, memPointer, isObject):
     self.__varName = varName
     self.__varType = varType
     self.__dimensions = dimensions
     self.__dimensionNodes = dimensionNodes
     self.__isParam = isParam
     self.__virtualAddress = memPointer.getInitialAddress() + memPointer.getOffset()
+    self.__isObject = isObject
     self.__value = None
 
     # incrementing offset when variable is created in memory
@@ -70,6 +71,9 @@ class Variable:
   def getVirtualAddress(self):
     return self.__virtualAddress
 
+  def getIsObject(self):
+    return self.__isObject
+
   # setters
   def setVarName(self, varName):
     self.__varName = varName
@@ -86,6 +90,9 @@ class Variable:
   def setIsParam(self, value):
     self.__isParam = value
 
+  def setIsObject(self, value):
+    self.__isObject = value
+  
   def __repr__(self):
     if self.__dimensions > 0:
       return "{\n name: %s \n type: %s \n dimensions: %s array: %s \n value: %s \n isParam: %s \n virtualAddress: %s \n}" % (self.getVarName(), self.getVarType(), self.getDimensions(), self.getDimensionNodes(), self.getValue(), self.getIsParam(), self.__virtualAddress)
@@ -274,8 +281,8 @@ class Scope:
     # adding the variable depending on the scope it's in, considering classes as global and local memory
     if self.__context == 'global' or self.__context == 'class':
       memPointer = self.memory.memSpace['global'][varType]['real']
-      # print("MEMNAME", self.memory.name)
-      self.__scopeVariables[varName] = Variable(varName, varType, dimensions, self.__dimensionNodes, offset, isParam, memPointer)
+      isObject = True if self.__context == 'class' else False
+      self.__scopeVariables[varName] = Variable(varName, varType, dimensions, self.__dimensionNodes, offset, isParam, memPointer, isObject)
     elif SymbolTable.instantiate().getCurrentScope().getContext() == 'function' or SymbolTable.instantiate().getCurrentScope().getContext() == 'classFunction':
       globalScope = SymbolTable.instantiate().getGlobalScope()
       if SymbolTable.instantiate().getCurrentScope().getContext() == 'function':
@@ -284,7 +291,7 @@ class Scope:
       else:
         classScope = globalScope.getScopeClasses()[SymbolTable.instantiate().getStack()]
         memPointer = classScope.memory.memSpace['local'][varType]['real']
-      self.__scopeVariables[varName] = Variable(varName, varType, dimensions, self.__dimensionNodes, offset, isParam, memPointer)
+      self.__scopeVariables[varName] = Variable(varName, varType, dimensions, self.__dimensionNodes, offset, isParam, memPointer, False)
     else:
       #TODO for CLASSES AND OBJECTS
       pass
@@ -334,7 +341,6 @@ class Scope:
     SymbolTable.instantiate().setStackPush(className)
     SymbolTable.instantiate().setCurrentScope(self.__scopeClasses[className])
 
-
   def sawCalledVariable(self, varName):
     globalScope = SymbolTable.instantiate().getGlobalScope()
 
@@ -347,35 +353,48 @@ class Scope:
       return globalScope.__scopeVariables[varName]
     self.resetLatestDimension()
 
-    self.resetLatestDimension()
-
-  def sawCalledFunction(self, funcName):
+  def sawCalledFunction(self, funcName, scope, className):
     globalScope = SymbolTable.instantiate().getGlobalScope()
-    if not funcName in globalScope.getScopeFunctions():
-      raise Exception('ERROR! FUNCTION with identifier:', funcName, 'is not defined in this program')
+    pointer = globalScope
+    if scope == 'class':
+      if not funcName in globalScope.getScopeClasses()[className].getScopeFunctions():
+        raise Exception('ERROR! FUNCTION with identifier:', funcName, 'is not defined in this program')
+      else:
+        pointer = globalScope.getScopeClasses()[className]
+    else:
+      if not funcName in globalScope.getScopeFunctions() and self.__context == 'classFunction':
+        # might be in a class
+        pointer = globalScope.getScopeClasses()[SymbolTable.instantiate().getStack()]
+      else:
+        if funcName in globalScope.getScopeFunctions():
+          pass
+        else:
+          raise Exception('ERROR! FUNCTION with identifier:', funcName, 'is not defined in this program')
     
     quadruple.saveQuad('era', funcName, -1, -1)
-
-    functionParams = globalScope.__scopeFunctions[funcName].__scopeVariables
+    functionParams = pointer.getScopeFunctions()[funcName].__scopeVariables
     self.setMatchingParams(True)
     for item, val in functionParams.items():
       if val.getIsParam():
         self.setCurrentFunctionParams(val)
       
     self.__latestFuncName = funcName
-    return globalScope.__scopeFunctions[funcName]
+    return pointer.getScopeFunctions()[funcName]
 
-  def doesClassExist(self, className, varName):
+  def doesClassExist(self, className, idName, type):
     globalScope = SymbolTable.instantiate().getGlobalScope()
     if not className in globalScope.getScopeClasses():
       raise Exception('ERROR! Class with identifier: ', className, 'is not defined in this scope')
     
     currentClass = globalScope.__scopeClasses[className]
-
-    if not varName in currentClass.getScopeVariables():
-      raise Exception('ERROR! Variable with identifier:', varName, 'is not defined in this scope')
-    
-    return currentClass.__scopeVariables[varName]
+    if type == 'var':
+      if not idName in currentClass.getScopeVariables():
+        raise Exception('ERROR! Variable with identifier:', idName, 'is not defined in the class')
+      return currentClass.__scopeVariables[idName]
+    else:
+      if not idName in currentClass.getScopeFunctions():
+        raise Exception('ERROR! Function with identifier:', idName, 'is not defined in the class')
+      return currentClass.__scopeName # returns class name
 
   def verifyDim(self, varName):
     globalScope = SymbolTable.instantiate().getGlobalScope()
@@ -402,7 +421,7 @@ class Scope:
     self.__quadCont = quadruple.quadCounter
 
   def __repr__(self):
-    return "{\n type: %s \n context: %s \n}" % (self.getScopeType(), self.getContext())
+    return "{\n type: %s \n context: %s \n name: %s \n vars: %s}" % (self.getScopeType(), self.getContext(), self.__scopeName, self.__scopeVariables)
 
 class SymbolTable:
   isAlive = None
@@ -508,4 +527,3 @@ class SymbolTable:
     self.__globalScope["global"] = Scope(keyword, keyword, keyword)
     self.__currentScope = self.__globalScope["global"]
     self.__classStack = []
-

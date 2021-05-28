@@ -287,19 +287,18 @@ def expression_evaluation(p):
     if not quadruple.pOper:
       if p[-2] == 'if' or p[-3] == 'while':
         condHelpers.enterCond()
-      else:
-        p[0] = quadruple.pilaO[-1]
-        symbolTable.getCurrentScope().setLatestExpValue(p[0])
+      # else:
+      #   p[0] = quadruple.pilaO[-1]
+      #   symbolTable.getCurrentScope().setLatestExpValue(p[0])
     elif quadruple.pOper[-1] == '=':
-      # print("ASIGNACION", quadruple.pilaO[-1], quadruple.pilaO[-2], quadruple.pilaO[-3], quadruple.pilaO[-4])
       right_operand = quadruple.pilaO.pop() # this should be a value
-      # while str(type(quadruple.pilaO[-1])) != "<class 'symbolTable.Variable'>":
-      #   quadruple.pilaO.pop()
       left_operand = quadruple.pilaO.pop() # this should be an id
       right_type = getTypeV2(right_operand)
       left_type = getTypeV2(left_operand)   
       if right_type == left_type:
         quadruple.saveQuad('=', right_operand, -1 ,left_operand)
+      else:
+        raise Exception("ERROR! cannot assign type {} to {}".format(left_type, right_type))
       quadruple.pOper.pop()
     elif quadruple.pOper[-1] == 'print' and not symbolTable.getCurrentScope().getMatchingParams():
       print_operand = quadruple.pilaO.pop() # this should be the value to print

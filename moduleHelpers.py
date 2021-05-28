@@ -25,13 +25,19 @@ def verifyParamMatch(cont):
     quadruple.saveQuad('param', incoming, -1, cont + 1)
     return cont
   
-def generateGoSub():
+def generateGoSub(isClass, className):
   currentScope = symbolTable.getCurrentScope()
   quadruple.saveQuad('gosub', currentScope.getLatestFuncName(), -1, -1) #initial address
   currentScope.clearCurrentFunctionParams()
   currentScope.setMatchingParams(False)
   keyword = ''
-  funcType = symbolTable.getGlobalScope().getScopeFunctions()[currentScope.getLatestFuncName()].getScopeType()
+  if isClass:
+    funcType = symbolTable.getGlobalScope().getScopeClasses()[className].getScopeFunctions()[currentScope.getLatestFuncName()].getScopeType()
+  else:
+    if currentScope.getContext() == 'classFunction':
+      funcType = symbolTable.getGlobalScope().getScopeClasses()[symbolTable.getStack()].getScopeFunctions()[currentScope.getLatestFuncName()].getScopeType()
+    else:
+      funcType = symbolTable.getGlobalScope().getScopeFunctions()[currentScope.getLatestFuncName()].getScopeType()
   pointingScope = symbolTable.getGlobalScope()
   # need to point either to global or class memory
   if currentScope.getContext() == 'classFunction':

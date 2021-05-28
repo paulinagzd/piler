@@ -2,7 +2,7 @@ from vm import VM
 from symbolTable import SymbolTable
 from quad import Quad
 from jumps import Jumps
-from plyler import lexer, parser
+from plyler import lexer, parser, resetGlobals
 
 symbolTable = SymbolTable.instantiate()
 quadruple = Quad.instantiate()
@@ -26,9 +26,10 @@ while True:
         virtualMachine = VM(quadruple.quads, symbolTable.getGlobalScope())
         virtualMachine.execute()
       # symbolTable.printingAll()
-      quadruple.print()
+      # quadruple.print()
       symbolTable.reset()
       quadruple.reset()
+      resetGlobals()
 
     except EOFError:
       print("INCORRECT")
