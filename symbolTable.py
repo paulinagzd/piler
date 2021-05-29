@@ -587,7 +587,13 @@ class SymbolTable:
       for key1, val1, in val.getScopeFunctions().items():
         size = self.getFuncSize(val.getScopeFunctions()[key1])
 
-        pointer[key1] = {"type": val1.getScopeType(), "size": size, "start": val1.starts}
+        pointer[key1] = {
+          "type": val1.getScopeType(),
+          "size": size,
+          "start": val1.starts,
+          "vars": val1.getScopeVariables(),
+          "temps": val1.getScopeTemps(),
+        }
         print(key1, pointer[key1])
 
       # classes are their own "world" inside the global scope
@@ -601,16 +607,22 @@ class SymbolTable:
         pointer = pointer["funcs"]
         for keyClass, valClass, in val2.getScopeFunctions().items():
           size = self.getFuncSize(val2.getScopeFunctions()[keyClass])
-          pointer[keyClass] = {"type": valClass.getScopeType(), "size": size, "start": valClass.starts}
+          pointer[keyClass] = {
+            "type": valClass.getScopeType(),
+            "size": size,
+            "start": valClass.starts,
+            "vars": valClass.getScopeVariables(),
+            "temps": valClass.getScopeTemps(),
+          }
           print(keyClass, pointer[keyClass])
 
-    # print("ENTRO")
-    # print("DIRFUNC")
-    # for i, j in tempDirFunc.items():
-    #   print(tempDirFunc[i])
-    # print("DIRCLASS")
-    # for i, j in tempDirClass.items():
-    #   print(tempDirClass[i])
+    print("ENTRO")
+    print("DIRFUNC")
+    for i, j in tempDirFunc.items():
+      print(tempDirFunc[i])
+    print("DIRCLASS")
+    for i, j in tempDirClass.items():
+      print(tempDirClass[i])
     res.append(tempDirFunc)
     res.append(tempDirClass)
     return res

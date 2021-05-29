@@ -24,15 +24,13 @@ while True:
         print("SUCCESSFULLY COMPILED!")
         print("---BEGINNING EXECUTION---") # a.out
         # symbolTable.printingAll()
-
+        MainMemory.instantiate()
         dirs = symbolTable.buildForVM()
         virtualMachine = VM(quadruple.quads, dirs[0], dirs[1])
         
         # start main memory
-        MainMemory.instantiate()
-
         virtualMachine.execute()
-      # quadruple.print()
+      quadruple.print()
       # symbolTable.buildSkeleton()
       symbolTable.reset()
       quadruple.reset()
