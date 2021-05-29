@@ -45,9 +45,9 @@ class Quad:
     return Quad.isAlive
 
   def saveQuad(self, operator, leftOperand, rightOperand, tvalue):
-    # codeNumber = self.operCodes[operator]
-    # q = QuadContainer(self.quadCounter, codeNumber, leftOperand, rightOperand, tvalue) # left and right operand contain ADDRESSES
-    q = QuadContainer(self.quadCounter, operator, leftOperand, rightOperand, tvalue) # left and right operand contain ADDRESSES
+    codeNumber = self.operCodes[operator]
+    q = QuadContainer(self.quadCounter, codeNumber, leftOperand, rightOperand, tvalue) # left and right operand contain ADDRESSES
+    # q = QuadContainer(self.quadCounter, operator, leftOperand, rightOperand, tvalue) # left and right operand contain ADDRESSES
     self.quads[self.quadCounter] = q
     self.quadCounter += 1
     # print(q)

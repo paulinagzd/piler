@@ -42,6 +42,7 @@ class Variable:
     self.__virtualAddress = memPointer.getInitialAddress() + memPointer.getOffset()
     self.__isObject = isObject
     self.__value = None
+    self.__memPointer = memPointer
 
     # incrementing offset when variable is created in memory
     if dimensions > 0:
@@ -75,6 +76,9 @@ class Variable:
 
   def getIsObject(self):
     return self.__isObject
+
+  def getMemPointer(self):
+    return self.__memPointer
 
   # setters
   def setVarName(self, varName):
@@ -494,13 +498,13 @@ class SymbolTable:
     for key, val in self.__globalScope.items():
       print(key, ': ', val)
 
-      # print('\n \n GLOBAL CONSTANTS')
-      # for aaa, aaaa in val.getScopeConstants().items():
-      #   print(aaa, ': ', aaaa)
+      print('\n \n GLOBAL CONSTANTS')
+      for aaa, aaaa in val.getScopeConstants().items():
+        print(aaa, ': ', aaaa)
 
-      # print('\n \n GLOBAL VARIABLES')
-      # for i, ii in val.getScopeVariables().items():
-      #   print(i, ': ', ii)
+      print('\n \n GLOBAL VARIABLES')
+      for i, ii in val.getScopeVariables().items():
+        print(i, ': ', ii)
 
       print('\n \n GLOBAL TEMPS')
       print(len(val.getScopeTemps()))
@@ -509,9 +513,9 @@ class SymbolTable:
       for j, jj in val.getScopeFunctions().items():
         print(j, ': ', jj)
 
-      #   print('\n \n FUNCTION VARIABLES')
-      #   for m, mm in jj.getScopeVariables().items():
-      #     print(m, ': ', mm)
+        print('\n \n FUNCTION VARIABLES')
+        for m, mm in jj.getScopeVariables().items():
+          print(m, ': ', mm)
 
         print('\n \n FUNCTION TEMPS')
         print(len(jj.getScopeTemps()))
@@ -519,18 +523,18 @@ class SymbolTable:
 
       print('\n \n CLASSES')
       for k, kk in val.getScopeClasses().items():
-        # print(k, ': ', kk)
+        print(k, ': ', kk)
 
-        # print('\n \n CLASS VARS')
-        # for n, nn in kk.getScopeVariables().items():
-          # print(n, ': ', nn)
+        print('\n \n CLASS VARS')
+        for n, nn in kk.getScopeVariables().items():
+          print(n, ': ', nn)
 
         print('\n \n CLASS FUNCTIONS')
         for o, oo in kk.getScopeFunctions().items():
           print(o, ': ', oo)
         
-          # for x, xx in oo.getScopeVariables().items():
-          #   print(x, ': ', xx)
+          for x, xx in oo.getScopeVariables().items():
+            print(x, ': ', xx)
 
           print('\n \n CLASS FUNC TEMPS')
           print(len(oo.getScopeTemps()))
