@@ -46,6 +46,8 @@ class Variable:
     # incrementing offset when variable is created in memory
     if dimensions > 0:
       memPointer.setDimensionalOffset(int(offset))
+    elif varName == '':
+      pass
     else:  
       memPointer.setOffset()
 
@@ -118,6 +120,7 @@ class Scope:
     self.__scopeVariables = {}
     self.__scopeClasses = {}
     self.__scopeConstants = {}
+    self.__scopeTemps = {}
     self.__latestName = None
     self.__latestFuncName = None
     self.__latestType = None
@@ -168,6 +171,9 @@ class Scope:
 
   def getScopeConstants(self):
     return self.__scopeConstants
+
+  def getScopeTemps(self):
+    return self.__scopeTemps
 
   def getLatestName(self):
     return self.__latestName
@@ -485,40 +491,49 @@ class SymbolTable:
 
   def printingAll(self):
     for key, val in self.__globalScope.items():
-      print(key, ': ', val)
+      # print(key, ': ', val)
 
-      print('\n \n GLOBAL CONSTANTS')
-      for aaa, aaaa in val.getScopeConstants().items():
-        print(aaa, ': ', aaaa)
+      # print('\n \n GLOBAL CONSTANTS')
+      # for aaa, aaaa in val.getScopeConstants().items():
+      #   print(aaa, ': ', aaaa)
 
-      print('\n \n GLOBAL VARIABLES')
-      for i, ii in val.getScopeVariables().items():
-        print(i, ': ', ii)
+      # print('\n \n GLOBAL VARIABLES')
+      # for i, ii in val.getScopeVariables().items():
+      #   print(i, ': ', ii)
+
+      print('\n \n GLOBAL TEMPS')
+      print(len(val.getScopeTemps()))
 
       print('\n \n GLOBAL FUNCTIONS')
       for j, jj in val.getScopeFunctions().items():
-        print(j, ': ', jj)
+      #   print(j, ': ', jj)
 
-        print('\n \n FUNCTION VARIABLES')
-        for m, mm in jj.getScopeVariables().items():
-          print(m, ': ', mm)
+      #   print('\n \n FUNCTION VARIABLES')
+      #   for m, mm in jj.getScopeVariables().items():
+      #     print(m, ': ', mm)
+
+        print('\n \n FUNCTION TEMPS')
+        print(len(jj.getScopeTemps()))
         print('---------------------------------')
 
 
       print('\n \n CLASSES')
       for k, kk in val.getScopeClasses().items():
-        print(k, ': ', kk)
+        # print(k, ': ', kk)
 
-        print('\n \n CLASS VARS')
-        for n, nn in kk.getScopeVariables().items():
-          print(n, ': ', nn)
+        # print('\n \n CLASS VARS')
+        # for n, nn in kk.getScopeVariables().items():
+          # print(n, ': ', nn)
 
         print('\n \n CLASS FUNCTIONS')
         for o, oo in kk.getScopeFunctions().items():
-          print(o, ': ', oo)
+          # print(o, ': ', oo)
         
-          for x, xx in oo.getScopeVariables().items():
-            print(x, ': ', xx)
+          # for x, xx in oo.getScopeVariables().items():
+          #   print(x, ': ', xx)
+
+          print('\n \n CLASS FUNC TEMPS')
+          print(len(oo.getScopeTemps()))
           print('---------------------------------')
   
   # def buildSkeleton(self):

@@ -784,7 +784,9 @@ def p_saw_function(p):
 
 def p_saw_function_end(p):
   ''' saw_function_end : '''
-  quadruple.saveQuad("endfunc", -1, -1, -1)
+  quadruple.saveQuad('endfunc', -1, -1, -1)
+  quadHelpers.tempCounter = 0
+
 
 def p_scope_end(p):
   ''' scope_end : '''

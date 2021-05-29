@@ -1,5 +1,5 @@
 from semanticCube import SemanticCube
-from symbolTable import SymbolTable
+from symbolTable import SymbolTable, Variable
 from quad import Quad
 import condHelpers
 
@@ -7,6 +7,7 @@ quadruple = Quad.instantiate()
 symbolTable = SymbolTable.instantiate()
 
 varPointer = None
+tempCounter = 0
 
 def getPointingScope(currentScope):
   # need to point either to global or class memory
@@ -119,6 +120,9 @@ def check_multdiv_operator(quadruple):
         quadruple.pilaO.append(tempAddress)
         symbolTable.getCurrentScope().setLatestExpValue(result_Type)
         quadruple.saveQuad(operator,left_operand,right_operand, tempAddress)
+        global tempCounter
+        symbolTable.getCurrentScope().getScopeTemps()[tempCounter] = (Variable('', result_Type, 0, [], tempAddressPointer.getOffset(), False, tempAddressPointer, False))
+        tempCounter += 1
         tempAddressPointer.setOffset()
         # Saving the operator code instead of the operator itself
       else:
@@ -160,6 +164,9 @@ def check_plusminus_operator(quadruple):
         quadruple.pilaO.append(tempAddress)
         symbolTable.getCurrentScope().setLatestExpValue(result_Type)
         quadruple.saveQuad(operator,left_operand,right_operand, tempAddress)
+        global tempCounter
+        symbolTable.getCurrentScope().getScopeTemps()[tempCounter] = (Variable('', result_Type, 0, [], tempAddressPointer.getOffset(), False, tempAddressPointer, False))
+        tempCounter += 1        
         tempAddressPointer.setOffset()
         
       else:
@@ -194,6 +201,9 @@ def check_relational_operator(quadruple):
         quadruple.pilaO.append(tempAddress)
         tempAddressPointer.setOffset()
         quadruple.saveQuad(operator,left_operand,right_operand,tempAddress)
+        global tempCounter
+        symbolTable.getCurrentScope().getScopeTemps()[tempCounter] = (Variable('', result_Type, 0, [], tempAddressPointer.getOffset(), False, tempAddressPointer, False))
+        tempCounter += 1
         symbolTable.getCurrentScope().setLatestExpValue(result_Type)
 
       else:
@@ -229,8 +239,10 @@ def check_and_operator(quadruple):
         tempAddress = tempAddressPointer.getInitialAddress() + tempAddressPointer.getOffset()
         quadruple.pilaO.append(tempAddress)
         quadruple.saveQuad(operator,left_operand,right_operand, tempAddress)
+        global tempCounter
+        symbolTable.getCurrentScope().getScopeTemps()[tempCounter] = (Variable('', result_Type, 0, [], tempAddressPointer.getOffset(), False, tempAddressPointer, False))
+        tempCounter += 1        
         tempAddressPointer.setOffset()
-
         symbolTable.getCurrentScope().setLatestExpValue(result_Type)
       else:
         raise Exception('ERROR! Type Mismatch') #type mismatch
@@ -265,6 +277,9 @@ def check_or_operator(quadruple):
         tempAddress = tempAddressPointer.getInitialAddress() + tempAddressPointer.getOffset()
         quadruple.pilaO.append(tempAddress)
         quadruple.saveQuad(operator,left_operand,right_operand, tempAddress)
+        global tempCounter
+        symbolTable.getCurrentScope().getScopeTemps()[tempCounter] = (Variable('', result_Type, 0, [], tempAddressPointer.getOffset(), False, tempAddressPointer, False))
+        tempCounter += 1  
         tempAddressPointer.setOffset()
 
         symbolTable.getCurrentScope().setLatestExpValue(result_Type)
@@ -304,9 +319,12 @@ def expression_evaluation(p):
     currType = getTypeV2(quadruple.pilaO[-1])
     tempAddressPointer = getPointingScope(symbolTable.getCurrentScope()).memory.memSpace[keyword][currType]['temp']
     tempAddress = tempAddressPointer.getInitialAddress() + tempAddressPointer.getOffset()
+    global tempCounter
     if len(lsPointer) > currentDim: 
       aux = quadruple.pilaO.pop()
       quadruple.saveQuad("*", aux, lsPointer[currentDim-1].getR(), tempAddress)
+      symbolTable.getCurrentScope().getScopeTemps()[tempCounter] = (Variable('', currType, 0, [], tempAddressPointer.getOffset(), False, tempAddressPointer, False))
+      tempCounter += 1        
       quadruple.pilaO.append(tempAddress)
       tempAddressPointer.setOffset()
     if currentDim > 1:
@@ -314,6 +332,8 @@ def expression_evaluation(p):
       right_operand = quadruple.pilaO.pop()
       tempAddress = tempAddressPointer.getInitialAddress() + tempAddressPointer.getOffset()
       quadruple.saveQuad("+", left_operand, right_operand, tempAddress)
+      symbolTable.getCurrentScope().getScopeTemps()[tempCounter] = (Variable('', currType, 0, [], tempAddressPointer.getOffset(), False, tempAddressPointer, False))
+      tempCounter += 1        
       quadruple.pilaO.append(tempAddress)
       tempAddressPointer.setOffset()
   elif quadruple.pOper[-1] == 'return':
@@ -336,10 +356,15 @@ def endDim(var):
   currType = getTypeV2(quadruple.pilaO[-1])
   tempAddressPointer = getPointingScope(symbolTable.getCurrentScope()).memory.memSpace[keyword][currType]['temp']
   tempAddress = tempAddressPointer.getInitialAddress() + tempAddressPointer.getOffset()
-  quadruple.saveQuad("+", aux, varPointerDimNodes[var.getDimensions()-1].getR(), tempAddress) # ojo offset for first ones
+  quadruple.saveQuad("+", aux, varPointerDimNodes[var.getDimensions()-1].getR(), tempAddress)
+  global tempCounter
+  symbolTable.getCurrentScope().getScopeTemps()[tempCounter] = (Variable('', currType, 0, [], tempAddressPointer.getOffset(), False, tempAddressPointer, False))
+  tempCounter += 1        
   tempAddressPointer.setOffset()
   tempAddress2 = tempAddressPointer.getInitialAddress() + tempAddressPointer.getOffset()
   quadruple.saveQuad("+", tempAddress, var.getVirtualAddress(), tempAddress2)
+  symbolTable.getCurrentScope().getScopeTemps()[tempCounter] = (Variable('', currType, 0, [], tempAddressPointer.getOffset(), False, tempAddressPointer, False))
+  tempCounter += 1        
   quadruple.pilaO.pop() # gets rid of dirBase
   tempAddressPointer.setOffset()
   quadruple.pilaO.append(tempAddress2)

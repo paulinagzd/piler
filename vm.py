@@ -40,7 +40,9 @@ currentScope = None
 # cont = 0
 
 # def getByVirtualAddress(address, scope):
-  
+#   for key, val in scope.getScopeVariables():
+#     # if 
+
 class MemSpaceContainer:
   def __init__(self, initialAddress):
     self.__initialAddress = initialAddress
@@ -200,15 +202,15 @@ class VM:
 
   def assign(self, leftDir, rightDir):
     # if its a function return, we assign it to the global dictionary
-    if leftDir in self.__dirFunc:
-      pass
-    #   pointer = self.__dirFunc[leftDir]
-    #   getByVirtualAddress(pointer.getVirtualAddress())
-    else:
-      leftOp = getByVirtualAddress(leftDir)
-      rightOp = getByVirtualAddress(rightDir)
-      leftOp.setValue(rightOp.getValue())
-    # return False
+    # if leftDir in self.__dirFunc:
+    #   pass
+    # #   pointer = self.__dirFunc[leftDir]
+    # #   getByVirtualAddress(pointer.getVirtualAddress())
+    # else:
+      # leftOp = getByVirtualAddress(leftDir)
+      # rightOp = getByVirtualAddress(rightDir)
+      # leftOp.setValue(rightOp.getValue())
+    return False
 
   def lt(self, leftDir, rightDir, resultDir):
     return False
@@ -397,7 +399,6 @@ class MainMemory:
     return self.__pointer
   
   # def setPointer(self):
-
 
   @classmethod
   def instantiate(cls):

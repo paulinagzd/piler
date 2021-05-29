@@ -1,4 +1,4 @@
-from symbolTable import SymbolTable
+from symbolTable import SymbolTable, Variable
 from quad import Quad
 import quadHelpers
 
@@ -52,4 +52,6 @@ def generateGoSub(isClass, className):
     tempAddress = tempAddressPointer.getInitialAddress() + tempAddressPointer.getOffset()
     quadruple.pilaO.append(tempAddress)
     quadruple.saveQuad('=', symbolTable.getCurrentScope().getLatestFuncName(), -1, tempAddress) #temp address
+    symbolTable.getCurrentScope().getScopeTemps()[quadHelpers.tempCounter] = (Variable('', funcType, 0, [], tempAddressPointer.getOffset(), False, tempAddressPointer, False))
+    quadHelpers.tempCounter += 1
     tempAddressPointer.setOffset() # TODO, will I need more space? or not

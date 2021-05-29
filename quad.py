@@ -24,7 +24,7 @@ class Quad:
     'era': 18,
     'param': 19,
     'endfunc': 20,
-    'ver' : 21,
+    'verify' : 21,
     'return' : 22,
     'era' : 23,
     'end': 24
