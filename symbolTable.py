@@ -594,7 +594,7 @@ class SymbolTable:
           "vars": val1.getScopeVariables(),
           "temps": val1.getScopeTemps(),
         }
-        print(key1, pointer[key1])
+        # print(key1, pointer[key1])
 
       # classes are their own "world" inside the global scope
       # meaning they have global variables and dirFunc
@@ -614,15 +614,15 @@ class SymbolTable:
             "vars": valClass.getScopeVariables(),
             "temps": valClass.getScopeTemps(),
           }
-          print(keyClass, pointer[keyClass])
+          # print(keyClass, pointer[keyClass])
 
-    print("ENTRO")
-    print("DIRFUNC")
-    for i, j in tempDirFunc.items():
-      print(tempDirFunc[i])
-    print("DIRCLASS")
-    for i, j in tempDirClass.items():
-      print(tempDirClass[i])
+    # print("ENTRO")
+    # print("DIRFUNC")
+    # for i, j in tempDirFunc.items():
+    #   print(tempDirFunc[i])
+    # print("DIRCLASS")
+    # for i, j in tempDirClass.items():
+    #   print(tempDirClass[i])
     res.append(tempDirFunc)
     res.append(tempDirClass)
     return res
