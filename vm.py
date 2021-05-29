@@ -264,9 +264,7 @@ class VM:
   
   def funcReturn(self):
     return False
-  
-  def era(self):
-    return False
+
 
   def end(self):
     print("---SUCCESSFUL EXECUTION---")

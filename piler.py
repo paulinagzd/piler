@@ -25,8 +25,8 @@ while True:
         print("---BEGINNING EXECUTION---") # a.out
         virtualMachine = VM(quadruple.quads, symbolTable.getGlobalScope())
         virtualMachine.execute()
-      symbolTable.printingAll()
-      # quadruple.print()
+      # symbolTable.printingAll()
+      quadruple.print()
       # symbolTable.buildSkeleton()
       symbolTable.reset()
       quadruple.reset()
