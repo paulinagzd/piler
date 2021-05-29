@@ -248,28 +248,16 @@ def p_while_loop(p):
   '''
 
 ################################################
-# CICLO WHILE
+# WHILE LOOP
+# General structure of a while loop with action points
 def p_do_while_loop(p):
   '''
   do_while_loop : DO saw_while block WHILE cond2 saw_do_while_end SEMICOLON
   '''
 
-################################################
-# CICLO FOR
-# def p_for_loop(p):
-#   '''
-#   for_loop : 
-#   '''
-#   # FOR OPAREN variable FROM for_loop1 TO for_loop1 BY for_loop1 CPAREN THEN block SEMICOLON
-
-# def p_for_loop1(p):
-#   '''
-#   for_loop1 : CSTINT
-#             | variable
-#   '''
-
  ################################################
-# DECLARACION VARS
+# VARIABLE DECLARATION
+# Used only when declaring variables in a new scope (not an expression)
 def p_decs(p):
   '''
   decs : dec decs1
@@ -285,8 +273,10 @@ def p_decs1(p):
   decs1 : decs
         | empty
   '''
+
 ################################################
-# type
+# TYPE
+# Handles the conditions between the type being appropriate for its declaration
 def p_type(p):
   '''
   type : compound ID saw_id saw_variable type1
