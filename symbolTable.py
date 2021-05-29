@@ -377,6 +377,7 @@ class Scope:
         else:
           raise Exception('ERROR! FUNCTION with identifier:', funcName, 'is not defined in this program')
     
+    quadruple.saveQuad('era', funcName, -1, -1)
     functionParams = pointer.getScopeFunctions()[funcName].__scopeVariables
     self.setMatchingParams(True)
     for item, val in functionParams.items():
