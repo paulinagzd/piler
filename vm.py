@@ -192,13 +192,20 @@ class MemoryContainer:
       }
     }
 class VM:
-  def __init__(self, quadList, dirFunc):
+  def __init__(self, quadList, dirFunc, dirClass):
     self.__quadList = quadList
     self.__nextPointer = 1
     self.__callStack = []
-    self.__constTable = dirFunc.getScopeConstants()
+    # self.__constTable = dirFunc.getScopeConstants()
     self.__dirFunc = dirFunc
-  
+    self.__dirClass = dirClass
+
+  def getDirFunc(self):
+    return self.__dirFunc
+
+  def getDirClass(self):
+    return self.__dirClass 
+
   # Call Stack access
   def pushCallStack(self, functionCall):
     self.__callStack.append(functionCall)

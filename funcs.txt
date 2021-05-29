@@ -22,7 +22,7 @@ func int hola(boo you) {
   e = False
   return 1
 }
-/*
+
 class Animal: { 
   att: 
     var int estatura;
@@ -33,7 +33,7 @@ class Animal: {
       print(2*2)
     }
 };
-*/
+
 var cha aqui;
 
 func boo adios(cha si) {

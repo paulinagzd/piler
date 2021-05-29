@@ -43,6 +43,7 @@ class Variable:
     self.__isObject = isObject
     self.__value = None
     self.__memPointer = memPointer
+    self.__offset = offset
 
     # incrementing offset when variable is created in memory
     if dimensions > 0:
@@ -76,6 +77,9 @@ class Variable:
 
   def getIsObject(self):
     return self.__isObject
+
+  def getOffset(self):
+    return self.__offset
 
   def getMemPointer(self):
     return self.__memPointer
@@ -540,36 +544,76 @@ class SymbolTable:
           print(len(oo.getScopeTemps()))
           print('---------------------------------')
   
+  def getFuncSize(self, func):
+    res = {
+      "local": {}, 
+      "temps": {},  
+    }
+
+    for i, j in func.getScopeVariables().items():
+      varType = j.getVarType()
+      if not varType in res["local"]:
+        print("OFFSET", int(j.getOffset()))
+        res["local"][varType] = int(j.getOffset()) + 1
+      else:
+        res["local"][varType] = int(res["local"][varType] + j.getOffset() + 1)
+    for i, j in func.getScopeTemps().items():
+      varType = j.getVarType()
+      if not varType in res["temps"]:
+        res["temps"][varType] = 1
+      else:
+        res["temps"][varType] += 1
+
+    return res
+
   def buildForVM(self):
-    print("AKI")
-    tempArr = {"global": {
+    res = []
+    tempDirFunc = {"global": {
+      "vars": self.getGlobalScope().getScopeVariables(),
+      "temps": self.getGlobalScope().getScopeTemps(),
+      "consts": self.getGlobalScope().getScopeConstants(),
+      "funcs": {}
     }}
-    pointer = tempArr["global"]
+
+    tempArr = []
+    tempDirClass = {
+      "global": {}
+    }
+
+    pointer = tempDirFunc["global"]
     for key, val in self.__globalScope.items():
+      # functions
+      pointer = pointer["funcs"]
       for key1, val1, in val.getScopeFunctions().items():
-        pointer[key1] = {"size": 0, "start": val1.starts}
+        size = self.getFuncSize(val.getScopeFunctions()[key1])
 
-      # pointer = pointer["consts"]
-      # for key2, val2, in val.getScopeConstants().items():
-      #   pointer[key2] = {val2}
-      
-      # pointer = pointer["vars"]
-      # for key3, val3, in val.getScopeVariables().items():
-      #   pointer[key3] = {"size": 0, "start": val1.starts}
-      # for key2, val2, in val.getScopeClasses().items():
-        # print(key2)
-        # classes have vars and functions
-        # pointer[key2] = {}
-        # pointer = pointer[key2]
-        # for keyClass, valClass, in val2.getScopeFunctions().items():
-          # print(valClass)
-          # pointer[keyClass] = {"size": 0, "start": valClass.starts}
-        #   print("VALSTARTS", val.starts)
+        pointer[key1] = {"type": val1.getScopeType(), "size": size, "start": val1.starts}
+        print(key1, pointer[key1])
 
-    print("ENTRO")
-    for i, j in tempArr.items():
-      print(tempArr[i])
-    # return tempArr
+      # classes are their own "world" inside the global scope
+      # meaning they have global variables and dirFunc
+      for key2, val2, in val.getScopeClasses().items():
+        tempArr.append(tempDirClass)
+        pointer = tempArr[-1]
+        pointer = pointer["global"]
+        pointer["vars"] = val2.getScopeVariables(),
+        pointer["funcs"] = {}
+        pointer = pointer["funcs"]
+        for keyClass, valClass, in val2.getScopeFunctions().items():
+          size = self.getFuncSize(val2.getScopeFunctions()[keyClass])
+          pointer[keyClass] = {"type": valClass.getScopeType(), "size": size, "start": valClass.starts}
+          print(keyClass, pointer[keyClass])
+
+    # print("ENTRO")
+    # print("DIRFUNC")
+    # for i, j in tempDirFunc.items():
+    #   print(tempDirFunc[i])
+    # print("DIRCLASS")
+    # for i, j in tempDirClass.items():
+    #   print(tempDirClass[i])
+    res.append(tempDirFunc)
+    res.append(tempDirClass)
+    return res
 
   def reset(self):
     self.__globalScope = {}
