@@ -1,4 +1,4 @@
-from vm import VM
+from vm import VM, MainMemory
 from symbolTable import SymbolTable, Variable
 from quad import Quad
 from jumps import Jumps
@@ -26,9 +26,12 @@ while True:
         # symbolTable.printingAll()
 
         dirs = symbolTable.buildForVM()
-        # globalScope = symbolTable.getGlobalScope()
         virtualMachine = VM(quadruple.quads, dirs[0], dirs[1])
-        # virtualMachine.execute()
+        
+        # start main memory
+        MainMemory.instantiate()
+
+        virtualMachine.execute()
       # quadruple.print()
       # symbolTable.buildSkeleton()
       symbolTable.reset()

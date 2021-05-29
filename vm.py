@@ -1,9 +1,9 @@
 from quad import Quad
-# from symbolTable import SymbolTable
+from symbolTable import SymbolTable
 # import quadHelpers
 
 # quadruple = Quad.instantiate()
-# symbolTable = SymbolTable.instantiate()
+symbolTable = SymbolTable.instantiate()
 
 # quadruple = Quad.instantiate()
 # symbolTable = SymbolTable.instantiate()
@@ -52,6 +52,16 @@ memNumbers = {
 }
 
 cont = 0
+scopePointer = None
+
+# used to return the current scope
+def pointToFunc(funcName, fromWhere):
+  if fromWhere == 'dirFunc':
+    globalScope = symbolTable.getGlobalScope()
+    return globalScope.getScopeFunctions[funcName]
+  else:
+    # TODO send clasName as param to find class then func
+    return
 
 def getTempOffset(address):
   return address + 1000
@@ -421,9 +431,9 @@ class MainMemory:
   # [Constantes consts con direcciones de mmeoria]
   def __init__(self):
     MainMemory.isAlive = self
-    self.__global = {}
-    self.__local = {}
-    self.__constants = {}
+    self.__global = []
+    self.__local = []
+    self.__constants = []
     self.__classes = {}
     self.__pointer = None
   
@@ -441,6 +451,10 @@ class MainMemory:
 
   def getPointer(self):
     return self.__pointer
+  
+  def setGlobal(self, globalDir):
+    for i, j in globalDir.items():
+      self.__global.append({j.getVirtualAddress(): None})
   
   # def setPointer(self):
 
