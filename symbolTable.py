@@ -377,7 +377,6 @@ class Scope:
         else:
           raise Exception('ERROR! FUNCTION with identifier:', funcName, 'is not defined in this program')
     
-    quadruple.saveQuad('era', funcName, -1, -1)
     functionParams = pointer.getScopeFunctions()[funcName].__scopeVariables
     self.setMatchingParams(True)
     for item, val in functionParams.items():
@@ -515,7 +514,6 @@ class SymbolTable:
         print('\n \n FUNCTION TEMPS')
         print(len(jj.getScopeTemps()))
         print('---------------------------------')
-
 
       print('\n \n CLASSES')
       for k, kk in val.getScopeClasses().items():
