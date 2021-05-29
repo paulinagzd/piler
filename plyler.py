@@ -177,6 +177,7 @@ def p_program(p):
   '''
   program : PROGRAM ID SEMICOLON saw_program program_content main
   '''
+  p[0] = 'SUCCESS'
 
 def p_program_content(p):
   '''

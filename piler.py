@@ -23,8 +23,9 @@ while True:
       if parser.parse(curr) == 'SUCCESS':
         print("SUCCESSFULLY COMPILED!")
         print("---BEGINNING EXECUTION---") # a.out
-        virtualMachine = VM(quadruple.quads, symbolTable.getGlobalScope())
-        virtualMachine.execute()
+        symbolTable.buildForVM()
+        # virtualMachine = VM(quadruple.quads, symbolTable.getGlobalScope())
+        # virtualMachine.execute()
       # symbolTable.printingAll()
       quadruple.print()
       # symbolTable.buildSkeleton()

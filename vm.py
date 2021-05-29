@@ -20,24 +20,54 @@ from quad import Quad
 
 functionsReturning = {}
 currentScope = None
-# globalInt = 5000
-# globalInts = 7000
-# globalFlt = 9000
-# globalFlts = 11000
-# globalCha = 13000
-# globalChas = 15000
-# globalBoo = 17000
-# globalBoos = 19000
-# globalStr = 21000
-# globalStrs = 23000
 
-# localInt = 25000
-# localInts = 27000
-# localFlt = 29000
-# localFlts = 31000
-# localCha = 33000
-# localChas = 7000
-# cont = 0
+memNumbers = {
+  "globalInt": 5000,
+  "globalInts": 7000,
+  "globalFlt": 9000,
+  "globalFlts": 11000,
+  "globalCha": 13000,
+  "globalChas": 15000,
+  "globalBoo": 17000,
+  "globalBoos": 19000,
+  "globalStr": 21000,
+  "globalStrs": 23000,
+
+  "localInt": 25000,
+  "localInts": 27000,
+  "localFlt": 29000,
+  "localFlts": 31000,
+  "localCha": 33000,
+  "localChas": 35000,
+  "localBoo": 37000,
+  "localBoos": 39000,
+  "localStr": 41000,
+  "localStrs": 43000,
+
+  "constInt": 45000,
+  "constFlt": 47000,
+  "constCha": 49000,
+  "constBoo": 51000,
+  "constStr": 53000,
+}
+
+cont = 0
+
+def getTempOffset(address):
+  return address + 1000
+
+def getConstType(address):
+  return
+
+def getClassification(address):
+  if address >= 45000 and address < 55000:
+    return 'const'
+  elif address >= 25000 and address < 45000:
+    return 'local'
+  elif address >= 5000 and address < 25000:
+    return 'global'
+  else:
+    raise Exception("ERROR! Memory out of bounds")
 
 # def getByVirtualAddress(address, scope):
 #   for key, val in scope.getScopeVariables():
@@ -201,6 +231,12 @@ class VM:
     return False
 
   def assign(self, leftDir, rightDir):
+    return False
+    # check if value is constant, there is no problem assigning
+    # if getClassification(rightDir) == 'const':
+
+    # check if value is variable, it might not be declared yet
+
     # if its a function return, we assign it to the global dictionary
     # if leftDir in self.__dirFunc:
     #   pass
@@ -210,7 +246,7 @@ class VM:
       # leftOp = getByVirtualAddress(leftDir)
       # rightOp = getByVirtualAddress(rightDir)
       # leftOp.setValue(rightOp.getValue())
-    return False
+    # return False
 
   def lt(self, leftDir, rightDir, resultDir):
     return False
@@ -271,78 +307,81 @@ class VM:
     
   #MAIN VM PROGRAM
   def execute(self):
-    operCode = self.__quadList[self.__nextPointer][0]
-    while (operCode < 25):
+    operCode = self.__quadList[self.__nextPointer].getOp()
+    while (operCode < 24):
       currentQuad = self.__quadList[self.__nextPointer]
       if operCode == 1: #sumar
-        self.add(currentQuad[1], currentQuad[2], currentQuad[3])
+        self.add(currentQuad.getLeft(), currentQuad.getRight(), currentQuad.getRes())
         self.__nextPointer += 1
       
       elif operCode == 2: #restar
-        self.subtract(currentQuad[1], currentQuad[2], currentQuad[3])
+        self.subtract(currentQuad.getLeft(), currentQuad.getRight(), currentQuad.getRes())
         self.__nextPointer += 1
 
       elif operCode == 3: #multiplicar
-        self.multiply(currentQuad[1], currentQuad[2], currentQuad[3])
+        self.multiply(currentQuad.getLeft(), currentQuad.getRight(), currentQuad.getRes())
         self.__nextPointer += 1
 
       elif operCode == 4: #dividir
-        self.divide(currentQuad[1], currentQuad[2], currentQuad[3])
+        self.divide(currentQuad.getLeft(), currentQuad.getRight(), currentQuad.getRes())
         self.__nextPointer += 1
 
       elif operCode == 5: # assign
-        self.assign(currentQuad[1], currentQuad[3])
+        self.assign(currentQuad.getLeft(), currentQuad.getRes())
 
       elif operCode == 6: # less than
-        self.lt(currentQuad[1], currentQuad[2], currentQuad[3])
+        self.lt(currentQuad.getLeft(), currentQuad.getRight(), currentQuad.getRes())
         self.__nextPointer += 1
 
       elif operCode == 7: # greater than
-        self.gt(currentQuad[1], currentQuad[2], currentQuad[3])
+        self.gt(currentQuad.getLeft(), currentQuad.getRight(), currentQuad.getRes())
         self.__nextPointer += 1
 
       elif operCode == 8: # less than equals
-        self.le(currentQuad[1], currentQuad[2], currentQuad[3])
+        self.le(currentQuad.getLeft(), currentQuad.getRight(), currentQuad.getRes())
         self.__nextPointer += 1
 
       elif operCode == 9: # greater than equals
-        self.ge(currentQuad[1], currentQuad[2], currentQuad[3])
+        self.ge(currentQuad.getLeft(), currentQuad.getRight(), currentQuad.getRes())
         self.__nextPointer += 1
 
       elif operCode == 10: # equal
-        self.equal(currentQuad[1], currentQuad[2], currentQuad[3])
+        self.equal(currentQuad.getLeft(), currentQuad.getRight(), currentQuad.getRes())
         self.__nextPointer += 1
 
       elif operCode == 11: # not equal
-        self.notEqual(currentQuad[1], currentQuad[2], currentQuad[3])
+        self.notEqual(currentQuad.getLeft(), currentQuad.getRight(), currentQuad.getRes())
         self.__nextPointer += 1
 
       # TODO PRINT
       elif operCode == 12:
-        self.printLine(currentQuad[3])
+        self.printLine(currentQuad.getRes())
         self.__nextPointer += 1
 
       # TODO READ
       elif operCode == 13:
-        self.readLine(currentQuad[3])
+        self.readLine(currentQuad.getRes())
         self.__nextPointer += 1
       
       elif operCode == 14:
+        # if self.__nextPointer == 1:
+        self.__nextPointer = currentQuad.getRes()
+        # else:
+
         # self.goto()
-        self.__nextPointer = currentQuad[3]
       
       elif operCode == 15:
         # self.gotoF()
         # add boolean logic
-        self.__nextPointer = currentQuad[3]
+        self.__nextPointer = currentQuad.getRes()
       
       elif operCode == 16:
         # self.gotoV()
-        self.__nextPointer = currentQuad[3]
+        self.__nextPointer = currentQuad.getRes()
         
       elif operCode == 17:
         # self.goSub()
-        self.__nextPointer = currentQuad[3]
+        self.__nextPointer = currentQuad.getRes()
 
       elif operCode == 18:
         self.era()
@@ -361,9 +400,9 @@ class VM:
       
       elif operCode == 23:
         # create a space in the stack with the local memory
-        self.era()
+        self.end()
       
-      operCode = self.__quadList[self.__nextPointer][0]
+      operCode = self.__quadList[self.__nextPointer].getOp()
     
     self.end()
      

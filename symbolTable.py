@@ -112,7 +112,7 @@ class Scope:
   # Class local scopes contain variables and functions (empty scopeClasses objects)
   # Function local scopes contain variables (empty scopeFunctions and scopeClasses objects)
 
-  def __init__(self, type, name, context):
+  def __init__(self, type, name, context, starts):
     self.__scopeType = type # Will be used to validate if local or global
     self.__scopeName = name
     self.__context = context
@@ -126,6 +126,7 @@ class Scope:
     self.__latestType = None
     self.__latestExpValue = None
     self.__latestDimension = 0
+    self.starts = starts
     # for functions and modules
     self.__quadCont = 0
     self.__numParams = 0
@@ -335,7 +336,7 @@ class Scope:
       keyword = 'classFunction'
     else:
       keyword = 'function' # remove UnboundLocalError
-    self.__scopeFunctions[funcName] = Scope(funcType, funcName, keyword)
+    self.__scopeFunctions[funcName] = Scope(funcType, funcName, keyword, quadruple.quadCounter + 1 if quadruple.quadCounter > 2 else quadruple.quadCounter)
     SymbolTable.instantiate().setCurrentScope(self.__scopeFunctions[funcName])
     
   def addClass(self, className):
@@ -343,7 +344,7 @@ class Scope:
       raise Exception('ERROR! Class with identifier:', className, 'already exists!')
 
     classType = 'class'
-    self.__scopeClasses[className] = Scope(classType, className, classType)
+    self.__scopeClasses[className] = Scope(classType, className, classType, -1)
     SymbolTable.instantiate().setStackPush(className)
     SymbolTable.instantiate().setCurrentScope(self.__scopeClasses[className])
 
@@ -427,7 +428,7 @@ class Scope:
     self.__quadCont = quadruple.quadCounter
 
   def __repr__(self):
-    return "{\n type: %s \n context: %s \n name: %s \n vars: %s}" % (self.getScopeType(), self.getContext(), self.__scopeName, self.__scopeVariables)
+    return "{\n starts :%s type: %s \n context: %s \n name: %s \n vars: %s \n}" % (self.starts, self.getScopeType(), self.getContext(), self.__scopeName, self.__scopeVariables)
 
 class SymbolTable:
   isAlive = None
@@ -436,7 +437,7 @@ class SymbolTable:
     SymbolTable.isAlive = self
     self.__globalScope = {}
     keyword = "global"
-    self.__globalScope["global"] = Scope(keyword, keyword, keyword)
+    self.__globalScope["global"] = Scope(keyword, keyword, keyword, 1)
     self.__currentScope = self.__globalScope["global"]
     self.__classStack = []
 
@@ -491,7 +492,7 @@ class SymbolTable:
 
   def printingAll(self):
     for key, val in self.__globalScope.items():
-      # print(key, ': ', val)
+      print(key, ': ', val)
 
       # print('\n \n GLOBAL CONSTANTS')
       # for aaa, aaaa in val.getScopeConstants().items():
@@ -506,7 +507,7 @@ class SymbolTable:
 
       print('\n \n GLOBAL FUNCTIONS')
       for j, jj in val.getScopeFunctions().items():
-      #   print(j, ': ', jj)
+        print(j, ': ', jj)
 
       #   print('\n \n FUNCTION VARIABLES')
       #   for m, mm in jj.getScopeVariables().items():
@@ -526,7 +527,7 @@ class SymbolTable:
 
         print('\n \n CLASS FUNCTIONS')
         for o, oo in kk.getScopeFunctions().items():
-          # print(o, ': ', oo)
+          print(o, ': ', oo)
         
           # for x, xx in oo.getScopeVariables().items():
           #   print(x, ': ', xx)
@@ -535,16 +536,40 @@ class SymbolTable:
           print(len(oo.getScopeTemps()))
           print('---------------------------------')
   
-  # def buildSkeleton(self):
-  #   tempArr = {}
-  #   globalScope = self.__globalScope["global"]
-  #   for key, val in globalScope.items():
-  #     print(val)
-    
+  def buildForVM(self):
+    print("AKI")
+    tempArr = {"global": {
+    }}
+    pointer = tempArr["global"]
+    for key, val in self.__globalScope.items():
+      for key1, val1, in val.getScopeFunctions().items():
+        pointer[key1] = {"size": 0, "start": val1.starts}
+
+      # pointer = pointer["consts"]
+      # for key2, val2, in val.getScopeConstants().items():
+      #   pointer[key2] = {val2}
+      
+      # pointer = pointer["vars"]
+      # for key3, val3, in val.getScopeVariables().items():
+      #   pointer[key3] = {"size": 0, "start": val1.starts}
+      # for key2, val2, in val.getScopeClasses().items():
+        # print(key2)
+        # classes have vars and functions
+        # pointer[key2] = {}
+        # pointer = pointer[key2]
+        # for keyClass, valClass, in val2.getScopeFunctions().items():
+          # print(valClass)
+          # pointer[keyClass] = {"size": 0, "start": valClass.starts}
+        #   print("VALSTARTS", val.starts)
+
+    print("ENTRO")
+    for i, j in tempArr.items():
+      print(tempArr[i])
+    # return tempArr
 
   def reset(self):
     self.__globalScope = {}
     keyword = "global"
-    self.__globalScope["global"] = Scope(keyword, keyword, keyword)
+    self.__globalScope["global"] = Scope(keyword, keyword, keyword, 1)
     self.__currentScope = self.__globalScope["global"]
     self.__classStack = []
