@@ -26,11 +26,11 @@ while True:
         # symbolTable.printingAll()
         MainMemory.instantiate()
         dirs = symbolTable.buildForVM()
-        virtualMachine = VM(quadruple.quads, dirs[0], dirs[1])
+        virtualMachine = VM.instantiate(quadruple.quads, dirs[0], dirs[1])
         
         # start main memory
         virtualMachine.execute()
-      quadruple.print()
+      # quadruple.print()
       # symbolTable.buildSkeleton()
       symbolTable.reset()
       quadruple.reset()

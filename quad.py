@@ -118,7 +118,7 @@ class QuadContainer:
     self.__res = val
 
   def __repr__(self):
-    return "{%s %s %s %s %s}" % (self.getId(), self.getOp(), self.getLeft(), self.getRight(), self.getRes())
+    return "{%s %s %s %s}" % (self.getOp(), self.getLeft(), self.getRight(), self.getRes())
 class QuadsStack:
   isAlive = None
   cont = 0

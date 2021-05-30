@@ -344,7 +344,7 @@ class Scope:
       keyword = 'classFunction'
     else:
       keyword = 'function' # remove UnboundLocalError
-    self.__scopeFunctions[funcName] = Scope(funcType, funcName, keyword, quadruple.quadCounter + 1 if quadruple.quadCounter > 2 else quadruple.quadCounter)
+    self.__scopeFunctions[funcName] = Scope(funcType, funcName, keyword, quadruple.quadCounter)
     SymbolTable.instantiate().setCurrentScope(self.__scopeFunctions[funcName])
     
   def addClass(self, className):
@@ -386,7 +386,7 @@ class Scope:
         else:
           raise Exception('ERROR! FUNCTION with identifier:', funcName, 'is not defined in this program')
     
-    quadruple.saveQuad('era', funcName, -1, -1)
+    quadruple.saveQuad('era', funcName, scope, -1)
     functionParams = pointer.getScopeFunctions()[funcName].__scopeVariables
     self.setMatchingParams(True)
     for item, val in functionParams.items():
@@ -619,10 +619,12 @@ class SymbolTable:
     # print("ENTRO")
     # print("DIRFUNC")
     # for i, j in tempDirFunc.items():
+    #   # if i == "start":
     #   print(tempDirFunc[i])
     # print("DIRCLASS")
     # for i, j in tempDirClass.items():
     #   print(tempDirClass[i])
+  
     res.append(tempDirFunc)
     res.append(tempDirClass)
     return res
