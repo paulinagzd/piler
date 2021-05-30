@@ -553,7 +553,7 @@ class SymbolTable:
     for i, j in func.getScopeVariables().items():
       varType = j.getVarType()
       if not varType in res["local"]:
-        print("OFFSET", int(j.getOffset()))
+        # print("OFFSET", int(j.getOffset()))
         res["local"][varType] = int(j.getOffset()) + 1
       else:
         res["local"][varType] = int(res["local"][varType] + j.getOffset() + 1)

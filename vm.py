@@ -1,29 +1,11 @@
 from ast import literal_eval
 from quad import Quad
 
-# from symbolTable import SymbolTable
-# import quadHelpers
-
-# quadruple = Quad.instantiate()
-# symbolTable = SymbolTable.instantiate()
-
-# quadruple = Quad.instantiate()
-# symbolTable = SymbolTable.instantiate()
-# globalScope = SymbolTable.getGlobalScope()
-
-# def getScopeByFuncName(quad):
-#   if not quad[-1] in globalScope.keys():
-#     raise Exception("Wrong mem address when finding scope")
-#   return globalScope[quad[-1]]
-
-# def assignValueToMemSpace(address, currentScope):
-#   addressType = quadHelpers.getTypeV2(address) # gets if local
-#   # symbolTable[currentScope].getVar
-
 functionsReturning = {}
 currentScope = None
 arrParam = []
 paramCont = 0
+returnVal = 0
 
 def getTypeConstant(operand):
   if operand == 'True' or operand == 'False':
@@ -71,15 +53,6 @@ memNumbers = {
 cont = 0
 scopePointer = None
 
-# used to return the current scope
-# def pointToFunc(funcName, fromWhere):
-#   if fromWhere == 'dirFunc':
-#     globalScope = symbolTable.getGlobalScope()
-#     return globalScope.getScopeFunctions[funcName]
-#   else:
-#     # TODO send clasName as param to find class then func
-#     return
-
 def getTempOffset(address):
   return address + 1000
 
@@ -90,14 +63,14 @@ def verifySize(funcSize, mem):
   for i, j in funcSize["local"].items():
     if j + mem.localMem.variables[i] <= 1000:
       mem.localMem.variables[i] += j
-      print(MainMemory.instantiate().localMem.variables[i])
+      # print(MainMemory.instantiate().localMem.variables[i])
     else:
       raise Exception("ERROR! Stack overflow")
 
   for i, j in funcSize["temps"].items():
     if j + mem.localMem.temps[i] <= 1000:
       mem.localMem.temps[i] += j
-      print( MainMemory.instantiate().localMem.temps[i])
+      # print( MainMemory.instantiate().localMem.temps[i])
     else:
       raise Exception("ERROR! Stack overflow")
 
@@ -118,6 +91,21 @@ def generateERA(funcName, scope):
 
   return True
 
+# def freeMemory(funcName, scope):
+#   dirFunc = VM.get().getDirClass() if scope == 'class' else VM.get().getDirFunc()
+#   mem = MainMemory.instantiate()
+#   global scopePointer
+#   if scope == 'class':
+#     for i in dirFunc:
+#       if funcName in i['global']['funcs']:
+#         funcSize = i['global']['funcs'][funcName]["size"]
+#         verifySize(funcSize, mem)
+#         scopePointer = {funcName: i['global']['funcs'][funcName]}
+#   else:
+#     funcSize = dirFunc['global']['funcs'][funcName]["size"]
+#     verifySize(funcSize, mem)
+#     scopePointer = {funcName: dirFunc['global']['funcs'][funcName]}
+
 def getClassification(address):
   if address >= 45000 and address < 55000:
     return 'const'
@@ -131,11 +119,15 @@ def getClassification(address):
 def point(address):
   mem = MainMemory.instantiate()
   if getClassification(address) == 'const':
-    mem.setPointer(mem.getConstants())
+    return mem.getConstants()
+    # mem.setPointer(mem.getConstants())
   elif getClassification(address) == 'local':
-    print("POINTING TO LOCAL")
-    mem.setPointer(mem.getLocal())
-
+    # print("POINTING TO LOCAL")
+    # global goHere
+    # goHere = mem.getLocal()[list(VM.get().topCallStack())[0]]
+    curr = mem.getLocal()
+    # print("GET LOCAL", curr)
+    mem.setPointer(curr[list(VM.get().topCallStack())[0]])
     # mem.setPointer(mem.getPointer().)
   else:
     mem.setPointer(mem.getGlobal())
@@ -295,19 +287,23 @@ class VM:
     return self.__dirClass 
 
   # Call Stack access
-  def pushCallStack(self, functionCall):
+  def pushCallStack(self, functionCall, goHere):
     self.__callStack.append(functionCall)
     mem = MainMemory.instantiate()
-    mem.setLocal(functionCall)
+    mem.setLocal(functionCall, goHere)
     # print("CALLSTACK")
     # print(self.__callStack)
 
   def popCallStack(self):
     if self.__callStack:
       #liberar memoria
-        #1. volver a poner como None las variables y los temporales utilizados
-        #2. bajar el counter de direcciones memorias usadas
-      return self.__callStack.pop()
+      #1. volver a poner como None las variables y los temporales utilizados
+      #2. bajar el counter de direcciones memorias usadas
+      mem = MainMemory.instantiate()
+      curr = mem.localMem.variables
+      for i, j in curr.items():
+        curr[i] -= j      
+    self.__callStack.pop()
 
   def topCallStack(self):
     if self.__callStack:
@@ -324,8 +320,8 @@ class VM:
     return point(address)
 
   def assignValueToDir(self, value, pointer, key):
-    # print("ASSIGN VALUE TO DIR", pointer[key], value)
     pointer[key] = value
+    # print("ASSIGN VALUE TO DIR", pointer[key], value)
 
   def add(self, leftVal, rightVal):
     return leftVal + rightVal
@@ -340,7 +336,7 @@ class VM:
     return leftVal / rightVal
 
   def assign(self, assignWhat, assignWhatDir, assignTo, assignToDir):
-    return self.assignValueToDir(assignWhat[assignWhatDir], assignTo, assignToDir)
+    self.assignValueToDir(assignWhat[assignWhatDir], assignTo, assignToDir)
 
   def lt(self, leftVal, rightVal):
     return leftVal < rightVal
@@ -348,10 +344,11 @@ class VM:
   def gt(self, leftVal, rightVal):
     return leftVal > rightVal
       
-  def le(self, leftVal, rightVal):
+  def lte(self, leftVal, rightVal):
     return leftVal <= rightVal
       
-  def ge(self, leftVal, rightVal):
+  def gte(self, leftVal, rightVal):
+    # print()
     return leftVal >= rightVal
       
   def equal(self, leftVal, rightVal):
@@ -388,13 +385,19 @@ class VM:
     return False
 
   def era(self, funcName, scope):
-    if generateERA(funcName, scope):
-      global scopePointer
-      VM.get().pushCallStack(scopePointer)
+    if generateERA(funcName, scope) == True:
+      self.__nextPointer += 1
+    # else:
+    #   raise Exception("ERROR! Stack overflow")
 
     # return False
-  def param(self, val, paramKey, paramDir):
-    return self.assignValueToDir(val, paramKey, paramDir)
+  def param(self, paramPoint, paramDir):
+    global paramCont
+    global arrParam
+    arrParam.append(paramPoint[paramDir])
+    # print("LEN ARR PARAM", len(arrParam))
+    # paramCont += 1
+    # return
 
   def endFunc(self):
     return False
@@ -402,8 +405,10 @@ class VM:
   def ver(self):
     return False
   
-  def funcReturn(self):
-    return False
+  def funcReturn(self, retPointer, retAddress):
+    # access value I want to send
+    valueToSend = retPointer[retAddress]
+    return valueToSend
   
   def binaryOps(self, left, right, result):
     res = []
@@ -417,12 +422,16 @@ class VM:
     
   #MAIN VM PROGRAM
   def execute(self):
+    global arrParam
+    global paramCont
+    global returnVal
     operCode = self.__quadList[self.__nextPointer].getOp()
     while (operCode < 24):
+      # print("OPERCODE", operCode)
       currentQuad = self.__quadList[self.__nextPointer]
       if operCode == 1: #sumar
         pointers = self.binaryOps(currentQuad.getLeft(), currentQuad.getRight(), currentQuad.getRes())
-        print(pointers[0], pointers[1], pointers[2])
+        # print(pointers[0], pointers[1], pointers[2])
         if pointers[0] == None or pointers[1] == None:
           raise Exception("ERROR! Adding null values")
         res = self.add(pointers[0][currentQuad.getLeft()], pointers[1][currentQuad.getRight()])
@@ -459,10 +468,15 @@ class VM:
         self.__nextPointer += 1
 
       elif operCode == 5: # assign
-        assignWhat = self.getPointerType(currentQuad.getLeft())
-        assignTo = self.getPointerType(currentQuad.getRes())
-        print(currentQuad.getLeft(), currentQuad.getRight(), currentQuad.getRes())
-        self.assign(assignWhat, currentQuad.getLeft(), assignTo, currentQuad.getRes())
+        if isinstance(currentQuad.getLeft(), str):
+          assignTo = self.getPointerType(currentQuad.getRes())
+          assignTo[currentQuad.getRes] = returnVal
+          returnVal = None
+        else:
+          assignWhat = self.getPointerType(currentQuad.getLeft())
+          assignTo = self.getPointerType(currentQuad.getRes())
+          # print(currentQuad.getLeft(), currentQuad.getRight(), currentQuad.getRes())
+          self.assign(assignWhat, currentQuad.getLeft(), assignTo, currentQuad.getRes())
         self.__nextPointer += 1
 
       elif operCode == 6: # less than
@@ -553,39 +567,53 @@ class VM:
         
       elif operCode == 17: # goSub
         # self.goSub()
-        print("LLEGO GOSUB")
+        # print("LLEGO GOSUB")
+        global scopePointer
+        VM.get().pushCallStack(scopePointer, self.__nextPointer + 1)
+        arrParam = []
+        paramCont = 0
         calledFunction = VM.get().topCallStack()
-        # print(list(calledFunction)[0])
-        # print(calledFunction["start"])
         self.__nextPointer = calledFunction[list(calledFunction)[0]]["start"]
 
       elif operCode == 18: # era
         self.era(currentQuad.getLeft(), currentQuad.getRight())
-        self.__nextPointer += 1
+        # self.__nextPointer += 1
 
       elif operCode == 19: # param
         paramDir = currentQuad.getLeft()
         paramPoint = self.getPointerType(paramDir)
-        paramCont = currentQuad.getRes()
-        self.param(None, paramPoint, paramDir)
-        global paramCont
-        global arrParam
-        arrParam.append(paramPoint[paramDir])
+        self.param(paramPoint, paramDir)
         self.__nextPointer += 1
 
       elif operCode == 20: # endfunc
         self.endFunc()
-      
+        self.__nextPointer += 1
+
       elif operCode == 21: # verify
         self.ver()
-      
+        self.__nextPointer += 1
+
       elif operCode == 22: # return
-        self.funcReturn()
-      
+        print("RETURN")
+        retAddress = currentQuad.getRes()
+        retPointer = self.getPointerType(retAddress)
+        returnVal = self.funcReturn(retPointer, retAddress)
+        # regresa a migajita de pan
+        # if getClassification(retPointer[retAddress]) == 'const':
+
+        print("GOHERE", retPointer, retAddress)
+        goHere = MainMemory.instantiate().getPointer()["goHere"]
+        # pop from Call Stack
+        VM.get().popCallStack()
+        self.__nextPointer = goHere
+
       elif operCode == 23: # end
         # create a space in the stack with the local memory
         self.end()
-      
+        print("TERMINO CON EXITO")
+        return False
+        self.__nextPointer += 1
+
       print(self.__nextPointer)
       operCode = self.__quadList[self.__nextPointer].getOp()
     
@@ -638,33 +666,29 @@ class MainMemory:
     # print("ESTA LINEA")
     # for i in self.__global:
     #   print(i)
-  def setLocal(self, functionCall):
+  def setLocal(self, functionCall, goHere):
     # sends a dictionary with function name: attributes
-    print("SET LOCAL")
+    # print("SET LOCAL")
     funcName = list(functionCall)[0]
-    # print(funcName)
+    # migajita de pan
     self.__local[funcName] = {}
     pointerVars = functionCall[funcName]['vars']
-    # print("POINTER VARS", pointerVars)
     pointerTemps = functionCall[funcName]['temps']
-    # print("POINTER TEMPS", pointerTemps)
-    # print("POINTER VARS", pointerVars)
-
-    # print("HEREHEREHHEHEHEEEEEEEEE", funcName)
     for i, j in pointerVars.items():
       if j.getIsParam():
         global arrParam
         global paramCont
+        # print("PARAM ARR", arrParam)
+        # print("PARAM CONT", paramCont)
         # assign temp value from arrParam
         self.__local[funcName][j.getVirtualAddress()] = arrParam[paramCont]
+        paramCont += 1
       else:
         self.__local[funcName][j.getVirtualAddress()] = None
     for i, j in pointerTemps.items():
       self.__local[funcName][j.getVirtualAddress()] = None
-    # print("YAYAYAYAY J")
-    #   # self.__local[i] = 
-    #   # print("LOCAL I J", i, j)
-    print(self.__local[funcName])
+    self.__local[funcName]["goHere"] = goHere
+    # print(self.__local[funcName])
 
   def setConstants(self, dirFunc):
     consts = dirFunc["global"]["consts"]

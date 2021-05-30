@@ -337,10 +337,15 @@ def expression_evaluation(p):
       quadruple.pilaO.append(tempAddress)
       tempAddressPointer.setOffset()
   elif quadruple.pOper[-1] == 'return':
+    if symbolTable.getCurrentScope().getScopeType() == 'void':
+      if quadruple.pilaO[-1]:
+        raise Exception("ERROR! Void functions cannot return values")
+
     expValue = quadruple.pilaO.pop()
     expValueType = getTypeV2(expValue)
     if expValueType != symbolTable.getCurrentScope().getScopeType():
       raise Exception("ERROR! Type mismatch in returning function")
+    # if void, return shoult have no expValue
     quadruple.saveQuad('return', -1, -1, expValue)
     quadruple.pOper.pop()
 

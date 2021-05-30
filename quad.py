@@ -119,6 +119,7 @@ class QuadContainer:
 
   def __repr__(self):
     return "{%s %s %s %s}" % (self.getOp(), self.getLeft(), self.getRight(), self.getRes())
+
 class QuadsStack:
   isAlive = None
   cont = 0

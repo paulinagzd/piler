@@ -366,7 +366,6 @@ def p_estatuto(p):
            | ternary
            | RETURN saw_return_value exp
   '''
-#            | for_loop
 
 def p_estatuto_redux(p): # TERNARY ONE LINERS
   '''
