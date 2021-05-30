@@ -2,10 +2,13 @@ from quad import Quad
 from vm import MemoryContainer
 quadruple = Quad.instantiate()
 
+i = 0
+j = 0
 class DimensionNode:
   def __init__(self, dim, lim, temp):
     self.__dim = dim
     self.__r = (lim + 1) * temp
+    # self.__r = (lim) * temp  
     self.__lim = lim
     self.__offset = 0
 
@@ -46,9 +49,14 @@ class Variable:
     self.__offset = offset
 
     # incrementing offset when variable is created in memory
-    if dimensions > 0:
-      memPointer.setDimensionalOffset(int(offset))
-    elif varName == '':
+    # if dimensions > 0:
+    #   while(offset > 0):
+    #     print("OFFSET", offset)
+    #     offset -= 1
+    #     SymbolTable.instantiate().getCurrentScope().getScopeVariables()[varName] = Variable(varName, varType, dimensions, self.__dimensionNodes, offset, isParam, memPointer, False)
+    #     memPointer.setOffset()
+    #   # memPointer.setDimensionalOffset(int(offset))
+    if varName == '':
       pass
     else:  
       memPointer.setOffset()
@@ -297,7 +305,21 @@ class Scope:
     if self.__context == 'global' or self.__context == 'class':
       memPointer = self.memory.memSpace['global'][varType]['real']
       isObject = True if self.__context == 'class' else False
-      self.__scopeVariables[varName] = Variable(varName, varType, dimensions, self.__dimensionNodes, offset, isParam, memPointer, isObject)
+      if dimensions > 0:
+        global j
+        jj = offset - j
+        temp = 0
+        while temp < jj:
+          if temp == 0:
+            self.__scopeVariables[varName] = Variable(varName, varType, dimensions, self.__dimensionNodes, offset, isParam, memPointer, isObject)
+          else:
+            strObj = str(int(offset))
+            self.__scopeVariables[varName + strObj] = Variable(varName, varType, dimensions, self.__dimensionNodes, offset, isParam, memPointer, isObject)
+          temp += 1
+          j += 1
+          offset -= 1
+      else:
+          self.__scopeVariables[varName] = Variable(varName, varType, dimensions, self.__dimensionNodes, offset, isParam, memPointer, isObject)
     elif SymbolTable.instantiate().getCurrentScope().getContext() == 'function' or SymbolTable.instantiate().getCurrentScope().getContext() == 'classFunction':
       globalScope = SymbolTable.instantiate().getGlobalScope()
       if SymbolTable.instantiate().getCurrentScope().getContext() == 'function':
@@ -306,7 +328,20 @@ class Scope:
       else:
         classScope = globalScope.getScopeClasses()[SymbolTable.instantiate().getStack()]
         memPointer = classScope.memory.memSpace['local'][varType]['real']
-      self.__scopeVariables[varName] = Variable(varName, varType, dimensions, self.__dimensionNodes, offset, isParam, memPointer, False)
+      if dimensions > 0:
+        global i
+        ii = offset - i
+        temp = 0
+        while temp < ii:
+          if temp == 0:
+            self.__scopeVariables[varName] = Variable(varName, varType, dimensions, self.__dimensionNodes, offset, isParam, memPointer, False)
+          else:
+            self.__scopeVariables[varName + str(offset)] = Variable(varName, varType, dimensions, self.__dimensionNodes, offset, isParam, memPointer, False)
+          temp += 1
+          i += 1
+          offset -= 1
+      else:
+        self.__scopeVariables[varName] = Variable(varName, varType, dimensions, self.__dimensionNodes, offset, isParam, memPointer, False)
     else:
       #TODO for CLASSES AND OBJECTS
       pass
@@ -619,8 +654,8 @@ class SymbolTable:
     # print("ENTRO")
     # print("DIRFUNC")
     # for i, j in tempDirFunc.items():
-    #   # if i == "start":
-    #   print(tempDirFunc[i])
+      # if i == "vars":
+      # print(tempDirFunc[i])
     # print("DIRCLASS")
     # for i, j in tempDirClass.items():
     #   print(tempDirClass[i])

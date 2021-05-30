@@ -29,6 +29,8 @@ class Quad:
     'verify' : 23,
     'return' : 24,
     'end': 25,
+    '+a': 26,
+    '*a': 27,
   }
 
   def __init__(self):
@@ -52,7 +54,7 @@ class Quad:
     # q = QuadContainer(self.quadCounter, operator, leftOperand, rightOperand, tvalue) # left and right operand contain ADDRESSES
     self.quads[self.quadCounter] = q
     self.quadCounter += 1
-    # print(q)
+    print(q)
 
   def getWorkingStack(self):
     workingStack = []

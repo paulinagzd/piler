@@ -322,7 +322,7 @@ def expression_evaluation(p):
     global tempCounter
     if len(lsPointer) > currentDim: 
       aux = quadruple.pilaO.pop()
-      quadruple.saveQuad("*", aux, lsPointer[currentDim-1].getR(), tempAddress)
+      quadruple.saveQuad("*a", aux, lsPointer[currentDim-1].getR(), tempAddress)
       symbolTable.getCurrentScope().getScopeTemps()[tempCounter] = (Variable('', currType, 0, [], tempAddressPointer.getOffset(), False, tempAddressPointer, False))
       tempCounter += 1        
       quadruple.pilaO.append(tempAddress)
@@ -361,7 +361,7 @@ def endDim(var):
   currType = getTypeV2(quadruple.pilaO[-1])
   tempAddressPointer = getPointingScope(symbolTable.getCurrentScope()).memory.memSpace[keyword][currType]['temp']
   tempAddress = tempAddressPointer.getInitialAddress() + tempAddressPointer.getOffset()
-  quadruple.saveQuad("+", aux, varPointerDimNodes[var.getDimensions()-1].getR(), tempAddress)
+  quadruple.saveQuad("+a", aux, varPointerDimNodes[var.getDimensions()-1].getR(), tempAddress)
   global tempCounter
   symbolTable.getCurrentScope().getScopeTemps()[tempCounter] = (Variable('', currType, 0, [], tempAddressPointer.getOffset(), False, tempAddressPointer, False))
   tempCounter += 1        

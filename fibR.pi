@@ -3,10 +3,8 @@ program fibR;
 func int fib(int x) {
   print(x)
    if ((x==1) || (x==0)) then {
-      print("aqui", x)
-      return x
+      return (x)
    } else {
-      print("aca", x)
       return ( {fib(x - 1)} + {fib(x - 2)})
    };
 }
@@ -17,10 +15,9 @@ int main() {
   i = 0
   print("Enter the number of terms of series : ")
   /*  cin >> x; */
-  x = 2
+  x = 4
   print("\nFibonnaci Series : ")
   while (i < x) then {
-    print("entro")
     print({fib(i)})
     i = i + 1
   };

@@ -35,5 +35,5 @@ int main() {
 
   /* A[i+j*k] = j + B[i*j][k - i] * A[k] */
   /* B[i+j][A[i] * k] = i + Clase.a */
-  Clase.claseFunc(1, 1.1)
+  /* Clase.claseFunc(1, 1.1) */
 }

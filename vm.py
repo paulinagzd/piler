@@ -97,7 +97,24 @@ def getClassification(address):
   elif address >= 5000 and address < 25000:
     return 'global'
   else:
+    print("CONSTMEM", address)
     raise Exception("ERROR! Memory out of bounds")
+
+def isMultiple(address):
+  print("ADDRESS", address)
+  if address >= 7000 and address < 9000 \
+    or address >= 11000 and address < 13000 \
+    or address >= 15000 and address < 17000 \
+    or address >= 19000 and address < 21000 \
+    or address >= 23000 and address < 25000 \
+    or address >= 27000 and address < 29000 \
+    or address >= 31000 and address < 33000 \
+    or address >= 35000 and address < 37000 \
+    or address >= 39000 and address < 41000 \
+    or address >= 43000 and address < 45000:
+    return True
+  else:
+    return False
 
 def point(address):
   mem = MainMemory.instantiate()
@@ -310,6 +327,7 @@ class VM:
 
   def assign(self, assignWhat, assignWhatDir, assignTo, assignToDir):
     self.assignValueToDir(assignWhat[assignWhatDir], assignTo, assignToDir)
+    print("ASSIGNING", assignWhat[assignWhatDir], assignTo[assignToDir])
 
   def lt(self, leftVal, rightVal):
     return leftVal < rightVal
@@ -400,15 +418,34 @@ class VM:
     global paramCont
     global returnVal
     operCode = self.__quadList[self.__nextPointer].getOp()
-    while (operCode < 26):
+    while (operCode < 28):
       currentQuad = self.__quadList[self.__nextPointer]
       if operCode == 1: #sumar
-        pointers = self.binaryOps(currentQuad.getLeft(), currentQuad.getRight(), currentQuad.getRes())
-        if pointers[0] == None or pointers[1] == None:
-          raise Exception("ERROR! Adding null values")
-        res = self.add(pointers[0][currentQuad.getLeft()], pointers[1][currentQuad.getRight()])
-
-        self.assignValueToDir(res, pointers[2], currentQuad.getRes())
+        if isMultiple(currentQuad.getRight()):
+          # store value of whats in address   
+          print("IF", currentQuad.getRight())
+          leftDir = currentQuad.getLeft()
+          leftVal = self.getPointerType(leftDir)
+          resDir = currentQuad.getRes()
+          resVal = self.getPointerType(resDir)
+          print("LEFTDIRVAL", leftVal[leftDir])
+          res = self.add(leftVal[leftDir], currentQuad.getRight())
+          # asignar lo que hay en la casilla que sacamos a la que queremos
+          # {tempVal = pointer[res]}
+          # en vez de guardar la res, guardo lo que hay en res
+          # point to whats stored there
+          newDirPointer = self.getPointerType(res)
+          # newVal = newDirPointer[res]
+          # print("NEWVAL", newVal)
+          self.assignValueToDir(newDirPointer[res], resVal, resDir) 
+      
+        else:
+          print("ELSE")
+          pointers = self.binaryOps(currentQuad.getLeft(), currentQuad.getRight(), currentQuad.getRes())
+          if pointers[0] == None or pointers[1] == None:
+            raise Exception("ERROR! Adding null values")
+          res = self.add(pointers[0][currentQuad.getLeft()], pointers[1][currentQuad.getRight()])
+          self.assignValueToDir(res, pointers[2], currentQuad.getRes())
         self.__nextPointer += 1
       
       elif operCode == 2: #restar
@@ -585,12 +622,12 @@ class VM:
       elif operCode == 23: # verify
         verDir = currentQuad.getLeft()
         verVal = self.getPointerType(verDir)
+        valToSend = verVal[verDir]
         upperLim = currentQuad.getRes()
-        self.ver(verVal, upperLim)
+        self.ver(valToSend, upperLim)
         self.__nextPointer += 1
 
       elif operCode == 24: # return
-        # print("RETURN")
         retAddress = currentQuad.getRes()
         retPointer = self.getPointerType(retAddress)
         returnVal = self.funcReturn(retPointer, retAddress)
@@ -619,7 +656,29 @@ class VM:
         return False
         self.__nextPointer += 1
 
-      # print(self.__nextPointer)
+      elif operCode == 26: # add from arrays
+        print("HERE")
+        # comes from array
+        leftDir = currentQuad.getLeft()
+        leftVal = self.getPointerType(leftDir)
+        resDir = currentQuad.getRes()
+        resVal = self.getPointerType(resDir)
+        res = self.add(leftVal[leftDir], currentQuad.getRight())
+        self.assignValueToDir(res, resVal, resDir)
+        self.__nextPointer += 1
+
+      elif operCode == 27: # add from arrays
+        print("HERE *")
+        # comes from array
+        leftDir = currentQuad.getLeft()
+        leftVal = self.getPointerType(leftDir)
+        resDir = currentQuad.getRes()
+        resVal = self.getPointerType(resDir)
+        res = self.multiply(leftVal[leftDir], currentQuad.getRight())
+        self.assignValueToDir(res, resVal, resDir)
+        self.__nextPointer += 1
+
+      print(self.__nextPointer)
       operCode = self.__quadList[self.__nextPointer].getOp()
     
     self.end()
@@ -703,7 +762,8 @@ class MainMemory:
     for i, j in consts.items():
       for k, l in j.items():
         self.__constants[l] = k
-
+    print(self.__constants)
+  
   @classmethod
   def instantiate(cls):
     if MainMemory.isAlive is None:
