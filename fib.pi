@@ -3,15 +3,12 @@ program fib;
 int main() {
     var int n, t1, t2, nextTerm;
     var int j;
-    n = 5
+    n = 12
     t1 = 0
     t2 = 1
     nextTerm = 0
     j = 1
     while (j <= n) then {
-      if (j == n) then {
-        print("llegue aqui")
-      };
       if (j == 1) then {
         print(t1)
       };

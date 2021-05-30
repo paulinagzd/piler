@@ -34,7 +34,10 @@ while True:
           
           # start main memory
           virtualMachine.execute()
-        quadruple.print()
+        # quadruple.print()
+        MainMemory.instantiate().reset()
+        virtualMachine = VM.get()
+        virtualMachine.reset()
         symbolTable.reset()
         quadruple.reset()
         resetGlobals()
