@@ -324,7 +324,7 @@ def expression_evaluation(p):
     global tempCounter
     if len(lsPointer) > currentDim: 
       aux = quadruple.pilaO.pop()
-      quadruple.saveQuad("*a", aux, lsPointer[currentDim-1].getR(), tempAddress)      
+      quadruple.saveQuad("*a", aux, lsPointer[currentDim-1].getMDim(), tempAddress)      
       symbolTable.getCurrentScope().getScopeTemps()[tempCounter] = (Variable('', currType, 0, [], tempAddressPointer.getOffset(), False, tempAddressPointer, False))
       tempCounter += 1        
       quadruple.pilaO.append(tempAddress)
@@ -364,20 +364,14 @@ def endDim(var):
   currType = getTypeV2(quadruple.pilaO[-1])
   tempAddressPointer = getPointingScope(symbolTable.getCurrentScope()).memory.memSpace[keyword][currType]['temp']
   tempAddress = tempAddressPointer.getInitialAddress() + tempAddressPointer.getOffset()
-  quadruple.saveQuad("+a", aux, varPointerDimNodes[var.getDimensions()-1].getR(), tempAddress)  
-  # print("OFFSEEET", aux, varPointerDimNodes[var.getDimensions()-1].getR())
+  quadruple.saveQuad("+a", aux, varPointerDimNodes[var.getDimensions()-1].getOffset(), tempAddress)  
   global tempCounter
   symbolTable.getCurrentScope().getScopeTemps()[tempCounter] = (Variable('', currType, 0, [], tempAddressPointer.getOffset(), False, tempAddressPointer, False))
   tempCounter += 1        
   tempAddressPointer.setOffset()
   tempAddress2 = tempAddressPointer.getInitialAddress() + tempAddressPointer.getOffset()
-  if var.getDimensions() > 1:
-    print(var.getVarName(), var.getDimensions())
-    quadruple.saveQuad("+a", tempAddress, var.getVirtualAddress(), tempAddress2)
-  else:
-    quadruple.saveQuad("+a", tempAddress, var.getVirtualAddress(), tempAddress2)
+  quadruple.saveQuad("+a", tempAddress, var.getVirtualAddress(), tempAddress2)
 
-  print("+ BASE", tempAddress, var.getVirtualAddress())
   symbolTable.getCurrentScope().getScopeTemps()[tempCounter] = (Variable('', currType, 0, [], tempAddressPointer.getOffset(), False, tempAddressPointer, False))
   tempCounter += 1        
   quadruple.pilaO.pop() # gets rid of dirBase

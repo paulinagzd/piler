@@ -5,9 +5,9 @@ quadruple = Quad.instantiate()
 cont = 0
 cont2 = 0
 class DimensionNode:
-  def __init__(self, dim, lim, temp):
+  def __init__(self, dim, lim):
     self.__dim = dim
-    self.__r = (lim + 1) * temp
+    self.__mDim = None
     self.__lim = lim
     self.__offset = 0
     self.__content = []
@@ -18,8 +18,8 @@ class DimensionNode:
   def getLim(self):
     return self.__lim
 
-  def getR(self):
-    return self.__r
+  def getMDim(self):
+    return self.__mDim
 
   def getOffset(self):
     return self.__offset
@@ -30,17 +30,11 @@ class DimensionNode:
   def getContent(self):
     return self.__content
 
-  def setR(self, val):
-    self.__r = val
-  
-  def setOffset(self, val):
-    self.__offset = val
-
-  def setContent(self, val):
-    self.__content.append(val)
+  def setMDim(self, val):
+    self.__mDim = val
 
   def __repr__(self):
-    return "lSup: %s m or k = %s" % (self.__lim, self.__r)
+    return "lSup: %s mDim = %s" % (self.__lim, self.__mDim)
 class Variable:
   def __init__(self, varName, varType, dimensions, dimensionNodes, offset, isParam, memPointer, isObject):
     self.__varName = varName
@@ -143,6 +137,7 @@ class Scope:
     self.__latestType = None
     self.__latestExpValue = None
     self.__latestDimension = 0
+    self.__r = 1
     self.starts = starts
     # for functions and modules
     self.__quadCont = 0
@@ -248,9 +243,9 @@ class Scope:
   def setLatestDimension(self, lim):
     self.__latestDimension = self.__latestDimension + 1
     if lim != -1:
-      temp = lim
+      self.__r = lim * self.__r
       # print("ADDING DIM", self.__latestDimension, lim, temp)
-      self.__dimensionNodes.append(DimensionNode(self.__latestDimension, lim, temp))
+      self.__dimensionNodes.append(DimensionNode(self.__latestDimension, lim))
 
   def resetLatestDimension(self):
     self.__latestDimension = 0
@@ -346,14 +341,12 @@ class Scope:
     # if it has dimensions it needs to complete the dimensionNodes
     offset = 0
     if dimensions > 0:
-      size = self.__dimensionNodes[0].getR()
       for dimNode in self.__dimensionNodes:
-        mDim = dimNode.getR() / (dimNode.getLim() + 1)
-        dimNode.setR(int(mDim))
-        offset = offset + dimNode.getLim() * mDim
-        dimNode.setOffset(int(offset))
-      self.__dimensionNodes[-1].setR(0)
+        mDim = self.__r / (dimNode.getLim())
 
+        self.__r = int(mDim)
+        dimNode.setMDim(int(mDim))
+      self.__r = 1
     # adding the variable depending on the scope it's in, considering classes as global and local memory
     if self.__context == 'global' or self.__context == 'class':
       memPointer = self.memory.memSpace['global'][varType]['real']
@@ -370,7 +363,6 @@ class Scope:
             self.__scopeVariables[varName + strObj] = Variable(varName, varType, dimensions, self.__dimensionNodes, offset, isParam, memPointer, isObject)
             self.__scopeVariables[varName + strObj].setValue(flatList[temp])
           temp += 1
-          # offset -= 1
       else:
         self.__scopeVariables[varName] = Variable(varName, varType, dimensions, self.__dimensionNodes, offset, isParam, memPointer, isObject)
     elif SymbolTable.instantiate().getCurrentScope().getContext() == 'function' or SymbolTable.instantiate().getCurrentScope().getContext() == 'classFunction':
@@ -392,7 +384,6 @@ class Scope:
             self.__scopeVariables[varName + str(temp)] = Variable(varName, varType, dimensions, self.__dimensionNodes, offset, isParam, memPointer, False)
             self.__scopeVariables[varName + str(temp)].setValue(flatList[temp])
           temp += 1
-          # offset -= 1
       else:
         self.__scopeVariables[varName] = Variable(varName, varType, dimensions, self.__dimensionNodes, offset, isParam, memPointer, False)
     else:

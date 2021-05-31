@@ -697,7 +697,6 @@ class VM:
         self.__nextPointer += 1
 
 
-      print(self.__nextPointer)
       operCode = self.__quadList[self.__nextPointer].getOp()
     
     # self.end()
