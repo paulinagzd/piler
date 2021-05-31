@@ -438,7 +438,7 @@ class VM:
         self.assignValueToDir(res, pointers[2], pointersVal[2])
         self.__nextPointer += 1
 
-      elif operCode == 3: #multiplicar
+      elif operCode == 3: # multiplicar
         pointersVal = self.binaryOps(self.returnIsArray(currentQuad.getLeft()), self.returnIsArray(currentQuad.getRight()), self.returnIsArray(currentQuad.getRes()))
         pointers = self.binaryOps(self.getPointerType(pointersVal[0]), self.getPointerType(pointersVal[1]), self.getPointerType(pointersVal[2]))
 
@@ -632,10 +632,8 @@ class VM:
         goHere = mem.getLocalTop()["goHere"]
         endingFunc = self.popCallStack()
         endingLocal = mem.popLocalTop()
-
         self.__nextPointer = goHere
         currentQuad = self.__quadList[self.__nextPointer]
-
         if not self.__callStack: # return to sleeping function
           # it returns to main (or global)
           globalDir = currentQuad.getRes()
@@ -646,12 +644,14 @@ class VM:
           else:
             globalDirVal = mem.getConstants()
           self.assignValueToDir(returnVal, globalDirVal, globalDir)
+          self.__nextPointer += 1
         else:
           currLocal = mem.getLocalTop()
           newDir = currentQuad.getRes()
           newVal = self.getPointerType(newDir)
           self.assignValueToDir(returnVal, newVal, newDir)
-          
+          self.__nextPointer += 1
+
       elif operCode == 25: # end
         # create a space in the stack with the local memory
         self.end()
@@ -761,13 +761,13 @@ class MainMemory:
       self.__local[funcName][j.getVirtualAddress()] = None
     self.__local[funcName]["goHere"] = goHere
     self.__localArr.append(self.__local[funcName])
-    self.printing()
+    # self.printing()
     return
 
-  def printing(self):
-    print("CCCCCOOOOOMMMOOOOO ESTAAAAAAAAA")
-    for i in self.__localArr:
-      print(i)
+  # def printing(self):
+    # print("CCCCCOOOOOMMMOOOOO ESTAAAAAAAAA")
+    # for i in self.__localArr:
+    #   print(i)
 
   def setConstants(self, dirFunc):
     consts = dirFunc["global"]["consts"]
