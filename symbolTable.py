@@ -56,9 +56,10 @@ class Variable:
     self.__value = None
 
     # incrementing offset when variable is created in memory
-    if dimensions > 0:
-      memPointer.setDimensionalOffset(int(offset))
-    elif varName == '':
+    # if dimensions > 0:
+    #   memPointer.setDimensionalOffset(int(offset))
+    # el
+    if varName == '':
       pass
     else:  
       memPointer.setOffset()
@@ -304,23 +305,22 @@ class Scope:
       newVarType = varType[:3]
 
     # print("LEN ARRAY", len(array))
-    if len(array) == 1 != dimensions or len(array) == 2 != dimensionNodes[0].getLim():
+    if len(array) == 1 and len(array) != dimensions:
       raise Exception('ERROR! Variable with incorrect dimensions')
     else:
       if dimensions == 2:
         arrSize1 = dimensionNodes[0].getLim()
         arrSize2 = dimensionNodes[1].getLim()
         for i in array:
-          # print("I", i, arrSize2)
           if len(i) != arrSize2:
-            raise Exception('ERROR! Variable with incorrect dimension length')
-          for j in range(len(array)):
-            if self.getTypeConstants(j) != newVarType:
-              raise Exception('ERROR! Variable with incorrect type for dimensions')
+            raise Exception('ERROR! Variable with incorrect dimensions')
+            for j in i:
+              if len(j) != arrSize1:
+                raise Exception('ERROR! Variable with incorrect dimensions')                      
+              if self.getTypeConstants(j) != newVarType:
+                raise Exception('ERROR! Variable with incorrect type for dimensions')
       else:
-        print("ELSE", newVarType)
         for j in array[0]:
-          # print("J", j)
           if self.getTypeConstants(j) != newVarType:
             raise Exception('ERROR! Variable with incorrect type for dimensions')
     return True
@@ -336,6 +336,7 @@ class Scope:
         self.__scopeVariables[varName + strObj] = Variable(varName, varType, dimensions, self.__dimensionNodes, offset, isParam, memPointer, isObject)
         self.__scopeVariables[varName + strObj].setValue(flatList[temp])
       temp += 1
+      offset -= 1
 
 
   def addVariable(self, varName, varType, dimensions, isParam, varDim):
@@ -357,7 +358,7 @@ class Scope:
     if self.__context == 'global' or self.__context == 'class':
       memPointer = self.memory.memSpace['global'][varType]['real']
       isObject = True if self.__context == 'class' else False
-      if dimensions > 0:
+      if dimensions > 0 and self.verifyArrContent(varDim, varType, dimensions, self.__dimensionNodes):
         temp = 0
         flatList = [item for sublist in varDim for item in sublist]
         while temp < len(flatList):
@@ -380,7 +381,7 @@ class Scope:
       else:
         classScope = globalScope.getScopeClasses()[SymbolTable.instantiate().getStack()]
         memPointer = classScope.memory.memSpace['local'][varType]['real']
-      if dimensions > 0:
+      if dimensions > 0 and self.verifyArrContent(varDim, varType, dimensions, self.__dimensionNodes):
         temp = 0
         flatList = [item for sublist in varDim for item in sublist]
         while temp < len(flatList):          
@@ -703,11 +704,10 @@ class SymbolTable:
           }
           # print(keyClass, pointer[keyClass])
 
-    # print("ENTRO")
-    # print("DIRFUNC")
-    # for i, j in tempDirFunc.items():
-      # if i == "start":
-      # print(tempDirFunc[i])
+    print("ENTRO")
+    print("DIRFUNC")
+    for i, j in tempDirFunc.items():
+      print(tempDirFunc[i])
     # print("DIRCLASS")
     # for i, j in tempDirClass.items():
     #   print(tempDirClass[i])

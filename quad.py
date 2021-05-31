@@ -29,6 +29,8 @@ class Quad:
     'verify' : 23,
     'return' : 24,
     'end': 25,
+    '+a': 26,
+    '*a': 27,
   }
 
   def __init__(self):

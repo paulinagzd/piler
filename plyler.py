@@ -705,7 +705,7 @@ def p_saw_variable_param(p):
   ''' saw_variable_param : '''
   current = symbolTable.getCurrentScope()
   isParam = True
-  current.addVariable(current.getLatestName(), current.getLatestType(), current.getLatestDimension(), isParam)
+  current.addVariable(current.getLatestName(), current.getLatestType(), current.getLatestDimension(), isParam, None)
 
 def p_saw_dimension(p):
   ''' saw_dimension : '''
