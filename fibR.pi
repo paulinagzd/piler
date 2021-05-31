@@ -12,7 +12,7 @@ int main() {
   var int i;
   print("Enter the number of terms of series : ")
   /*  cin >> x; */
-  x = 5
-  print("\nFibonnaci Series : ")
+  x = 6
+  print("Fibonnaci Series : ")
   print({fib(6)})
 }

@@ -15,7 +15,8 @@ int main()
     var int n;
 
     print("Enter a positive integer: ")
-    read(n)
+    /* read(n) */
+    n = 5
 
     print("The factorial is = ", {factorial(n)})
 }
