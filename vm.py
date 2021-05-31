@@ -73,24 +73,25 @@ def verifySize(funcSize, mem):
     else:
       raise Exception("ERROR! Too many variables!")
 
-def generateERA(funcName, scope):
+def generateERA(funcName, className, scope):
   dirFunc = VM.get().getDirClass() if scope == 'class' else VM.get().getDirFunc()
   mem = MainMemory.instantiate()
   global scopePointer
   if scope == 'class':
-    for i in dirFunc:
-      if funcName in i['global']['funcs']:
-        funcSize = i['global']['funcs'][funcName]["size"]
-        verifySize(funcSize, mem)
-        scopePointer = {funcName: i['global']['funcs'][funcName]}
+    for j in dirFunc:
+      if list(j)[0] == className:
+        if funcName in j[className]['global']['funcs']:
+          funcSize = j[className]['global']['funcs'][funcName]["size"]
+          verifySize(funcSize, mem)
+          scopePointer = {funcName: j[className]['global']['funcs'][funcName]}
   else:
     funcSize = dirFunc['global']['funcs'][funcName]["size"]
     verifySize(funcSize, mem)
     scopePointer = {funcName: dirFunc['global']['funcs'][funcName]}
-
   return True
 
 def getClassification(address):
+  # print("ADDRESS", address)
   if address >= 45000 and address < 55000:
     return 'const'
   elif address >= 25000 and address < 45000:
@@ -370,8 +371,8 @@ class VM:
   def goSub(self):
     return False
 
-  def era(self, funcName, scope):
-    if generateERA(funcName, scope) == True:
+  def era(self, funcName, scope, className):
+    if generateERA(funcName, className, scope) == True:
       self.__nextPointer += 1
 
   def param(self, paramPoint, paramDir):
@@ -379,8 +380,8 @@ class VM:
     global arrParam
     arrParam.append(paramPoint[paramDir])
 
-  def endFunc(self):
-    return False
+  # def endFunc(self):
+  #   return False
   
   def ver(self, verVal, upperLim):
     if verVal < 0 or verVal > upperLim - 1:
@@ -601,7 +602,11 @@ class VM:
 
       elif operCode == 20: # era
         arrParam = []
-        self.era(currentQuad.getLeft(), currentQuad.getRight())
+        if currentQuad.getRes() != -1:
+          self.era(currentQuad.getLeft(), currentQuad.getRight(), currentQuad.getRes())
+        else:
+          self.era(currentQuad.getLeft(), currentQuad.getRight(), None)
+
 
       elif operCode == 21: # param
         paramDir = currentQuad.getLeft()
@@ -610,8 +615,17 @@ class VM:
         self.__nextPointer += 1
 
       elif operCode == 22: # endfunc
-        self.endFunc()
-        self.__nextPointer += 1
+        # regresa a migajita de pan
+        mem = MainMemory.instantiate()
+        funcName = list(self.topCallStack())[0]
+        goHere = mem.getLocalTop()["goHere"]
+        endingFunc = self.popCallStack()
+        endingLocal = mem.popLocalTop()
+        self.__nextPointer = goHere
+        currentQuad = self.__quadList[self.__nextPointer]
+        # it returns to main (or global)
+        print("RETURN")
+
 
       elif operCode == 23: # verify
         verDir = currentQuad.getLeft()
@@ -636,6 +650,9 @@ class VM:
         currentQuad = self.__quadList[self.__nextPointer]
         if not self.__callStack: # return to sleeping function
           # it returns to main (or global)
+          print("ACACACCCCAC")
+          print("VOY A ASSVALTPDIR", returnVal, currentQuad.getRes())
+
           globalDir = currentQuad.getRes()
           if getClassification(globalDir) == 'global':
             globalDirVal = mem.getGlobal()
@@ -680,7 +697,7 @@ class VM:
         self.__nextPointer += 1
 
 
-      # print(self.__nextPointer)
+      print(self.__nextPointer)
       operCode = self.__quadList[self.__nextPointer].getOp()
     
     # self.end()
@@ -751,6 +768,9 @@ class MainMemory:
     pointerTemps = functionPointer[funcName]['temps']
     arrParams = functionPointer[funcName]['arrParam']
     k = 0
+    # print("FUNCPTR", functionPointer)
+    # now = False
+    # if now:
     for i, j in pointerVars.items():
       if j.getIsParam():
         self.__local[funcName][j.getVirtualAddress()] = arrParams[k]

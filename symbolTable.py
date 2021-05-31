@@ -249,7 +249,7 @@ class Scope:
     self.__latestDimension = self.__latestDimension + 1
     if lim != -1:
       temp = lim
-      print("ADDING DIM", self.__latestDimension, lim, temp)
+      # print("ADDING DIM", self.__latestDimension, lim, temp)
       self.__dimensionNodes.append(DimensionNode(self.__latestDimension, lim, temp))
 
   def resetLatestDimension(self):
@@ -336,7 +336,7 @@ class Scope:
         self.__scopeVariables[varName + strObj] = Variable(varName, varType, dimensions, self.__dimensionNodes, offset, isParam, memPointer, isObject)
         self.__scopeVariables[varName + strObj].setValue(flatList[temp])
       temp += 1
-      offset -= 1
+      # offset -= 1
 
 
   def addVariable(self, varName, varType, dimensions, isParam, varDim):
@@ -370,7 +370,7 @@ class Scope:
             self.__scopeVariables[varName + strObj] = Variable(varName, varType, dimensions, self.__dimensionNodes, offset, isParam, memPointer, isObject)
             self.__scopeVariables[varName + strObj].setValue(flatList[temp])
           temp += 1
-          offset -= 1
+          # offset -= 1
       else:
         self.__scopeVariables[varName] = Variable(varName, varType, dimensions, self.__dimensionNodes, offset, isParam, memPointer, isObject)
     elif SymbolTable.instantiate().getCurrentScope().getContext() == 'function' or SymbolTable.instantiate().getCurrentScope().getContext() == 'classFunction':
@@ -392,7 +392,7 @@ class Scope:
             self.__scopeVariables[varName + str(temp)] = Variable(varName, varType, dimensions, self.__dimensionNodes, offset, isParam, memPointer, False)
             self.__scopeVariables[varName + str(temp)].setValue(flatList[temp])
           temp += 1
-          offset -= 1
+          # offset -= 1
       else:
         self.__scopeVariables[varName] = Variable(varName, varType, dimensions, self.__dimensionNodes, offset, isParam, memPointer, False)
     else:
@@ -474,7 +474,11 @@ class Scope:
         else:
           raise Exception('ERROR! FUNCTION with identifier:', funcName, 'is not defined in this program')
     
-    quadruple.saveQuad('era', funcName, scope, -1)
+    # print("GENERATE ERA", funcName, scope, pointer)
+    if scope == 'class': 
+      quadruple.saveQuad('era', funcName, scope, pointer.getScopeName())
+    else:
+      quadruple.saveQuad('era', funcName, scope, -1)
     functionParams = pointer.getScopeFunctions()[funcName].__scopeVariables
     self.setMatchingParams(True)
     for item, val in functionParams.items():
@@ -687,9 +691,9 @@ class SymbolTable:
       # classes are their own "world" inside the global scope
       # meaning they have global variables and dirFunc
       for key2, val2, in val.getScopeClasses().items():
-        tempArr.append(tempDirClass)
+        tempArr.append({key2: tempDirClass})
         pointer = tempArr[-1]
-        pointer = pointer["global"]
+        pointer = pointer[key2]["global"]
         pointer["vars"] = val2.getScopeVariables(),
         pointer["funcs"] = {}
         pointer = pointer["funcs"]
@@ -704,16 +708,16 @@ class SymbolTable:
           }
           # print(keyClass, pointer[keyClass])
 
-    print("ENTRO")
-    print("DIRFUNC")
-    for i, j in tempDirFunc.items():
-      print(tempDirFunc[i])
+    # print("ENTRO")
+    # print("DIRFUNC")
+    # for i, j in tempDirFunc.items():
+    #   print(tempDirFunc[i])
     # print("DIRCLASS")
     # for i, j in tempDirClass.items():
     #   print(tempDirClass[i])
   
     res.append(tempDirFunc)
-    res.append(tempDirClass)
+    res.append(tempArr)
     return res
 
   def reset(self):

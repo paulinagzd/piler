@@ -743,6 +743,7 @@ def p_saw_end_value(p):
   tempAddressPointer = symbolTable.getGlobalScope().getScopeConstants()[constType]
   curr = p[-1]
   tempAddress = tempAddressPointer[curr]
+  # print("EXP", curr, tempAddress)
   quadruple.pilaO.append(tempAddress)
 
 def p_saw_plusminus_operator(p):

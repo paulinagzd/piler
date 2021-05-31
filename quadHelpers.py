@@ -332,6 +332,7 @@ def expression_evaluation(p):
     if currentDim > 1:
       left_operand = quadruple.pilaO.pop()
       right_operand = quadruple.pilaO.pop()
+      print("LR", left_operand, right_operand)
       tempAddress = tempAddressPointer.getInitialAddress() + tempAddressPointer.getOffset()
       quadruple.saveQuad("+", left_operand, right_operand, tempAddress)
       symbolTable.getCurrentScope().getScopeTemps()[tempCounter] = (Variable('', currType, 0, [], tempAddressPointer.getOffset(), False, tempAddressPointer, False))
@@ -347,7 +348,7 @@ def expression_evaluation(p):
     expValueType = getTypeV2(expValue)
     if expValueType != symbolTable.getCurrentScope().getScopeType():
       raise Exception("ERROR! Type mismatch in returning function")
-    # if void, return shoult have no expValue
+    # if void, return should have no expValue
     quadruple.saveQuad('return', -1, -1, expValue)
     quadruple.pOper.pop()
 
@@ -364,12 +365,19 @@ def endDim(var):
   tempAddressPointer = getPointingScope(symbolTable.getCurrentScope()).memory.memSpace[keyword][currType]['temp']
   tempAddress = tempAddressPointer.getInitialAddress() + tempAddressPointer.getOffset()
   quadruple.saveQuad("+a", aux, varPointerDimNodes[var.getDimensions()-1].getR(), tempAddress)  
+  # print("OFFSEEET", aux, varPointerDimNodes[var.getDimensions()-1].getR())
   global tempCounter
   symbolTable.getCurrentScope().getScopeTemps()[tempCounter] = (Variable('', currType, 0, [], tempAddressPointer.getOffset(), False, tempAddressPointer, False))
   tempCounter += 1        
   tempAddressPointer.setOffset()
   tempAddress2 = tempAddressPointer.getInitialAddress() + tempAddressPointer.getOffset()
-  quadruple.saveQuad("+a", tempAddress, var.getVirtualAddress(), tempAddress2)
+  if var.getDimensions() > 1:
+    print(var.getVarName(), var.getDimensions())
+    quadruple.saveQuad("+a", tempAddress, var.getVirtualAddress(), tempAddress2)
+  else:
+    quadruple.saveQuad("+a", tempAddress, var.getVirtualAddress(), tempAddress2)
+
+  print("+ BASE", tempAddress, var.getVirtualAddress())
   symbolTable.getCurrentScope().getScopeTemps()[tempCounter] = (Variable('', currType, 0, [], tempAddressPointer.getOffset(), False, tempAddressPointer, False))
   tempCounter += 1        
   quadruple.pilaO.pop() # gets rid of dirBase
