@@ -32,6 +32,9 @@ class DimensionNode:
 
   def setMDim(self, val):
     self.__mDim = val
+  
+  def setOffset(self, val):
+    self.__offset = val
 
   def __repr__(self):
     return "lSup: %s mDim = %s" % (self.__lim, self.__mDim)
