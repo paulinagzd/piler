@@ -17,7 +17,7 @@ while True:
     try:
       reading = input('Name of piler file > ')
       if reading[-3:] != '.pi':
-        print('Invalid file format')
+        raise Exception('Invalid file format')
         break
       else:
         correct = reading

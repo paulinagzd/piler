@@ -17,6 +17,8 @@ def getPointingScope(currentScope):
     return symbolTable.getGlobalScope()
 
 def getTypeV2(operand):
+  if isinstance(operand, list):
+    operand = operand[0]
   if operand >= 5000 and operand < 6999:
     return 'int'
   elif operand >= 7000 and operand < 8999:
@@ -322,7 +324,7 @@ def expression_evaluation(p):
     global tempCounter
     if len(lsPointer) > currentDim: 
       aux = quadruple.pilaO.pop()
-      quadruple.saveQuad("*", aux, lsPointer[currentDim-1].getR(), tempAddress)
+      quadruple.saveQuad("*a", aux, lsPointer[currentDim-1].getMDim(), tempAddress)      
       symbolTable.getCurrentScope().getScopeTemps()[tempCounter] = (Variable('', currType, 0, [], tempAddressPointer.getOffset(), False, tempAddressPointer, False))
       tempCounter += 1        
       quadruple.pilaO.append(tempAddress)
@@ -330,6 +332,7 @@ def expression_evaluation(p):
     if currentDim > 1:
       left_operand = quadruple.pilaO.pop()
       right_operand = quadruple.pilaO.pop()
+      print("LR", left_operand, right_operand)
       tempAddress = tempAddressPointer.getInitialAddress() + tempAddressPointer.getOffset()
       quadruple.saveQuad("+", left_operand, right_operand, tempAddress)
       symbolTable.getCurrentScope().getScopeTemps()[tempCounter] = (Variable('', currType, 0, [], tempAddressPointer.getOffset(), False, tempAddressPointer, False))
@@ -345,7 +348,7 @@ def expression_evaluation(p):
     expValueType = getTypeV2(expValue)
     if expValueType != symbolTable.getCurrentScope().getScopeType():
       raise Exception("ERROR! Type mismatch in returning function")
-    # if void, return shoult have no expValue
+    # if void, return should have no expValue
     quadruple.saveQuad('return', -1, -1, expValue)
     quadruple.pOper.pop()
 
@@ -361,18 +364,19 @@ def endDim(var):
   currType = getTypeV2(quadruple.pilaO[-1])
   tempAddressPointer = getPointingScope(symbolTable.getCurrentScope()).memory.memSpace[keyword][currType]['temp']
   tempAddress = tempAddressPointer.getInitialAddress() + tempAddressPointer.getOffset()
-  quadruple.saveQuad("+", aux, varPointerDimNodes[var.getDimensions()-1].getR(), tempAddress)
+  quadruple.saveQuad("+a", aux, varPointerDimNodes[var.getDimensions()-1].getOffset(), tempAddress)  
   global tempCounter
   symbolTable.getCurrentScope().getScopeTemps()[tempCounter] = (Variable('', currType, 0, [], tempAddressPointer.getOffset(), False, tempAddressPointer, False))
   tempCounter += 1        
   tempAddressPointer.setOffset()
   tempAddress2 = tempAddressPointer.getInitialAddress() + tempAddressPointer.getOffset()
-  quadruple.saveQuad("+", tempAddress, var.getVirtualAddress(), tempAddress2)
+  quadruple.saveQuad("+a", tempAddress, var.getVirtualAddress(), tempAddress2)
+
   symbolTable.getCurrentScope().getScopeTemps()[tempCounter] = (Variable('', currType, 0, [], tempAddressPointer.getOffset(), False, tempAddressPointer, False))
   tempCounter += 1        
   quadruple.pilaO.pop() # gets rid of dirBase
   tempAddressPointer.setOffset()
-  quadruple.pilaO.append(tempAddress2)
+  quadruple.pilaO.append([tempAddress2])
   quadruple.pOper.pop() # eliminates fake bottom
   quadruple.pilaDim.pop()
   current.resetLatestDimension()

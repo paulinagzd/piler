@@ -1,9 +1,0 @@
-program arr;
-var int i;
-var ints A[9];
-var int j;
-var ints B[5][6];
-var int k;
-int main() {
-  B[i+j][A[i]*k] = i + j
-}

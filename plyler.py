@@ -25,6 +25,8 @@ classPointer = None
 funcPointer = None
 aux = False
 cont = 0
+varArr = []
+varDim = []
 
 # reserved words
 reserved = {
@@ -50,10 +52,6 @@ reserved = {
   'then' : 'THEN',
   'else' : 'ELSE',
   'while' : 'WHILE',
-  # 'for' : 'FOR',
-  # 'from' : 'FROM',
-  # 'to' : 'TO',
-  # 'by' : 'BY',
   'do' : 'DO',
   'class' : 'CLASS',
   'att' : 'ATTRIBUTES',
@@ -292,7 +290,35 @@ def p_type(p):
   '''
   type : compound ID saw_id saw_variable type1
        | simple ID saw_id saw_variable type1
-       | multiple ID saw_id OBRACKET CSTINT saw_declared_dim CBRACKET type3 saw_variable type2
+       | multiple ID saw_id OBRACKET CSTINT saw_declared_dim CBRACKET type3 arr_dec saw_variable type2
+  '''
+
+def p_arr_dec(p):
+  '''
+  arr_dec : AS OCURLY arr_dec2 CCURLY
+  '''
+
+def p_arr_dec2(p):
+  '''
+  arr_dec2 : arr_dec_base arr_dec3
+           | arrcst arr_dec4
+  '''
+
+def p_arr_dec3(p):
+  '''
+  arr_dec3 : COMMA arr_dec_base arr_dec3
+           | empty
+  '''
+
+def p_arr_dec4(p):
+  '''
+  arr_dec4 : COMMA arrcst arr_dec4
+           | empty
+  '''
+
+def p_arr_dec_base(p):
+  '''
+  arr_dec_base : OCURLY arrcst arr_dec4 CCURLY append_dim
   '''
 
 def p_type1(p):
@@ -563,7 +589,7 @@ def p_factor(p):
   factor : OPAREN saw_oparen exp CPAREN saw_cparen check_multdiv_operator
          | varcst check_multdiv_operator
          | variable saw_var_factor check_multdiv_operator
-         | OCURLY saw_oparen saw_func_factor function_call CCURLY saw_cparen check_multdiv_operator
+         | OCURLY saw_oparen function_call CCURLY saw_cparen check_multdiv_operator
   '''
 #          | negative check_multdiv_operator
 
@@ -584,19 +610,6 @@ def p_saw_var_factor(p):
     quadruple.pilaO.append(current.getVirtualAddress())
   classPointer = None
 
-def p_saw_func_factor(p):
-  '''
-  saw_func_factor :
-  '''
-  # print("SAW FUNC FACTOR")
-  # global aux
-  # if aux:
-  #   quadruple.pilaArr.pop()
-  #   aux = False
-  #   pass
-  # else:
-  #   current = symbolTable.getCurrentScope().sawCalledFunction(symbolTable.getCurrentScope().getLatestName())
-  #   quadruple.pilaO.append(current.getVirtualAddress())
 ################################################
 #VARCST
 def p_varcst(p):
@@ -606,6 +619,14 @@ def p_varcst(p):
          | CSTCHAR saw_end_value
          | CSTSTRING saw_end_value
          | boolean
+  '''
+
+def p_arrcst(p):
+  '''
+  arrcst : CSTINT append_val
+         | CSTFLT append_val
+         | CSTCHAR append_val
+         | CSTSTRING append_val
   '''
 
 # def p_negative(p):
@@ -669,15 +690,22 @@ def p_saw_id_arr_class(p):
 
 def p_saw_variable(p):
   ''' saw_variable : '''
+  global varDim
+  global varArr
   current = symbolTable.getCurrentScope()
   isParam = False
-  current.addVariable(current.getLatestName(), current.getLatestType(), current.getLatestDimension(), isParam)
+  if len(varArr) > 0:
+    varDim.append(varArr)
+  varArr = []
+  dimensions = current.getLatestDimension()
+  current.addVariable(current.getLatestName(), current.getLatestType(), dimensions, isParam, varDim)
+  varDim = []
 
 def p_saw_variable_param(p):
   ''' saw_variable_param : '''
   current = symbolTable.getCurrentScope()
   isParam = True
-  current.addVariable(current.getLatestName(), current.getLatestType(), current.getLatestDimension(), isParam)
+  current.addVariable(current.getLatestName(), current.getLatestType(), current.getLatestDimension(), isParam, None)
 
 def p_saw_dimension(p):
   ''' saw_dimension : '''
@@ -715,6 +743,7 @@ def p_saw_end_value(p):
   tempAddressPointer = symbolTable.getGlobalScope().getScopeConstants()[constType]
   curr = p[-1]
   tempAddress = tempAddressPointer[curr]
+  # print("EXP", curr, tempAddress)
   quadruple.pilaO.append(tempAddress)
 
 def p_saw_plusminus_operator(p):
@@ -925,6 +954,22 @@ def p_start_function_temp_count(p):
   start_function_temp_count : 
   '''
   
+def p_append_val(p):
+  '''
+  append_val : 
+  '''
+  global varArr
+  varArr.append(p[-1])
+
+def p_append_dim(p):
+  '''
+  append_dim : 
+  '''
+  global varDim
+  global varArr
+  varDim.append(varArr)
+  varArr = []
+
 def p_end_function_temp_count(p):
   '''
   end_function_temp_count : 

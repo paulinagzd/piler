@@ -65,32 +65,33 @@ def verifySize(funcSize, mem):
     if j + mem.localMem.variables[i] <= 1000:
       mem.localMem.variables[i] += j
     else:
-      raise Exception("ERROR! Stack overflow")
+      raise Exception("ERROR! Too many variables!")
 
   for i, j in funcSize["temps"].items():
     if j + mem.localMem.temps[i] <= 1000:
       mem.localMem.temps[i] += j
     else:
-      raise Exception("ERROR! Stack overflow")
+      raise Exception("ERROR! Too many variables!")
 
-def generateERA(funcName, scope):
+def generateERA(funcName, className, scope):
   dirFunc = VM.get().getDirClass() if scope == 'class' else VM.get().getDirFunc()
   mem = MainMemory.instantiate()
   global scopePointer
   if scope == 'class':
-    for i in dirFunc:
-      if funcName in i['global']['funcs']:
-        funcSize = i['global']['funcs'][funcName]["size"]
-        verifySize(funcSize, mem)
-        scopePointer = {funcName: i['global']['funcs'][funcName]}
+    for j in dirFunc:
+      if list(j)[0] == className:
+        if funcName in j[className]['global']['funcs']:
+          funcSize = j[className]['global']['funcs'][funcName]["size"]
+          verifySize(funcSize, mem)
+          scopePointer = {funcName: j[className]['global']['funcs'][funcName]}
   else:
     funcSize = dirFunc['global']['funcs'][funcName]["size"]
     verifySize(funcSize, mem)
     scopePointer = {funcName: dirFunc['global']['funcs'][funcName]}
-
   return True
 
 def getClassification(address):
+  # print("ADDRESS", address)
   if address >= 45000 and address < 55000:
     return 'const'
   elif address >= 25000 and address < 45000:
@@ -298,7 +299,7 @@ class VM:
       return self.__callStack[-1]
 
   def getPointerType(self, address):
-    return point(address)
+    return point(self.returnIsArray(address))
 
   def assignValueToDir(self, value, pointer, key):
     pointer[key] = value
@@ -370,8 +371,8 @@ class VM:
   def goSub(self):
     return False
 
-  def era(self, funcName, scope):
-    if generateERA(funcName, scope) == True:
+  def era(self, funcName, scope, className):
+    if generateERA(funcName, className, scope) == True:
       self.__nextPointer += 1
 
   def param(self, paramPoint, paramDir):
@@ -379,8 +380,8 @@ class VM:
     global arrParam
     arrParam.append(paramPoint[paramDir])
 
-  def endFunc(self):
-    return False
+  # def endFunc(self):
+  #   return False
   
   def ver(self, verVal, upperLim):
     if verVal < 0 or verVal > upperLim - 1:
@@ -391,11 +392,20 @@ class VM:
     valueToSend = retPointer[retAddress]
     return valueToSend
   
+  def returnIsArray(self, address):
+    if isinstance(address, list):
+      address = address[0]
+      # it references the content in the address
+      addressScope = point(address)
+      address = addressScope[address]
+
+    return address
+
   def binaryOps(self, left, right, result):
     res = []
-    res.append(self.getPointerType(left))
-    res.append(self.getPointerType(right))
-    res.append(self.getPointerType(result))
+    res.append(left)
+    res.append(right)
+    res.append(result)
     return res
 
   def end(self):
@@ -407,130 +417,148 @@ class VM:
     global paramCont
     global returnVal
     operCode = self.__quadList[self.__nextPointer].getOp()
-    while (operCode < 26):
+    while (operCode < 28):
       currentQuad = self.__quadList[self.__nextPointer]
       if operCode == 1: #sumar
-        pointers = self.binaryOps(currentQuad.getLeft(), currentQuad.getRight(), currentQuad.getRes())
-        if pointers[0] == None or pointers[1] == None:
+        pointersVal = self.binaryOps(self.returnIsArray(currentQuad.getLeft()), self.returnIsArray(currentQuad.getRight()), self.returnIsArray(currentQuad.getRes()))
+        pointers = self.binaryOps(self.getPointerType(pointersVal[0]), self.getPointerType(pointersVal[1]), self.getPointerType(pointersVal[2]))
+        if pointers[0][pointersVal[0]] == None or pointers[1][pointersVal[1]] == None:
           raise Exception("ERROR! Adding null values")
-        res = self.add(pointers[0][currentQuad.getLeft()], pointers[1][currentQuad.getRight()])
+        res = self.add(pointers[0][pointersVal[0]], pointers[1][pointersVal[1]])
 
-        self.assignValueToDir(res, pointers[2], currentQuad.getRes())
+        self.assignValueToDir(res, pointers[2], pointersVal[2])
         self.__nextPointer += 1
       
       elif operCode == 2: #restar
-        pointers = self.binaryOps(currentQuad.getLeft(), currentQuad.getRight(), currentQuad.getRes())
-        if pointers[0] == None or pointers[1] == None:
+        pointersVal = self.binaryOps(self.returnIsArray(currentQuad.getLeft()), self.returnIsArray(currentQuad.getRight()), self.returnIsArray(currentQuad.getRes()))
+        pointers = self.binaryOps(self.getPointerType(pointersVal[0]), self.getPointerType(pointersVal[1]), self.getPointerType(pointersVal[2]))        
+        if pointers[0][pointersVal[0]] == None or pointers[1][pointersVal[1]] == None:
           raise Exception("ERROR! Subtracting null values")
-        res = self.subtract(pointers[0][currentQuad.getLeft()], pointers[1][currentQuad.getRight()])
+        res = self.subtract(pointers[0][pointersVal[0]], pointers[1][pointersVal[1]])
 
-        self.assignValueToDir(res, pointers[2], currentQuad.getRes())
+        self.assignValueToDir(res, pointers[2], pointersVal[2])
         self.__nextPointer += 1
 
-      elif operCode == 3: #multiplicar
-        pointers = self.binaryOps(currentQuad.getLeft(), currentQuad.getRight(), currentQuad.getRes())
-        if pointers[0][currentQuad.getLeft()] == None or pointers[1][currentQuad.getRight()] == None:
+      elif operCode == 3: # multiplicar
+        pointersVal = self.binaryOps(self.returnIsArray(currentQuad.getLeft()), self.returnIsArray(currentQuad.getRight()), self.returnIsArray(currentQuad.getRes()))
+        pointers = self.binaryOps(self.getPointerType(pointersVal[0]), self.getPointerType(pointersVal[1]), self.getPointerType(pointersVal[2]))
+
+        if pointers[0][pointersVal[0]] == None or pointers[1][pointersVal[1]] == None:
           raise Exception("ERROR! Multiplying null values")
           
-        res = self.multiply(pointers[0][currentQuad.getLeft()], pointers[1][currentQuad.getRight()])
+        res = self.multiply(pointers[0][pointersVal[0]], pointers[1][pointersVal[1]])
 
-        self.assignValueToDir(res, pointers[2], currentQuad.getRes())
+        self.assignValueToDir(res, pointers[2], pointersVal[2])
         self.__nextPointer += 1
 
       elif operCode == 4: #dividir
-        pointers = self.binaryOps(currentQuad.getLeft(), currentQuad.getRight(), currentQuad.getRes())
-        if pointers[0] == None or pointers[1] == None:
+        pointersVal = self.binaryOps(self.returnIsArray(currentQuad.getLeft()), self.returnIsArray(currentQuad.getRight()), self.returnIsArray(currentQuad.getRes()))
+        pointers = self.binaryOps(self.getPointerType(pointersVal[0]), self.getPointerType(pointersVal[1]), self.getPointerType(pointersVal[2]))
+        if pointers[0][pointersVal[0]] == None or pointers[1][pointersVal[1]] == None:
           raise Exception("ERROR! Dividing null values")
-        res = self.divide(pointers[0][currentQuad.getLeft()], pointers[1][currentQuad.getRight()])
+        res = self.divide(pointers[0][pointersVal[0]], pointers[1][pointersVal[1]])
 
-        self.assignValueToDir(res, pointers[2], currentQuad.getRes())
+        self.assignValueToDir(res, pointers[2], pointersVal[2])
         self.__nextPointer += 1
 
       elif operCode == 5: # assign
-        assignTo = self.getPointerType(currentQuad.getRes())
+        pointerValLeft = self.returnIsArray(currentQuad.getLeft())
+        pointerValRes = self.returnIsArray(currentQuad.getRes())
+        pointerLeft = self.getPointerType(currentQuad.getLeft())
+        pointerRes = self.getPointerType(currentQuad.getRes())
+        assignTo = pointerRes
         if isinstance(currentQuad.getLeft(), str):
-          assignTo[currentQuad.getRes()] = returnVal
+          assignTo[pointerValRes] = returnVal
           returnVal = None
         else:
-          assignWhat = self.getPointerType(currentQuad.getLeft())
-          self.assign(assignWhat, currentQuad.getLeft(), assignTo, currentQuad.getRes())
+          assignWhat = pointerLeft
+          self.assign(assignWhat, pointerValLeft, assignTo, pointerValRes)
         self.__nextPointer += 1
 
       elif operCode == 6: # less than
-        pointers = self.binaryOps(currentQuad.getLeft(), currentQuad.getRight(), currentQuad.getRes())
-        if pointers[0] == None or pointers[1] == None:
+        pointersVal = self.binaryOps(self.returnIsArray(currentQuad.getLeft()), self.returnIsArray(currentQuad.getRight()), self.returnIsArray(currentQuad.getRes()))
+        pointers = self.binaryOps(self.getPointerType(pointersVal[0]), self.getPointerType(pointersVal[1]), self.getPointerType(pointersVal[2]))        
+        if pointers[0][pointersVal[0]] == None or pointers[1][pointersVal[1]] == None:
           raise Exception("ERROR! Comparing null values")
-        res = self.lt(pointers[0][currentQuad.getLeft()], pointers[1][currentQuad.getRight()])
+        res = self.lt(pointers[0][pointersVal[0]], pointers[1][pointersVal[1]])
 
-        self.assignValueToDir(res, pointers[2], currentQuad.getRes())
+        self.assignValueToDir(res, pointers[2], pointersVal[2])
         self.__nextPointer += 1
 
       elif operCode == 7: # greater than
-        pointers = self.binaryOps(currentQuad.getLeft(), currentQuad.getRight(), currentQuad.getRes())
-        if pointers[0] == None or pointers[1] == None:
+        pointersVal = self.binaryOps(self.returnIsArray(currentQuad.getLeft()), self.returnIsArray(currentQuad.getRight()), self.returnIsArray(currentQuad.getRes()))
+        pointers = self.binaryOps(self.getPointerType(pointersVal[0]), self.getPointerType(pointersVal[1]), self.getPointerType(pointersVal[2]))
+        if pointers[0][pointersVal[0]] == None or pointers[1][pointersVal[1]] == None:
           raise Exception("ERROR! Comparing null values")
-        res = self.gt(pointers[0][currentQuad.getLeft()], pointers[1][currentQuad.getRight()])
+        res = self.gt(pointers[0][pointersVal[0]], pointers[1][pointersVal[1]])
 
-        self.assignValueToDir(res, pointers[2], currentQuad.getRes())
+        self.assignValueToDir(res, pointers[2], pointersVal[2])
         self.__nextPointer += 1
 
       elif operCode == 8: # less than equals
-        pointers = self.binaryOps(currentQuad.getLeft(), currentQuad.getRight(), currentQuad.getRes())
-        if pointers[0] == None or pointers[1] == None:
+        pointersVal = self.binaryOps(self.returnIsArray(currentQuad.getLeft()), self.returnIsArray(currentQuad.getRight()), self.returnIsArray(currentQuad.getRes()))
+        pointers = self.binaryOps(self.getPointerType(pointersVal[0]), self.getPointerType(pointersVal[1]), self.getPointerType(pointersVal[2]))
+        if pointers[0][pointersVal[0]] == None or pointers[1][pointersVal[1]] == None:
           raise Exception("ERROR! Comparing null values")
-        res = self.lte(pointers[0][currentQuad.getLeft()], pointers[1][currentQuad.getRight()])
+        res = self.lte(pointers[0][pointersVal[0]], pointers[1][pointersVal[1]])
 
-        self.assignValueToDir(res, pointers[2], currentQuad.getRes())
+        self.assignValueToDir(res, pointers[2], pointersVal[2])
         self.__nextPointer += 1
 
       elif operCode == 9: # greater than equals
-        pointers = self.binaryOps(currentQuad.getLeft(), currentQuad.getRight(), currentQuad.getRes())
-        if pointers[0] == None or pointers[1] == None:
+        pointersVal = self.binaryOps(self.returnIsArray(currentQuad.getLeft()), self.returnIsArray(currentQuad.getRight()), self.returnIsArray(currentQuad.getRes()))
+        pointers = self.binaryOps(self.getPointerType(pointersVal[0]), self.getPointerType(pointersVal[1]), self.getPointerType(pointersVal[2]))
+        if pointers[0][pointersVal[0]] == None or pointers[1][pointersVal[1]] == None:
           raise Exception("ERROR! Comparing null values")
-        res = self.gte(pointers[0][currentQuad.getLeft()], pointers[1][currentQuad.getRight()])
+        res = self.gte(pointers[0][pointersVal[0]], pointers[1][pointersVal[1]])
 
-        self.assignValueToDir(res, pointers[2], currentQuad.getRes())
+        self.assignValueToDir(res, pointers[2], pointersVal[2])
         self.__nextPointer += 1
 
       elif operCode == 10: # equal
-        pointers = self.binaryOps(currentQuad.getLeft(), currentQuad.getRight(), currentQuad.getRes())
-        if pointers[0] == None or pointers[1] == None:
+        pointersVal = self.binaryOps(self.returnIsArray(currentQuad.getLeft()), self.returnIsArray(currentQuad.getRight()), self.returnIsArray(currentQuad.getRes()))
+        pointers = self.binaryOps(self.getPointerType(pointersVal[0]), self.getPointerType(pointersVal[1]), self.getPointerType(pointersVal[2]))
+        if pointers[0][pointersVal[0]] == None or pointers[1][pointersVal[1]] == None:
           raise Exception("ERROR! Comparing null values")
-        res = self.equal(pointers[0][currentQuad.getLeft()], pointers[1][currentQuad.getRight()])
+        res = self.equal(pointers[0][pointersVal[0]], pointers[1][pointersVal[1]])
 
-        self.assignValueToDir(res, pointers[2], currentQuad.getRes())
+        self.assignValueToDir(res, pointers[2], pointersVal[2])
         self.__nextPointer += 1
 
       elif operCode == 11: # not equal
-        pointers = self.binaryOps(currentQuad.getLeft(), currentQuad.getRight(), currentQuad.getRes())
-        if pointers[0] == None or pointers[1] == None:
+        pointersVal = self.binaryOps(self.returnIsArray(currentQuad.getLeft()), self.returnIsArray(currentQuad.getRight()), self.returnIsArray(currentQuad.getRes()))
+        pointers = self.binaryOps(self.getPointerType(pointersVal[0]), self.getPointerType(pointersVal[1]), self.getPointerType(pointersVal[2]))
+        if pointers[0][pointersVal[0]] == None or pointers[1][pointersVal[1]] == None:
           raise Exception("ERROR! Comparing null values")
-        res = self.notEqual(pointers[0][currentQuad.getLeft()], pointers[1][currentQuad.getRight()])
+        res = self.notEqual(pointers[0][pointersVal[0]], pointers[1][pointersVal[1]])
 
-        self.assignValueToDir(res, pointers[2], currentQuad.getRes())
+        self.assignValueToDir(res, pointers[2], pointersVal[2])
         self.__nextPointer += 1
 
       elif operCode == 12: # and
-        pointers = self.binaryOps(currentQuad.getLeft(), currentQuad.getRight(), currentQuad.getRes())
-        if pointers[0] == None or pointers[1] == None:
+        pointersVal = self.binaryOps(self.returnIsArray(currentQuad.getLeft()), self.returnIsArray(currentQuad.getRight()), self.returnIsArray(currentQuad.getRes()))
+        pointers = self.binaryOps(self.getPointerType(pointersVal[0]), self.getPointerType(pointersVal[1]), self.getPointerType(pointersVal[2]))
+        if pointers[0][pointersVal[0]] == None or pointers[1][pointersVal[1]] == None:
           raise Exception("ERROR! Comparing null values")
-        res = self.andFunc(pointers[0][currentQuad.getLeft()], pointers[1][currentQuad.getRight()])
+        res = self.andFunc(pointers[0][pointersVal[0]], pointers[1][pointersVal[1]])
 
-        self.assignValueToDir(res, pointers[2], currentQuad.getRes())
+        self.assignValueToDir(res, pointers[2], pointersVal[2])
         self.__nextPointer += 1
 
       elif operCode == 13: # or
-        pointers = self.binaryOps(currentQuad.getLeft(), currentQuad.getRight(), currentQuad.getRes())
-        if pointers[0] == None or pointers[1] == None:
+        pointersVal = self.binaryOps(self.returnIsArray(currentQuad.getLeft()), self.returnIsArray(currentQuad.getRight()), self.returnIsArray(currentQuad.getRes()))
+        pointers = self.binaryOps(self.getPointerType(pointersVal[0]), self.getPointerType(pointersVal[1]), self.getPointerType(pointersVal[2]))
+        if pointers[0][pointersVal[0]] == None or pointers[1][pointersVal[1]] == None:
           raise Exception("ERROR! Comparing null values")
-        res = self.orFunc(pointers[0][currentQuad.getLeft()], pointers[1][currentQuad.getRight()])
+        res = self.orFunc(pointers[0][pointersVal[0]], pointers[1][pointersVal[1]])
 
-        self.assignValueToDir(res, pointers[2], currentQuad.getRes())
+        self.assignValueToDir(res, pointers[2], pointersVal[2])
         self.__nextPointer += 1
 
       # TODO PRINT
       elif operCode == 14:
-        self.printLine(self.getPointerType(currentQuad.getRes())[currentQuad.getRes()])
+        pointerVal = self.returnIsArray(currentQuad.getRes())
+        self.printLine(self.getPointerType(pointerVal)[pointerVal])
         self.__nextPointer += 1
 
       # TODO READ
@@ -574,7 +602,11 @@ class VM:
 
       elif operCode == 20: # era
         arrParam = []
-        self.era(currentQuad.getLeft(), currentQuad.getRight())
+        if currentQuad.getRes() != -1:
+          self.era(currentQuad.getLeft(), currentQuad.getRight(), currentQuad.getRes())
+        else:
+          self.era(currentQuad.getLeft(), currentQuad.getRight(), None)
+
 
       elif operCode == 21: # param
         paramDir = currentQuad.getLeft()
@@ -583,14 +615,24 @@ class VM:
         self.__nextPointer += 1
 
       elif operCode == 22: # endfunc
-        self.endFunc()
-        self.__nextPointer += 1
+        # regresa a migajita de pan
+        mem = MainMemory.instantiate()
+        funcName = list(self.topCallStack())[0]
+        goHere = mem.getLocalTop()["goHere"]
+        endingFunc = self.popCallStack()
+        endingLocal = mem.popLocalTop()
+        self.__nextPointer = goHere
+        currentQuad = self.__quadList[self.__nextPointer]
+        # it returns to main (or global)
+        print("RETURN")
+
 
       elif operCode == 23: # verify
         verDir = currentQuad.getLeft()
         verVal = self.getPointerType(verDir)
+        valToSend = verVal[verDir]
         upperLim = currentQuad.getRes()
-        self.ver(verVal, upperLim)
+        self.ver(valToSend, upperLim)
         self.__nextPointer += 1
 
       elif operCode == 24: # return
@@ -604,12 +646,13 @@ class VM:
         goHere = mem.getLocalTop()["goHere"]
         endingFunc = self.popCallStack()
         endingLocal = mem.popLocalTop()
-
         self.__nextPointer = goHere
         currentQuad = self.__quadList[self.__nextPointer]
-
         if not self.__callStack: # return to sleeping function
           # it returns to main (or global)
+          print("ACACACCCCAC")
+          print("VOY A ASSVALTPDIR", returnVal, currentQuad.getRes())
+
           globalDir = currentQuad.getRes()
           if getClassification(globalDir) == 'global':
             globalDirVal = mem.getGlobal()
@@ -618,12 +661,14 @@ class VM:
           else:
             globalDirVal = mem.getConstants()
           self.assignValueToDir(returnVal, globalDirVal, globalDir)
+          self.__nextPointer += 1
         else:
           currLocal = mem.getLocalTop()
           newDir = currentQuad.getRes()
           newVal = self.getPointerType(newDir)
           self.assignValueToDir(returnVal, newVal, newDir)
-          
+          self.__nextPointer += 1
+
       elif operCode == 25: # end
         # create a space in the stack with the local memory
         self.end()
@@ -631,9 +676,30 @@ class VM:
         return False
         self.__nextPointer += 1
 
+      elif operCode == 26: # add from arrays
+        # comes from array
+        leftDir = currentQuad.getLeft()
+        leftVal = self.getPointerType(leftDir)
+        resDir = currentQuad.getRes()
+        resVal = self.getPointerType(resDir)
+        res = self.add(leftVal[leftDir], currentQuad.getRight())
+        self.assignValueToDir(res, resVal, resDir)
+        self.__nextPointer += 1
+
+      elif operCode == 27: # add from arrays
+        # comes from array
+        leftDir = currentQuad.getLeft()
+        leftVal = self.getPointerType(leftDir)
+        resDir = currentQuad.getRes()
+        resVal = self.getPointerType(resDir)
+        res = self.multiply(leftVal[leftDir], currentQuad.getRight())
+        self.assignValueToDir(res, resVal, resDir)
+        self.__nextPointer += 1
+
+
       operCode = self.__quadList[self.__nextPointer].getOp()
     
-    self.end()
+    # self.end()
      
 # works like a Memory SCOPE, divided in G, L, T, C, and Objs      
 class MainMemory:
@@ -682,11 +748,15 @@ class MainMemory:
   def setGlobal(self, dirFunc):
     globalVars = dirFunc["global"]["vars"]
     for i, j in globalVars.items():
-      self.__global[j.getVirtualAddress()] = None
+      self.__global[j.getVirtualAddress()] = j.getValue()
       
     globalTemps = dirFunc["global"]["temps"]
     for i, j in globalTemps.items():
       self.__global[j.getVirtualAddress()] = None
+    
+    # print("GLOBAL") 
+    # for i, j in self.__global.items():
+    #   print(i, j)
 
   def setLocal(self, functionPointer, goHere):
     # sends a dictionary with function name: attributes
@@ -697,6 +767,9 @@ class MainMemory:
     pointerTemps = functionPointer[funcName]['temps']
     arrParams = functionPointer[funcName]['arrParam']
     k = 0
+    # print("FUNCPTR", functionPointer)
+    # now = False
+    # if now:
     for i, j in pointerVars.items():
       if j.getIsParam():
         self.__local[funcName][j.getVirtualAddress()] = arrParams[k]
@@ -710,10 +783,10 @@ class MainMemory:
     # self.printing()
     return
 
-  def printing(self):
-    print("CCCCCOOOOOMMMOOOOO ESTAAAAAAAAA")
-    for i in self.__localArr:
-      print(i)
+  # def printing(self):
+    # print("CCCCCOOOOOMMMOOOOO ESTAAAAAAAAA")
+    # for i in self.__localArr:
+    #   print(i)
 
   def setConstants(self, dirFunc):
     consts = dirFunc["global"]["consts"]
