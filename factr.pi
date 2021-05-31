@@ -1,0 +1,18 @@
+program factr;
+func int factorial(int n) {
+  if (n > 1) then {
+    return n * {factorial(n - 1)}
+  } else {
+    return 1
+  };
+}
+
+int main()
+{
+  var int n;
+
+  n = 3
+
+  print("Factorial of 3", {factorial(n)}) 
+}
+

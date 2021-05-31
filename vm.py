@@ -4,6 +4,7 @@ from quad import Quad
 functionsReturning = {}
 currentScope = None
 arrParam = []
+localStack = []
 paramCont = 0
 returnVal = 0
 
@@ -104,8 +105,11 @@ def point(address):
   if getClassification(address) == 'const':
     return mem.getConstants()
   elif getClassification(address) == 'local':
-    curr = mem.getLocal()
-    mem.setPointer(curr[list(VM.get().topCallStack())[0]])
+    if VM.get().topCallStack() != None:
+      curr = mem.getLocalTop()
+      mem.setPointer(curr)
+    else:
+      mem.setPointer(mem.getGlobal())
   else:
     mem.setPointer(mem.getGlobal())
   return mem.getPointer()
@@ -271,8 +275,8 @@ class VM:
     mem = MainMemory.instantiate()
     mem.setLocal(functionPointer, goHere)
 
-    # funcName = list(functionPointer)[0]
-    # functionPointer[funcName]["name"] = funcName
+    funcName = list(functionPointer)[0]
+    functionPointer[funcName]["goHere"] = goHere
     self.__callStack.append(functionPointer)
 
   def popCallStack(self):
@@ -284,7 +288,10 @@ class VM:
       curr = mem.localMem.variables
       for i, j in curr.items():
         curr[i] -= j      
-    self.__callStack.pop()
+    return self.__callStack.pop()
+
+  def getCallStack(self):
+    return self.__callStack
 
   def topCallStack(self):
     if self.__callStack:
@@ -336,7 +343,10 @@ class VM:
     return leftVal or rightVal
 
   def printLine(self, val):
-    print(val, "this")
+    #remove quotations
+    if isinstance(val, str):
+      val = val.strip('"')
+    print(val)
 
   def readLine(self, type):
     inValue = input('> ')
@@ -345,8 +355,6 @@ class VM:
       return inValue
     else:
       raise Exception(ValueError, SyntaxError)
-    # print("INVVALUE", inValue)
-    # return inValue
       
   def goto(self, quadNumber):
     # pointing nextPointer to nextQuad
@@ -366,7 +374,6 @@ class VM:
     if generateERA(funcName, scope) == True:
       self.__nextPointer += 1
 
-    # return False
   def param(self, paramPoint, paramDir):
     global paramCont
     global arrParam
@@ -443,7 +450,6 @@ class VM:
         assignTo = self.getPointerType(currentQuad.getRes())
         if isinstance(currentQuad.getLeft(), str):
           assignTo[currentQuad.getRes()] = returnVal
-          print("ASSIGN FUNC TEMP TO VAL", assignTo, currentQuad.getRes())
           returnVal = None
         else:
           assignWhat = self.getPointerType(currentQuad.getLeft())
@@ -542,7 +548,6 @@ class VM:
         self.__nextPointer = currentQuad.getRes()
       
       elif operCode == 17: # gotoF
-        # add boolean logic
         tempAddress = currentQuad.getLeft()
         tempType = self.getPointerType(tempAddress)
         if tempType[tempAddress]:
@@ -559,17 +564,16 @@ class VM:
           self.__nextPointer = currentQuad.getRes()
         
       elif operCode == 19: # goSub
-        # self.goSub()
-        # print("LLEGO GOSUB")
         global scopePointer
-        # print("NEXT POINTER", scopePointer, self.__nextPointer)
-        VM.get().pushCallStack(scopePointer, self.__nextPointer + 1)
+        funcName = list(scopePointer)[0]
+        scopePointer[funcName]["arrParam"] = arrParam
         arrParam = []
-        paramCont = 0
+        VM.get().pushCallStack(scopePointer, self.__nextPointer + 1)
         calledFunction = VM.get().topCallStack()
-        self.__nextPointer = calledFunction[list(calledFunction)[0]]["start"]
+        self.__nextPointer = calledFunction[funcName]["start"]
 
       elif operCode == 20: # era
+        arrParam = []
         self.era(currentQuad.getLeft(), currentQuad.getRight())
 
       elif operCode == 21: # param
@@ -590,28 +594,36 @@ class VM:
         self.__nextPointer += 1
 
       elif operCode == 24: # return
-        # print("RETURN")
         retAddress = currentQuad.getRes()
         retPointer = self.getPointerType(retAddress)
         returnVal = self.funcReturn(retPointer, retAddress)
+
         # regresa a migajita de pan
-        # if getClassification(retPointer[retAddress]) == 'const':
-        # print("GET RETURN VAL", returnVal)
-        # print("GOHERE", retPointer, retAddress)
         mem = MainMemory.instantiate()
-        # funcName = VM.get().topCallStack()[list(VM.get().topCallStack()[0])]
-        goHere = mem.getPointer()["goHere"]
-        print("GOHERE", goHere)
-        # pop from Call Stack
-        # toAppend = None
-        # if list(mem.getRecursiveStack()[-1])[0] == funcName:
-        #   toAppend = mem.popRecursiveStack()
+        funcName = list(self.topCallStack())[0]
+        goHere = mem.getLocalTop()["goHere"]
+        endingFunc = self.popCallStack()
+        endingLocal = mem.popLocalTop()
 
-        VM.get().popCallStack()
-        # if toAppend != None:
-        #   mem.appendLocal(toAppend, funcName)
         self.__nextPointer = goHere
+        currentQuad = self.__quadList[self.__nextPointer]
 
+        if not self.__callStack: # return to sleeping function
+          # it returns to main (or global)
+          globalDir = currentQuad.getRes()
+          if getClassification(globalDir) == 'global':
+            globalDirVal = mem.getGlobal()
+          elif getClassification(globalDir) == 'local':
+            globalDirVal = mem.getLocalTop()
+          else:
+            globalDirVal = mem.getConstants()
+          self.assignValueToDir(returnVal, globalDirVal, globalDir)
+        else:
+          currLocal = mem.getLocalTop()
+          newDir = currentQuad.getRes()
+          newVal = self.getPointerType(newDir)
+          self.assignValueToDir(returnVal, newVal, newDir)
+          
       elif operCode == 25: # end
         # create a space in the stack with the local memory
         self.end()
@@ -619,7 +631,6 @@ class VM:
         return False
         self.__nextPointer += 1
 
-      # print(self.__nextPointer)
       operCode = self.__quadList[self.__nextPointer].getOp()
     
     self.end()
@@ -635,11 +646,11 @@ class MainMemory:
     self.__global = {}
     self.globalMem = CallStackMemory()
     self.__local = {}
+    self.__localArr = []
     self.localMem = CallStackMemory()
     self.__constants = {}
     self.__classes = {}
     self.__pointer = None
-    # self.__recursiveStack = []
   
   def getGlobal(self):
     return self.__global
@@ -647,17 +658,20 @@ class MainMemory:
   def getLocal(self):
     return self.__local
 
+  def getLocalArr(self):
+    return self.__localArr
+
+  def getLocalTop(self):
+    return self.__localArr[-1]
+
+  def popLocalTop(self):
+    return self.__localArr.pop()
+
   def getConstants(self):
     return self.__constants
 
   def getClasses(self):
     return self.__classes
-
-  # def getRecursiveStack(self):
-  #   return self.__recursiveStack
-
-  # def popRecursiveStack(self):
-  #   return self.__recursiveStack.pop()
 
   def getPointer(self):
     return self.__pointer
@@ -669,7 +683,7 @@ class MainMemory:
     globalVars = dirFunc["global"]["vars"]
     for i, j in globalVars.items():
       self.__global[j.getVirtualAddress()] = None
-    
+      
     globalTemps = dirFunc["global"]["temps"]
     for i, j in globalTemps.items():
       self.__global[j.getVirtualAddress()] = None
@@ -677,26 +691,29 @@ class MainMemory:
   def setLocal(self, functionPointer, goHere):
     # sends a dictionary with function name: attributes
     funcName = list(functionPointer)[0]
-    # if funcName == VM.get().topCallStack()["name"] and self.__recursiveStack:
-      # send to sleep
-      # self.__recursiveStack.append(self.__local[funcName])
-      # self.__local.pop(funcName)
     # migajita de pan
     self.__local[funcName] = {}
     pointerVars = functionPointer[funcName]['vars']
     pointerTemps = functionPointer[funcName]['temps']
+    arrParams = functionPointer[funcName]['arrParam']
+    k = 0
     for i, j in pointerVars.items():
       if j.getIsParam():
-        global arrParam
-        global paramCont
-        self.__local[funcName][j.getVirtualAddress()] = arrParam[paramCont]
-        paramCont += 1
+        self.__local[funcName][j.getVirtualAddress()] = arrParams[k]
+        k = k + 1
       else:
         self.__local[funcName][j.getVirtualAddress()] = None
     for i, j in pointerTemps.items():
       self.__local[funcName][j.getVirtualAddress()] = None
     self.__local[funcName]["goHere"] = goHere
-    # print(self.__local[funcName])
+    self.__localArr.append(self.__local[funcName])
+    # self.printing()
+    return
+
+  def printing(self):
+    print("CCCCCOOOOOMMMOOOOO ESTAAAAAAAAA")
+    for i in self.__localArr:
+      print(i)
 
   def setConstants(self, dirFunc):
     consts = dirFunc["global"]["consts"]
@@ -715,6 +732,7 @@ class MainMemory:
     self.globalMem = CallStackMemory()
     self.__local = {}
     self.localMem = CallStackMemory()
+    self.__localArr = []
     self.__constants = {}
     self.__classes = {}
     self.__pointer = None
