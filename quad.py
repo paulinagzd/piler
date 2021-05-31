@@ -15,19 +15,20 @@ class Quad:
     '>=': 9,
     '==': 10,
     '!=': 11,
-    'print': 12,
-    'read': 13,
-    'goto': 14,
-    'gotoF': 15,
-    'gotoV': 16,
-    'gosub': 17,
-    'era': 18,
-    'param': 19,
-    'endfunc': 20,
-    'ver' : 21,
-    'return' : 22,
-    'era' : 23,
-    'end': 24
+    '&&': 12,
+    '||': 13,
+    'print': 14,
+    'read': 15,
+    'goto': 16,
+    'gotoF': 17,
+    'gotoV': 18,
+    'gosub': 19,
+    'era': 20,
+    'param': 21,
+    'endfunc': 22,
+    'verify' : 23,
+    'return' : 24,
+    'end': 25,
   }
 
   def __init__(self):
@@ -46,9 +47,9 @@ class Quad:
     return Quad.isAlive
 
   def saveQuad(self, operator, leftOperand, rightOperand, tvalue):
-    # codeNumber = self.operCodes[operator]
-    # q = QuadContainer(self.quadCounter, codeNumber, leftOperand, rightOperand, tvalue) # left and right operand contain ADDRESSES
-    q = QuadContainer(self.quadCounter, operator, leftOperand, rightOperand, tvalue) # left and right operand contain ADDRESSES
+    codeNumber = self.operCodes[operator]
+    q = QuadContainer(codeNumber, leftOperand, rightOperand, tvalue) # left and right operand contain ADDRESSES
+    # q = QuadContainer(self.quadCounter, operator, leftOperand, rightOperand, tvalue) # left and right operand contain ADDRESSES
     self.quads[self.quadCounter] = q
     self.quadCounter += 1
     # print(q)
@@ -84,9 +85,9 @@ class Quad:
 class QuadContainer:
   isAlive = None
 
-  def __init__(self, ide, op, left, right, res):
+  def __init__(self, op, left, right, res):
     QuadContainer.isAlive = self
-    self.__id = ide
+    # self.__id = ide
     self.__op = op
     self.__left = left
     self.__right = right
@@ -98,9 +99,6 @@ class QuadContainer:
       QuadContainer()
     return QuadContainer.isAlive
 
-  def getId(self):
-    return self.__id
-  
   def getOp(self):
       return self.__op
 
@@ -122,7 +120,8 @@ class QuadContainer:
     self.__res = val
 
   def __repr__(self):
-    return "{%s %s %s %s %s}" % (self.getId(), self.getOp(), self.getLeft(), self.getRight(), self.getRes())
+    return "{%s %s %s %s}" % (self.getOp(), self.getLeft(), self.getRight(), self.getRes())
+
 class QuadsStack:
   isAlive = None
   cont = 0

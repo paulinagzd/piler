@@ -22,7 +22,8 @@ func void dos(int i, int j) {
 
 int main()
 {
-  read(k)
+  /* read(k) */
+  k = 2
   i = 5
   j = i * 2 + i
   dos(j - i, j)

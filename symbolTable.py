@@ -42,10 +42,14 @@ class Variable:
     self.__virtualAddress = memPointer.getInitialAddress() + memPointer.getOffset()
     self.__isObject = isObject
     self.__value = None
+    self.__memPointer = memPointer
+    self.__offset = offset
 
     # incrementing offset when variable is created in memory
     if dimensions > 0:
       memPointer.setDimensionalOffset(int(offset))
+    elif varName == '':
+      pass
     else:  
       memPointer.setOffset()
 
@@ -73,6 +77,12 @@ class Variable:
 
   def getIsObject(self):
     return self.__isObject
+
+  def getOffset(self):
+    return self.__offset
+
+  def getMemPointer(self):
+    return self.__memPointer
 
   # setters
   def setVarName(self, varName):
@@ -110,7 +120,7 @@ class Scope:
   # Class local scopes contain variables and functions (empty scopeClasses objects)
   # Function local scopes contain variables (empty scopeFunctions and scopeClasses objects)
 
-  def __init__(self, type, name, context):
+  def __init__(self, type, name, context, starts):
     self.__scopeType = type # Will be used to validate if local or global
     self.__scopeName = name
     self.__context = context
@@ -118,11 +128,13 @@ class Scope:
     self.__scopeVariables = {}
     self.__scopeClasses = {}
     self.__scopeConstants = {}
+    self.__scopeTemps = {}
     self.__latestName = None
     self.__latestFuncName = None
     self.__latestType = None
     self.__latestExpValue = None
     self.__latestDimension = 0
+    self.starts = starts
     # for functions and modules
     self.__quadCont = 0
     self.__numParams = 0
@@ -168,6 +180,9 @@ class Scope:
 
   def getScopeConstants(self):
     return self.__scopeConstants
+
+  def getScopeTemps(self):
+    return self.__scopeTemps
 
   def getLatestName(self):
     return self.__latestName
@@ -329,7 +344,7 @@ class Scope:
       keyword = 'classFunction'
     else:
       keyword = 'function' # remove UnboundLocalError
-    self.__scopeFunctions[funcName] = Scope(funcType, funcName, keyword)
+    self.__scopeFunctions[funcName] = Scope(funcType, funcName, keyword, quadruple.quadCounter)
     SymbolTable.instantiate().setCurrentScope(self.__scopeFunctions[funcName])
     
   def addClass(self, className):
@@ -337,7 +352,7 @@ class Scope:
       raise Exception('ERROR! Class with identifier:', className, 'already exists!')
 
     classType = 'class'
-    self.__scopeClasses[className] = Scope(classType, className, classType)
+    self.__scopeClasses[className] = Scope(classType, className, classType, -1)
     SymbolTable.instantiate().setStackPush(className)
     SymbolTable.instantiate().setCurrentScope(self.__scopeClasses[className])
 
@@ -371,7 +386,7 @@ class Scope:
         else:
           raise Exception('ERROR! FUNCTION with identifier:', funcName, 'is not defined in this program')
     
-    quadruple.saveQuad('era', funcName, -1, -1)
+    quadruple.saveQuad('era', funcName, scope, -1)
     functionParams = pointer.getScopeFunctions()[funcName].__scopeVariables
     self.setMatchingParams(True)
     for item, val in functionParams.items():
@@ -421,7 +436,7 @@ class Scope:
     self.__quadCont = quadruple.quadCounter
 
   def __repr__(self):
-    return "{\n type: %s \n context: %s \n name: %s \n vars: %s}" % (self.getScopeType(), self.getContext(), self.__scopeName, self.__scopeVariables)
+    return "{\n starts :%s type: %s \n context: %s \n name: %s \n vars: %s \n}" % (self.starts, self.getScopeType(), self.getContext(), self.__scopeName, self.__scopeVariables)
 
 class SymbolTable:
   isAlive = None
@@ -430,7 +445,7 @@ class SymbolTable:
     SymbolTable.isAlive = self
     self.__globalScope = {}
     keyword = "global"
-    self.__globalScope["global"] = Scope(keyword, keyword, keyword)
+    self.__globalScope["global"] = Scope(keyword, keyword, keyword, 1)
     self.__currentScope = self.__globalScope["global"]
     self.__classStack = []
 
@@ -495,6 +510,9 @@ class SymbolTable:
       for i, ii in val.getScopeVariables().items():
         print(i, ': ', ii)
 
+      print('\n \n GLOBAL TEMPS')
+      print(len(val.getScopeTemps()))
+
       print('\n \n GLOBAL FUNCTIONS')
       for j, jj in val.getScopeFunctions().items():
         print(j, ': ', jj)
@@ -502,8 +520,10 @@ class SymbolTable:
         print('\n \n FUNCTION VARIABLES')
         for m, mm in jj.getScopeVariables().items():
           print(m, ': ', mm)
-        print('---------------------------------')
 
+        print('\n \n FUNCTION TEMPS')
+        print(len(jj.getScopeTemps()))
+        print('---------------------------------')
 
       print('\n \n CLASSES')
       for k, kk in val.getScopeClasses().items():
@@ -519,11 +539,99 @@ class SymbolTable:
         
           for x, xx in oo.getScopeVariables().items():
             print(x, ': ', xx)
+
+          print('\n \n CLASS FUNC TEMPS')
+          print(len(oo.getScopeTemps()))
           print('---------------------------------')
   
+  def getFuncSize(self, func):
+    res = {
+      "local": {}, 
+      "temps": {},  
+    }
+
+    for i, j in func.getScopeVariables().items():
+      varType = j.getVarType()
+      if not varType in res["local"]:
+        # print("OFFSET", int(j.getOffset()))
+        res["local"][varType] = int(j.getOffset()) + 1
+      else:
+        res["local"][varType] = int(res["local"][varType] + j.getOffset() + 1)
+    for i, j in func.getScopeTemps().items():
+      varType = j.getVarType()
+      if not varType in res["temps"]:
+        res["temps"][varType] = 1
+      else:
+        res["temps"][varType] += 1
+
+    return res
+
+  def buildForVM(self):
+    res = []
+    tempDirFunc = {"global": {
+      "vars": self.getGlobalScope().getScopeVariables(),
+      "temps": self.getGlobalScope().getScopeTemps(),
+      "consts": self.getGlobalScope().getScopeConstants(),
+      "funcs": {}
+    }}
+
+    tempArr = []
+    tempDirClass = {
+      "global": {}
+    }
+
+    pointer = tempDirFunc["global"]
+    for key, val in self.__globalScope.items():
+      # functions
+      pointer = pointer["funcs"]
+      for key1, val1, in val.getScopeFunctions().items():
+        size = self.getFuncSize(val.getScopeFunctions()[key1])
+
+        pointer[key1] = {
+          "type": val1.getScopeType(),
+          "size": size,
+          "start": val1.starts,
+          "vars": val1.getScopeVariables(),
+          "temps": val1.getScopeTemps(),
+        }
+        # print(key1, pointer[key1])
+
+      # classes are their own "world" inside the global scope
+      # meaning they have global variables and dirFunc
+      for key2, val2, in val.getScopeClasses().items():
+        tempArr.append(tempDirClass)
+        pointer = tempArr[-1]
+        pointer = pointer["global"]
+        pointer["vars"] = val2.getScopeVariables(),
+        pointer["funcs"] = {}
+        pointer = pointer["funcs"]
+        for keyClass, valClass, in val2.getScopeFunctions().items():
+          size = self.getFuncSize(val2.getScopeFunctions()[keyClass])
+          pointer[keyClass] = {
+            "type": valClass.getScopeType(),
+            "size": size,
+            "start": valClass.starts,
+            "vars": valClass.getScopeVariables(),
+            "temps": valClass.getScopeTemps(),
+          }
+          # print(keyClass, pointer[keyClass])
+
+    # print("ENTRO")
+    # print("DIRFUNC")
+    # for i, j in tempDirFunc.items():
+    #   # if i == "start":
+    #   print(tempDirFunc[i])
+    # print("DIRCLASS")
+    # for i, j in tempDirClass.items():
+    #   print(tempDirClass[i])
+  
+    res.append(tempDirFunc)
+    res.append(tempDirClass)
+    return res
+
   def reset(self):
     self.__globalScope = {}
     keyword = "global"
-    self.__globalScope["global"] = Scope(keyword, keyword, keyword)
+    self.__globalScope["global"] = Scope(keyword, keyword, keyword, 1)
     self.__currentScope = self.__globalScope["global"]
     self.__classStack = []

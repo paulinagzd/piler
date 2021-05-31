@@ -1,0 +1,22 @@
+program factorial;
+
+func int factorial(int n)
+{
+    if (n > 1) then {
+        return n * {factorial(n - 1)}
+    }   
+    else {
+        return 1
+    };
+}
+
+int main()
+{
+    var int n;
+
+    print("Enter a positive integer: ")
+    /* read(n) */
+    n = 5
+
+    print("The factorial is = ", {factorial(n)})
+}
