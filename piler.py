@@ -17,7 +17,7 @@ while True:
     try:
       reading = input('Name of piler file > ')
       if reading[-3:] != '.pi':
-        print('Invalid file format')
+        raise Exception('Invalid file format')
         break
       else:
         correct = reading
@@ -28,16 +28,16 @@ while True:
           print("SUCCESSFULLY COMPILED!")
           print("---BEGINNING EXECUTION---") # a.out
           # symbolTable.printingAll()
-          MainMemory.instantiate()
+          # MainMemory.instantiate()
           dirs = symbolTable.buildForVM()
-          virtualMachine = VM.instantiate(quadruple.quads, dirs[0], dirs[1])
+          # virtualMachine = VM.instantiate(quadruple.quads, dirs[0], dirs[1])
           
           # start main memory
-          virtualMachine.execute()
+          # virtualMachine.execute()
         # quadruple.print()
-        MainMemory.instantiate().reset()
-        virtualMachine = VM.get()
-        virtualMachine.reset()
+        # MainMemory.instantiate().reset()
+        # virtualMachine = VM.get()
+        # virtualMachine.reset()
         symbolTable.reset()
         quadruple.reset()
         resetGlobals()

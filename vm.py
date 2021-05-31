@@ -682,7 +682,7 @@ class MainMemory:
   def setGlobal(self, dirFunc):
     globalVars = dirFunc["global"]["vars"]
     for i, j in globalVars.items():
-      self.__global[j.getVirtualAddress()] = None
+      self.__global[j.getVirtualAddress()] = j.getValue()
       
     globalTemps = dirFunc["global"]["temps"]
     for i, j in globalTemps.items():
