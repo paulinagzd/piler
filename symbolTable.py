@@ -1,7 +1,8 @@
 from quad import Quad
 from vm import MemoryContainer
-quadruple = Quad.instantiate()
+import helpers 
 
+quadruple = Quad.instantiate()
 cont = 0
 cont2 = 0
 class DimensionNode:

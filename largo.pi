@@ -18,28 +18,30 @@ func int fact(int j) {
   };
 }
 
+/*
 func void inicia(int y) {
   var int x;
-  x = -1
-  while (x < 11) then {
+  x = 0
+  while (x < 12) then {
     Arreglo[x] = y * x
     x = x + 1
   };
 }
+*/
 
 int main() {
-  /* read(p) */
-  p = 1
+  read(p)
   j = p * 2
-  i = -1
-  inicia(p * j - 5)
+  i = 0
+  /* inicia(p * j - 5) */
+  /*
   do {
     Arreglo[i] = Arreglo[i] * {fact(Arreglo[i] - p)}
     Matriz[i][Arreglo[i + p] * p] = Arreglo[i]
     i = i + 1
-  } while (i < 11);
-
-  while (i >= -1) then {
+  } while (i < 12);
+*/
+  while (i >= 0) then {
     print("resultado", Arreglo[i], {fact(i + 2)})
     print(Matriz[i][p* 2 - i])
     i = i - 1

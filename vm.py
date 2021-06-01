@@ -1,5 +1,6 @@
 from ast import literal_eval
 from quad import Quad
+import helpers
 
 functionsReturning = {}
 currentScope = None
@@ -53,12 +54,6 @@ memNumbers = {
 
 cont = 0
 scopePointer = None
-
-def getTempOffset(address):
-  return address + 1000
-
-def getConstType(address):
-  return
 
 def verifySize(funcSize, mem):
   for i, j in funcSize["local"].items():
@@ -355,7 +350,7 @@ class VM:
     if type == inValueType:
       return inValue
     else:
-      raise Exception(ValueError, SyntaxError)
+      raise Exception("ERROR! Incorrect data type as input (should be", type, "received ", inValueType)
       
   def goto(self, quadNumber):
     # pointing nextPointer to nextQuad
@@ -563,11 +558,10 @@ class VM:
 
       # TODO READ
       elif operCode == 15:
-        # print("READ TO ASSIGN TO THIS ADDRESS", currentQuad.getRes())
+        pointerVal = self.returnIsArray(currentQuad.getRes())
+        toReadPointer = self.getPointerType(pointerVal)
 
-        toReadPointer = self.getPointerType(currentQuad.getRes())
-
-        res = self.readLine(getTypeConstant(currentQuad.getRes()))
+        res = self.readLine(helpers.getTypeV2(pointerVal))
         self.assignValueToDir(int(res), toReadPointer, currentQuad.getRes())
 
         self.__nextPointer += 1
@@ -624,8 +618,6 @@ class VM:
         self.__nextPointer = goHere
         currentQuad = self.__quadList[self.__nextPointer]
         # it returns to main (or global)
-        print("RETURN")
-
 
       elif operCode == 23: # verify
         verDir = currentQuad.getLeft()
@@ -650,9 +642,6 @@ class VM:
         currentQuad = self.__quadList[self.__nextPointer]
         if not self.__callStack: # return to sleeping function
           # it returns to main (or global)
-          print("ACACACCCCAC")
-          print("VOY A ASSVALTPDIR", returnVal, currentQuad.getRes())
-
           globalDir = currentQuad.getRes()
           if getClassification(globalDir) == 'global':
             globalDirVal = mem.getGlobal()
@@ -673,8 +662,8 @@ class VM:
         # create a space in the stack with the local memory
         self.end()
         print("TERMINO CON EXITO")
-        return False
-        self.__nextPointer += 1
+        return True
+        # self.__nextPointer += 1
 
       elif operCode == 26: # add from arrays
         # comes from array
