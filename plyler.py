@@ -14,7 +14,7 @@ import quadHelpers
 import condHelpers
 import moduleHelpers
 import sys
-# sys.tracebacklimit=0 # DEPENDS IF I WANT TO LOG ERRORS AT THE MOMENT
+sys.tracebacklimit=0 # DEPENDS IF I WANT TO LOG ERRORS AT THE MOMENT
 
 symbolTable = SymbolTable.instantiate()
 quadruple = Quad.instantiate()

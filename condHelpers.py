@@ -2,6 +2,7 @@ from symbolTable import SymbolTable
 from quad import Quad, QuadContainer
 from jumps import Jumps, TBD
 import quadHelpers
+import helpers
 
 quadruple = Quad.instantiate()
 symbolTable = SymbolTable.instantiate()
@@ -12,7 +13,7 @@ def fill(end, cont):
 
 def enterCond():
   res = quadruple.pilaO.pop()
-  resType = quadHelpers.getTypeV2(res)
+  resType = helpers.getTypeV2(res)
   if resType != 'boo':
     raise Exception("ERROR! Conditional must have boolean value")
   quadruple.saveQuad('gotoF', res, -1, TBD())

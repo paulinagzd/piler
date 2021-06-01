@@ -1,6 +1,7 @@
 from symbolTable import SymbolTable, Variable
 from quad import Quad
 import quadHelpers
+import helpers
 
 quadruple = Quad.instantiate()
 symbolTable = SymbolTable.instantiate()
@@ -17,7 +18,7 @@ def incrementParamCounter(cont):
 def verifyParamMatch(cont):
   incoming = quadruple.pilaO.pop()
 
-  incoming_type = quadHelpers.getTypeV2(incoming)
+  incoming_type = helpers.getTypeV2(incoming)
   original = symbolTable.getCurrentScope().getCurrentFunctionParams()[cont]
   if incoming_type != original.getVarType():
     raise Exception("ERROR! Parameter mismatch")

@@ -1,0 +1,38 @@
+program sort;
+var ints a[10] = {22, 91, 35, 78, 10, 8, 75, 99, 1, 67};
+
+func void selectionSort (int size) {
+   var int i, j, imin;
+   var int a, b, temp;
+   i = 0
+   while(i < size - 1) then {
+    imin = i
+    j = i + 1
+    while(j < size) then {
+      if (a[j] < a[imin]) then {
+        imin = j
+      };
+      temp = a[i]
+      a[i] = a[imin]
+      a[imin] = temp
+      j = j + 1
+    };
+    i = i + 1
+  };
+}
+
+int main() {
+    print("Sorted array is: ")
+
+  var int n;
+  var int i;
+
+  selectionSort(10)
+
+  i = 0
+  print("Sorted array is: ")
+  while (i < 10) then {
+    print(a[i])
+    i = i + 1
+  };
+}

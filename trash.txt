@@ -1,6 +1,0 @@
-program square;
-var n : int;
-{
-    n = n * n;
-    print(n);
-} aqui hay basura
