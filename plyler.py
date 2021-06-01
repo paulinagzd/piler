@@ -14,7 +14,7 @@ import quadHelpers
 import condHelpers
 import moduleHelpers
 import sys
-sys.tracebacklimit=0 # DEPENDS IF I WANT TO LOG ERRORS AT THE MOMENT
+# sys.tracebacklimit=0 # DEPENDS IF I WANT TO LOG ERRORS AT THE MOMENT
 
 symbolTable = SymbolTable.instantiate()
 quadruple = Quad.instantiate()
@@ -254,20 +254,6 @@ def p_do_while_loop(p):
   '''
 
 ################################################
-# CICLO FOR
-# def p_for_loop(p):
-#   '''
-#   for_loop : 
-#   '''
-#   # FOR OPAREN variable FROM for_loop1 TO for_loop1 BY for_loop1 CPAREN THEN block SEMICOLON
-
-# def p_for_loop1(p):
-#   '''
-#   for_loop1 : CSTINT
-#             | variable
-#   '''
-
- ################################################
 # DECLARACION VARS
 def p_decs(p):
   '''
