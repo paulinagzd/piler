@@ -10,27 +10,21 @@ symbolTable = SymbolTable.instantiate()
 varPointer = None
 tempCounter = 0
 
+# getPointingScope
+# What: Gets the pointer to either global or class memory
+# Parameters: The current Scope (function or class) 
+# Returns the Scope from the sent function or class
+# When is it used: To get the Scope for the quad to be saved
 def getPointingScope(currentScope):
-  # need to point either to global or class memory
   if currentScope.getContext() == 'classFunction':
     return symbolTable.getGlobalScope().getScopeClasses()[symbolTable.getStack()]
   else:
     return symbolTable.getGlobalScope()
 
-# return the type of each value, either constant or variable
-def getTypeConstant(operand):
-  if operand == 'True' or operand == 'False':
-    return 'boo'
-  elif isinstance(operand,float):
-    return 'flt'
-  elif isinstance(operand,int):
-    return 'int'
-  elif isinstance(operand, str):
-    if len(operand) == 3 and operand[0] == '\'':
-      return 'cha'
-    else:
-      return 'str'
-     
+# check_multdiv_operator
+# What: Gets and checks left and right operators for multiplication and division
+# Parameters: A quadruple object
+# When is it used: When PLY reads a multiplication or division
 def check_multdiv_operator(quadruple):
   workingStack = quadruple.getWorkingStack()
   if workingStack:
@@ -42,39 +36,31 @@ def check_multdiv_operator(quadruple):
       operator = workingStack.pop()
       if quadruple.pOper:
         quadruple.pOper.pop()
-      result_Type = SemanticCube[operator][left_type][right_type]
+      result_type = SemanticCube[operator][left_type][right_type]
 
-      symbolTable.getCurrentScope().setLatestType(result_Type)
-
-      if result_Type != 'TYPE MISMATCH':
-        tvalue = "t{}".format(quadruple.quadCounter)
-        # if operator == '*':
-        #   tvalue = left_operand * right_operand
-        #   quadruple.pilaO.append(tvalue)
-        # elif operator == '/':
-        #   tvalue = left_operand / right_operand
-        #   quadruple.pilaO.append(tvalue)
-
+      if result_type != 'TYPE MISMATCH':
         # get next temp memory depending on type
         keyword = ''
         if symbolTable.getCurrentScope().getContext() == 'global':
           keyword = 'global'
         else:
           keyword = 'local'
-        #  {tvalue: result_Type}
-        tempAddressPointer = getPointingScope(symbolTable.getCurrentScope()).memory.memSpace[keyword][result_Type]['temp']
+        tempAddressPointer = getPointingScope(symbolTable.getCurrentScope()).memory.memSpace[keyword][result_type]['temp']
         tempAddress = tempAddressPointer.getInitialAddress() + tempAddressPointer.getOffset()
         quadruple.pilaO.append(tempAddress)
-        symbolTable.getCurrentScope().setLatestExpValue(result_Type)
+        symbolTable.getCurrentScope().setLatestExpValue(result_type)
         quadruple.saveQuad(operator,left_operand,right_operand, tempAddress)
         global tempCounter
-        symbolTable.getCurrentScope().getScopeTemps()[tempCounter] = (Variable('', result_Type, 0, [], tempAddressPointer.getOffset(), False, tempAddressPointer, False))
+        symbolTable.getCurrentScope().getScopeTemps()[tempCounter] = (Variable('', result_type, 0, [], tempAddressPointer.getOffset(), False, tempAddressPointer, False))
         tempCounter += 1
         tempAddressPointer.setOffset()
-        # Saving the operator code instead of the operator itself
       else:
         raise Exception('ERROR! Type Mismatch') #type mismatch
 
+# check_plusminus_operator
+# What: Gets and checks left and right operators for addition and subtraction
+# Parameters: A quadruple object
+# When is it used: When PLY reads a addition or subtraction
 def check_plusminus_operator(quadruple):
   workingStack = quadruple.getWorkingStack()
   if workingStack:
@@ -86,39 +72,33 @@ def check_plusminus_operator(quadruple):
       operator = workingStack.pop()
       if quadruple.pOper:
         quadruple.pOper.pop()
-      result_Type = SemanticCube[operator][left_type][right_type]
-      symbolTable.getCurrentScope().setLatestType(result_Type)
+      result_type = SemanticCube[operator][left_type][right_type]
+      symbolTable.getCurrentScope().setLatestType(result_type)
 
-      if result_Type != 'TYPE MISMATCH':
-        tvalue = "t{}".format(quadruple.quadCounter)
-
-        # if operator == '+':
-        #   tvalue = left_operand + right_operand
-        #   quadruple.pilaO.append(tvalue)
-        # elif operator == '-':
-        #   tvalue = left_operand - right_operand
-        #   quadruple.pilaO.append(tvalue)
-
+      if result_type != 'TYPE MISMATCH':
         # get next temp memory depending on type
         keyword = ''
         if symbolTable.getCurrentScope().getContext() == 'global':
           keyword = 'global'
         else:
           keyword = 'local'
-        #  {tvalue: result_Type}
-        tempAddressPointer = getPointingScope(symbolTable.getCurrentScope()).memory.memSpace[keyword][result_Type]['temp']
+        tempAddressPointer = getPointingScope(symbolTable.getCurrentScope()).memory.memSpace[keyword][result_type]['temp']
         tempAddress = tempAddressPointer.getInitialAddress() + tempAddressPointer.getOffset()
         quadruple.pilaO.append(tempAddress)
-        symbolTable.getCurrentScope().setLatestExpValue(result_Type)
+        symbolTable.getCurrentScope().setLatestExpValue(result_type)
         quadruple.saveQuad(operator,left_operand,right_operand, tempAddress)
         global tempCounter
-        symbolTable.getCurrentScope().getScopeTemps()[tempCounter] = (Variable('', result_Type, 0, [], tempAddressPointer.getOffset(), False, tempAddressPointer, False))
+        symbolTable.getCurrentScope().getScopeTemps()[tempCounter] = (Variable('', result_type, 0, [], tempAddressPointer.getOffset(), False, tempAddressPointer, False))
         tempCounter += 1        
         tempAddressPointer.setOffset()
         
       else:
         raise Exception('ERROR! Type Mismatch') #type mismatch
 
+# check_relational_operator
+# What: Gets and checks left and right operators for relational operators
+# Parameters: A quadruple object
+# When is it used: When PLY reads a relational operator
 def check_relational_operator(quadruple):
   workingStack = quadruple.getWorkingStack()
   if workingStack:
@@ -132,34 +112,37 @@ def check_relational_operator(quadruple):
       operator = workingStack.pop()
       if quadruple.pOper:
         quadruple.pOper.pop()
-      result_Type = SemanticCube[operator][left_type][right_type]
-      symbolTable.getCurrentScope().setLatestType(result_Type)
+      result_type = SemanticCube[operator][left_type][right_type]
+      symbolTable.getCurrentScope().setLatestType(result_type)
       
-      if result_Type != 'TYPE MISMATCH':
-        tvalue = "t{}".format(quadruple.quadCounter)
+      if result_type != 'TYPE MISMATCH':
         # get next temp memory depending on type
         keyword = ''
         if symbolTable.getCurrentScope().getContext() == 'global':
           keyword = 'global'
         else:
           keyword = 'local'
-        tempAddressPointer = getPointingScope(symbolTable.getCurrentScope()).memory.memSpace[keyword][result_Type]['temp']
+        tempAddressPointer = getPointingScope(symbolTable.getCurrentScope()).memory.memSpace[keyword][result_type]['temp']
         tempAddress = tempAddressPointer.getInitialAddress() + tempAddressPointer.getOffset()
         quadruple.pilaO.append(tempAddress)
         tempAddressPointer.setOffset()
         quadruple.saveQuad(operator,left_operand,right_operand,tempAddress)
         global tempCounter
-        symbolTable.getCurrentScope().getScopeTemps()[tempCounter] = (Variable('', result_Type, 0, [], tempAddressPointer.getOffset(), False, tempAddressPointer, False))
+        symbolTable.getCurrentScope().getScopeTemps()[tempCounter] = (Variable('', result_type, 0, [], tempAddressPointer.getOffset(), False, tempAddressPointer, False))
         tempCounter += 1
-        symbolTable.getCurrentScope().setLatestExpValue(result_Type)
+        symbolTable.getCurrentScope().setLatestExpValue(result_type)
 
       else:
         raise Exception('ERROR! Type Mismatch') #type mismatch
 
-def check_and_operator(quadruple):
+# check_and_or_operator
+# What: Gets and checks left and right operators for relational operators
+# Parameters: A quadruple object
+# When is it used: When PLY reads a relational operator
+def check_and_or_operator(quadruple):
   workingStack = quadruple.getWorkingStack()
   if workingStack:
-    if workingStack[-1] == '&&':
+    if workingStack[-1] == '&&' or workingStack[-1] == '||':
       right_operand = quadruple.pilaO.pop()
       right_type = helpers.getTypeV2(right_operand)
       left_operand = quadruple.pilaO.pop()
@@ -167,14 +150,9 @@ def check_and_operator(quadruple):
       operator = workingStack.pop()
       if quadruple.pOper:
         quadruple.pOper.pop()
-      result_Type = SemanticCube[operator][left_type][right_type]
+      result_type = SemanticCube[operator][left_type][right_type]
       
-      if result_Type != 'TYPE MISMATCH':
-        tvalue = "t{}".format(quadruple.quadCounter)
-        # tvalue = left_operand and right_operand
-        # quadruple.pilaO.append(tvalue)
-        # {tvalue: result_Type}
-
+      if result_type != 'TYPE MISMATCH':
         # get next temp memory depending on type
         keyword = ''
         if symbolTable.getCurrentScope().getContext() == 'global':
@@ -182,65 +160,29 @@ def check_and_operator(quadruple):
         else:
           keyword = 'local'
 
-        tempAddressPointer = getPointingScope(symbolTable.getCurrentScope()).memory.memSpace[keyword][result_Type]['temp']
+        tempAddressPointer = getPointingScope(symbolTable.getCurrentScope()).memory.memSpace[keyword][result_type]['temp']
         tempAddress = tempAddressPointer.getInitialAddress() + tempAddressPointer.getOffset()
         quadruple.pilaO.append(tempAddress)
         quadruple.saveQuad(operator,left_operand,right_operand, tempAddress)
         global tempCounter
-        symbolTable.getCurrentScope().getScopeTemps()[tempCounter] = (Variable('', result_Type, 0, [], tempAddressPointer.getOffset(), False, tempAddressPointer, False))
+        symbolTable.getCurrentScope().getScopeTemps()[tempCounter] = (Variable('', result_type, 0, [], tempAddressPointer.getOffset(), False, tempAddressPointer, False))
         tempCounter += 1        
         tempAddressPointer.setOffset()
-        symbolTable.getCurrentScope().setLatestExpValue(result_Type)
+        symbolTable.getCurrentScope().setLatestExpValue(result_type)
       else:
         raise Exception('ERROR! Type Mismatch') #type mismatch
 
-
-def check_or_operator(quadruple):
-  workingStack = quadruple.getWorkingStack()
-  if workingStack:
-    if workingStack[-1] == '||':
-      right_operand = quadruple.pilaO.pop()
-      right_type = helpers.getTypeV2(right_operand)
-      left_operand = quadruple.pilaO.pop()
-      left_type = helpers.getTypeV2(left_operand)
-      operator = workingStack.pop()
-      if quadruple.pOper:
-        quadruple.pOper.pop()
-      result_Type = SemanticCube[operator][left_type][right_type]
-      
-      if result_Type != 'TYPE MISMATCH':
-        tvalue = "t{}".format(quadruple.quadCounter)
-        # tvalue = left_operand or right_operand
-        # quadruple.pilaO.append(tvalue)
-
-        # get next temp memory depending on type
-        keyword = ''
-        if symbolTable.getCurrentScope().getContext() == 'global':
-          keyword = 'global'
-        else:
-          keyword = 'local'
-        #  {tvalue: result_Type}
-        tempAddressPointer = getPointingScope(symbolTable.getCurrentScope()).memory.memSpace[keyword][result_Type]['temp']
-        tempAddress = tempAddressPointer.getInitialAddress() + tempAddressPointer.getOffset()
-        quadruple.pilaO.append(tempAddress)
-        quadruple.saveQuad(operator,left_operand,right_operand, tempAddress)
-        global tempCounter
-        symbolTable.getCurrentScope().getScopeTemps()[tempCounter] = (Variable('', result_Type, 0, [], tempAddressPointer.getOffset(), False, tempAddressPointer, False))
-        tempCounter += 1  
-        tempAddressPointer.setOffset()
-
-        symbolTable.getCurrentScope().setLatestExpValue(result_Type)
-      else:
-        raise Exception('ERROR! Type Mismatch') #type mismatch
-
+# expression_evaluation
+# What: Solves expressions when completed
+# Parameters: P (what's stored in PLY's syntax)
+# When is it used: Everytime an expression ends
 def expression_evaluation(p):
   if not quadruple.pOper or quadruple.pOper[-1] == '=' or quadruple.pOper[-1] == 'print':
     if not quadruple.pOper:
+      # if it comes from a conditional
       if p[-2] == 'if' or p[-3] == 'while':
         condHelpers.enterCond()
-      # else:
-      #   p[0] = quadruple.pilaO[-1]
-      #   symbolTable.getCurrentScope().setLatestExpValue(p[0])
+   # regular assignments
     elif quadruple.pOper[-1] == '=':
       right_operand = quadruple.pilaO.pop() # this should be a value
       left_operand = quadruple.pilaO.pop() # this should be an id
@@ -251,9 +193,11 @@ def expression_evaluation(p):
       else:
         raise Exception("ERROR! cannot assign type {} to {}".format(left_type, right_type))
       quadruple.pOper.pop()
+    # print statements
     elif quadruple.pOper[-1] == 'print' and not symbolTable.getCurrentScope().getMatchingParams():
       print_operand = quadruple.pilaO.pop() # this should be the value to print
       quadruple.saveQuad('print', -1, -1, print_operand)
+  # verifying array dimensions
   elif quadruple.pOper[-1] == '$':
     lsPointer = quadruple.pilaDim[-1]["id"].getDimensionNodes()
     currentDim = quadruple.pilaDim[-1]["dim"]
@@ -267,6 +211,7 @@ def expression_evaluation(p):
     tempAddressPointer = getPointingScope(symbolTable.getCurrentScope()).memory.memSpace[keyword][currType]['temp']
     tempAddress = tempAddressPointer.getInitialAddress() + tempAddressPointer.getOffset()
     global tempCounter
+    # if array has another dimension still, multiply S1 by MDim1 
     if len(lsPointer) > currentDim: 
       aux = quadruple.pilaO.pop()
       quadruple.saveQuad("*a", aux, lsPointer[currentDim-1].getMDim(), tempAddress)      
@@ -274,6 +219,7 @@ def expression_evaluation(p):
       tempCounter += 1        
       quadruple.pilaO.append(tempAddress)
       tempAddressPointer.setOffset()
+    # if array has more than 1 dimension, generate quads
     if currentDim > 1:
       left_operand = quadruple.pilaO.pop()
       right_operand = quadruple.pilaO.pop()
@@ -284,6 +230,7 @@ def expression_evaluation(p):
       tempCounter += 1        
       quadruple.pilaO.append(tempAddress)
       tempAddressPointer.setOffset()
+  # check that void functions do not have return values
   elif quadruple.pOper[-1] == 'return':
     if symbolTable.getCurrentScope().getScopeType() == 'void':
       if quadruple.pilaO[-1]:
@@ -297,6 +244,10 @@ def expression_evaluation(p):
     quadruple.saveQuad('return', -1, -1, expValue)
     quadruple.pOper.pop()
 
+# endDim
+# What: Creates the quads when an array is finished being called
+# Parameters: variable with dimensions
+# When is it used: Everytime an array variable is called, not declared
 def endDim(var):
   current = symbolTable.getCurrentScope()
   aux = quadruple.pilaO.pop()

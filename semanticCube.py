@@ -1,5 +1,9 @@
 ERROR_MESSAGE = 'TYPE MISMATCH'
 
+# This variable is the main dictionary for binary operations
+# it is accessed through an operator, then their respective
+# left and right values from the operation. It should return
+# either the type that should be return or an error message.
 SemanticCube = {
   '+': {
     'int': {

@@ -4,11 +4,17 @@ import helpers
 
 functionsReturning = {}
 currentScope = None
+scopePointer = None
 arrParam = []
 localStack = []
 paramCont = 0
 returnVal = 0
 
+# getTypeConstants
+# What: Function to get the type of constant depending of instances
+# Parameters: The value of the address
+# Returns the type of each value, either constant or variable
+# When is it used: During every type matching call with constants (expressions)
 def getTypeConstant(operand):
   if operand == 'True' or operand == 'False':
     return 'boo'
@@ -22,39 +28,11 @@ def getTypeConstant(operand):
     else:
       return 'str'
 
-memNumbers = {
-  "globalInt": 5000,
-  "globalInts": 7000,
-  "globalFlt": 9000,
-  "globalFlts": 11000,
-  "globalCha": 13000,
-  "globalChas": 15000,
-  "globalBoo": 17000,
-  "globalBoos": 19000,
-  "globalStr": 21000,
-  "globalStrs": 23000,
-
-  "localInt": 25000,
-  "localInts": 27000,
-  "localFlt": 29000,
-  "localFlts": 31000,
-  "localCha": 33000,
-  "localChas": 35000,
-  "localBoo": 37000,
-  "localBoos": 39000,
-  "localStr": 41000,
-  "localStrs": 43000,
-
-  "constInt": 45000,
-  "constFlt": 47000,
-  "constCha": 49000,
-  "constBoo": 51000,
-  "constStr": 53000,
-}
-
-cont = 0
-scopePointer = None
-
+# verifySize
+# What: Used to verify if the called function fits in memory
+# Parameters: The function's size and Main Memory
+# When is it used: Every time a function is called correctly and
+# should be added to the call stack
 def verifySize(funcSize, mem):
   for i, j in funcSize["local"].items():
     if j + mem.localMem.variables[i] <= 1000:
@@ -68,6 +46,11 @@ def verifySize(funcSize, mem):
     else:
       raise Exception("ERROR! Too many variables!")
 
+# generateERA
+# What: Finds and checks if the called function or class fits in memory and the call stack
+# Parameters: Attributes of the sent function
+# Returns or updates a pointer with the respective function or class
+# When is it used: Every time an era quad is called (called function declaration)
 def generateERA(funcName, className, scope):
   dirFunc = VM.get().getDirClass() if scope == 'class' else VM.get().getDirFunc()
   mem = MainMemory.instantiate()
@@ -86,7 +69,6 @@ def generateERA(funcName, className, scope):
   return True
 
 def getClassification(address):
-  # print("ADDRESS", address)
   if address >= 45000 and address < 55000:
     return 'const'
   elif address >= 25000 and address < 45000:
@@ -110,6 +92,10 @@ def point(address):
     mem.setPointer(mem.getGlobal())
   return mem.getPointer()
 
+################################################
+# MEM SPACE CONTAINER: keeps track of created memory in the 
+# Symbol Table. This just updates and assign addresses for the table,
+# but further memory handling will be done by quad evaluation
 class MemSpaceContainer:
   def __init__(self, initialAddress):
     self.__initialAddress = initialAddress
@@ -130,7 +116,8 @@ class MemSpaceContainer:
   def setDimensionalOffset(self, val):
     self.__offset += val
 
-# this is the main directory for memory addresses separated by scope
+################################################
+# MEMORY CONTAINER: this is the main directory for memory addresses separated by scope
 # elements contain their offset for when assigning new variables
 class MemoryContainer:
   def __init__(self, name):
@@ -228,6 +215,11 @@ class MemoryContainer:
         'str': MemSpaceContainer(53000),
       }
     }
+
+################################################
+# VM: our virtual memory. It's composed of the quad list, the function,
+# and class directories, as well as the call stack and next pointer for
+# quadruples
 class VM:
   isAlive = None
   def __init__(self, quadList, dirFunc, dirClass):
@@ -275,11 +267,11 @@ class VM:
     functionPointer[funcName]["goHere"] = goHere
     self.__callStack.append(functionPointer)
 
+  # freeing up memory
+  # 1. setting variables and temp to their None values
+  # 2. removing from the counter the space to pop
   def popCallStack(self):
     if self.__callStack:
-      #liberar memoria
-      #1. volver a poner como None las variables y los temporales utilizados
-      #2. bajar el counter de direcciones memorias usadas
       mem = MainMemory.instantiate()
       curr = mem.localMem.variables
       for i, j in curr.items():
@@ -690,7 +682,10 @@ class VM:
     
     # self.end()
      
-# works like a Memory SCOPE, divided in G, L, T, C, and Objs      
+# 
+################################################
+# MAIN MEMORY: works like a Memory SCOPE, divided in Global,
+# Local, Constants, and Objs      
 class MainMemory:
   isAlive = None
   # ["global" [reales]  [temp]]
@@ -699,12 +694,10 @@ class MainMemory:
   def __init__(self):
     MainMemory.isAlive = self
     self.__global = {}
-    self.globalMem = CallStackMemory()
     self.__local = {}
+    self.__constants = {}
     self.__localArr = []
     self.localMem = CallStackMemory()
-    self.__constants = {}
-    self.__classes = {}
     self.__pointer = None
   
   def getGlobal(self):
@@ -725,9 +718,6 @@ class MainMemory:
   def getConstants(self):
     return self.__constants
 
-  def getClasses(self):
-    return self.__classes
-
   def getPointer(self):
     return self.__pointer
   
@@ -736,29 +726,26 @@ class MainMemory:
 
   def setGlobal(self, dirFunc):
     globalVars = dirFunc["global"]["vars"]
+    if len(globalVars) > 1000:
+      raise Exception("ERROR! Too many variables!")
     for i, j in globalVars.items():
       self.__global[j.getVirtualAddress()] = j.getValue()
       
     globalTemps = dirFunc["global"]["temps"]
     for i, j in globalTemps.items():
       self.__global[j.getVirtualAddress()] = None
-    
-    # print("GLOBAL") 
-    # for i, j in self.__global.items():
-    #   print(i, j)
+    if len(globalTemps) > 1000:
+      raise Exception("ERROR! Too many variables!")   
 
   def setLocal(self, functionPointer, goHere):
     # sends a dictionary with function name: attributes
     funcName = list(functionPointer)[0]
-    # migajita de pan
+    # our so-called breadcrumb
     self.__local[funcName] = {}
     pointerVars = functionPointer[funcName]['vars']
     pointerTemps = functionPointer[funcName]['temps']
     arrParams = functionPointer[funcName]['arrParam']
     k = 0
-    # print("FUNCPTR", functionPointer)
-    # now = False
-    # if now:
     for i, j in pointerVars.items():
       if j.getIsParam():
         self.__local[funcName][j.getVirtualAddress()] = arrParams[k]
@@ -769,17 +756,13 @@ class MainMemory:
       self.__local[funcName][j.getVirtualAddress()] = None
     self.__local[funcName]["goHere"] = goHere
     self.__localArr.append(self.__local[funcName])
-    # self.printing()
     return
 
-  # def printing(self):
-    # print("CCCCCOOOOOMMMOOOOO ESTAAAAAAAAA")
-    # for i in self.__localArr:
-    #   print(i)
-
   def setConstants(self, dirFunc):
-    consts = dirFunc["global"]["consts"]
+    consts = dirFunc["global"]["consts"] 
     for i, j in consts.items():
+      if len(j) > 2000:
+        raise Exception("ERROR! Too many variables!")  
       for k, l in j.items():
         self.__constants[l] = k
 
@@ -791,7 +774,6 @@ class MainMemory:
 
   def reset(self):
     self.__global = {}
-    self.globalMem = CallStackMemory()
     self.__local = {}
     self.localMem = CallStackMemory()
     self.__localArr = []
@@ -799,6 +781,10 @@ class MainMemory:
     self.__classes = {}
     self.__pointer = None
 
+
+################################################
+# CALL STACK MEMORY: contains an index of variables and temps
+# that are counters updated within function calls.
 class CallStackMemory:
   def __init__(self):
     self.variables = {

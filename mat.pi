@@ -4,56 +4,46 @@ var ints A[8] = {1,2,3,4,5,6,7,8};
 var int j;
 var ints B[4][6] = {{1,2,3,4,5,6},{1,2,3,4,5,6}, {1,2,3,4,5,6}, {1,2,3,4,5,6}};
 var int k;
-/*
+
 class Clase: {
   att:
     var int a;
     var flt b;
+    var str st;
   
   met:
     func void claseFunc(int a, flt b) {
       var int c;
       c = 8 - 9
       b = a + b * 8.17
-      print("C", c, "B", b)
+      Clase.st = "hello world!"
+      print("C", c, "B", b, Clase.st)
+    }
+
+    func int fact(int j) {
+      var int i;
+      var int k;
+      i = 2
+      k = 8
+      print(k)
+      /*   i = j + (i - j * 2 + j)  */
+      if (j == 1) then {
+        return (j)
+      } else {
+        return (j)
+        /* return (j * {fact(j - 1)}) */
+      };
     }
 };
-
-
-class Clase2: {
-  att:
-    var int a;
-    var flt b;
-  
-  met:
-    func void claseFunc(int a, flt b) {
-      var int c;
-      c = 8 - 9
-      b = a + b * 8.17
-      print("C", c, "B", b)
-    }
-};
-*/
-
-func int fact(int j) {
-  /*  var ints C[12][12]; */
-  /*  var ints D[2][3]; */
-  var int i;
-  i = 2
-
-  /*   i = j + (i - j * 2 + j)  */
-  if (j == 1) then {
-    return (j)
-  } else {
-    return (j)
-    /* return (j * {fact(j - 1)}) */
-  };
-}
 
 int main() {
 
   /* A[i+j*k] = j + B[i*j][k - i] * A[k] */
   /* B[i+j][A[i] * k] = i + Clase.a */
-  fact(3)
-  /* Clase.claseFunc(1, 1.1) */
+  /* fact(3) */
+  Clase.a = 1
+  Clase.b = 1.1
+  k = {Clase.fact(3)}
+  Clase.claseFunc(Clase.a, Clase.b)
+  print(k)
 }

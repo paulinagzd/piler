@@ -2,9 +2,11 @@ from quad import Quad
 from vm import MemoryContainer
 import helpers 
 
+################################################
+# DIMENSION NODE: for handling the dimensions in each variable
+# This follows the implementation seen in class where the offset and
+# MDim or k are accessed. Used for easier accessing and setting.
 quadruple = Quad.instantiate()
-cont = 0
-cont2 = 0
 class DimensionNode:
   def __init__(self, dim, lim):
     self.__dim = dim
@@ -13,6 +15,7 @@ class DimensionNode:
     self.__offset = 0
     self.__content = []
 
+  # GETTERS: used to access each element in this class
   def getDim(self):
     return self.__dim
 
@@ -24,7 +27,8 @@ class DimensionNode:
 
   def getOffset(self):
     return self.__offset
-
+    
+  # SETTERS: for setting attributes from outside the class
   def getVirtualAddress(self):
     return self.__virtualAddress
 
@@ -34,149 +38,167 @@ class DimensionNode:
   def setMDim(self, val):
     self.__mDim = val
   
+  # Set the current displacement
   def setOffset(self, val):
     self.__offset = val
 
+  # Method used to print for debugging purposes
   def __repr__(self):
     return "lSup: %s mDim = %s" % (self.__lim, self.__mDim)
+
+################################################
+# VARIABLE: for handling all of the attribute's attributes
+# This class contains identifiers as well as flags to indicate
+# if it is a special variable, like an object or with dimensions
 class Variable:
   def __init__(self, varName, varType, dimensions, dimensionNodes, offset, isParam, memPointer, isObject):
     self.__varName = varName
     self.__varType = varType
-    self.__dimensions = dimensions
-    self.__dimensionNodes = dimensionNodes
-    self.__isParam = isParam
     self.__virtualAddress = memPointer.getInitialAddress() + memPointer.getOffset()
+    # for better identification
+    self.__isParam = isParam
     self.__isObject = isObject
-    self.__value = None
+    #for arrays and dimensions
     self.__memPointer = memPointer
     self.__offset = offset
+    self.__dimensions = dimensions
+    self.__dimensionNodes = dimensionNodes
+
     self.__value = None
 
     # incrementing offset when variable is created in memory
-    # if dimensions > 0:
-    #   memPointer.setDimensionalOffset(int(offset))
-    # el
     if varName == '':
       pass
     else:  
       memPointer.setOffset()
 
-  # getters
+  # GETTERS: used to access each element in this class
+  # Getting the variable's name
   def getVarName(self):
     return self.__varName
-  
+
+  # Getting the variable's name  
   def getVarType(self):
     return self.__varType
 
+  # Getting the variable's type
   def getDimensions(self):
     return self.__dimensions
 
+  # Getting the variable's dimension node array
   def getDimensionNodes(self):
     return self.__dimensionNodes
 
-  def getValue(self):
-    return self.__value
-
+  # Getting the variable's parameter flag
   def getIsParam(self):
     return self.__isParam
 
+  # Getting the variable's virtual address
   def getVirtualAddress(self):
     return self.__virtualAddress
 
+  # Getting the variable's object flag
   def getIsObject(self):
     return self.__isObject
 
+  # Getting the variable's value if dimensional
+  def getValue(self):
+    return self.__value
+
+  # Getting the variable's offset when created in memory
   def getOffset(self):
     return self.__offset
 
+  # Getting the variable's memory information
   def getMemPointer(self):
     return self.__memPointer
 
-  # setters
+  # SETTERS: for setting attributes from outside the class
+  # Getting the variable's name
   def setVarName(self, varName):
     self.__varName = varName
 
+  # Getting the variable's type
   def setVarType(self, varType):
     self.__varType = varType
-  
+
+  # Setting the variable's dimension number
   def setDimensions(self):
     self.__dimensions += 1
 
-  def setValue(self, value):
-    self.__value = value
-
+  # Setting the variable's parameter flag
   def setIsParam(self, value):
     self.__isParam = value
 
+  # Setting the variable's object flag
   def setIsObject(self, value):
     self.__isObject = value
 
+  # Setting the variable's value if dimensional
   def setValue(self, value):
     self.__value = value
-
+  
+  # Method used to print for debugging purposes
   def __repr__(self):
     if self.__dimensions > 0:
-      return "{\n name: %s \n type: %s \n dimensions: %s array: %s \n value: %s \n isParam: %s \n virtualAddress: %s \n}" % (self.getVarName(), self.getVarType(), self.getDimensions(), self.getDimensionNodes(), self.getValue(), self.getIsParam(), self.__virtualAddress)
+      return "{\n name: %s \n type: %s \n dimensions: %s array: %s \n isParam: %s \n virtualAddress: %s \n}" % (self.getVarName(), self.getVarType(), self.getDimensions(), self.getDimensionNodes(), self.getIsParam(), self.__virtualAddress)
     else:
-      return "{\n name: %s \n type: %s \n dimensions: %s \n value: %s \n isParam: %s \n virtualAddress: %s \n}" % (self.getVarName(), self.getVarType(), self.getDimensions(), self.getValue(), self.getIsParam(), self.__virtualAddress)
+      return "{\n name: %s \n type: %s \n dimensions: %s \n isParam: %s \n virtualAddress: %s \n}" % (self.getVarName(), self.getVarType(), self.getDimensions(), self.getIsParam(), self.__virtualAddress)
 
+################################################
+# SCOPE: what a block contains.
+# Global scopes contain variables, functions, and classes
+# Class local scopes contain variables and functions (empty scopeClasses objects)
+# Function local scopes contain variables (empty scopeFunctions and scopeClasses objects
 class Scope:
-  # SCOPE: what a block contains.
-  # Global scopes contain variables, functions, and classes
-  # Class local scopes contain variables and functions (empty scopeClasses objects)
-  # Function local scopes contain variables (empty scopeFunctions and scopeClasses objects)
-
   def __init__(self, type, name, context, starts):
     self.__scopeType = type # Will be used to validate if local or global
-    self.__scopeName = name
-    self.__context = context
-    self.__scopeFunctions = {}
-    self.__scopeVariables = {}
-    self.__scopeClasses = {}
-    self.__scopeConstants = {}
-    self.__scopeTemps = {}
+    self.__scopeName = name # Main identifier
+    self.__context = context # Distinguishes between functions, classFunctions...
+    self.__scopeFunctions = {} # Not always has value, only if Global or Class
+    self.__scopeVariables = {} # Has value if a variable is declared in that Scope
+    self.__scopeClasses = {} # Not always has value, only if Global
+    self.__scopeConstants = {} # Not always has value, only if Global
+    self.__scopeTemps = {} # Used to store temporal values
+
+    # for keeping track of Scope attributes
     self.__latestName = None
     self.__latestFuncName = None
     self.__latestType = None
     self.__latestExpValue = None
+
+    # for arrays and matrices
     self.__latestDimension = 0
+    self.__dimensionNodes = []
     self.__r = 1
-    self.starts = starts
+
     # for functions and modules
     self.__quadCont = 0
     self.__numParams = 0
     self.__numLocalVars = 0
     self.__latestReturnValue = None
     self.__currentFunctionParams = []
-    self.__temps = {
-      'int' : 0,
-      'ints': 0,
-      'flt' : 0,
-      'flts': 0,
-      'boo' : 0,
-      'boos': 0,
-      'cha' : 0,
-      'chas': 0,
-      'str' : 0,
-      'strs': 0,
-    }
-    self.__dimensionNodes = []
     self.__matchingParams = False
 
+    # for quadruple number when Scope initiates
+    self.starts = starts
+
+    # Global and Class Scopes have their own memory addresses (resetting)
     if type == 'global' or type == 'class':
       self.memory = MemoryContainer(type)
 
-  # getters
+  # GETTERS: used to access each element in this class
+  # Depending on function, class, or global
   def getScopeType(self):
     return self.__scopeType
-
+  
   def getScopeName(self):
     return self.__scopeName
 
   def getContext(self):
     return self.__context
 
+  # Getting scope's content through objects
   def getScopeVariables(self):
     return self.__scopeVariables
 
@@ -192,6 +214,8 @@ class Scope:
   def getScopeTemps(self):
     return self.__scopeTemps
 
+  # Used for accessibility purposes and syntax readability
+  # Constantly being updated through the syntax
   def getLatestName(self):
     return self.__latestName
 
@@ -207,6 +231,10 @@ class Scope:
   def getLatestExpValue(self):
     return self.__latestExpValue 
 
+  def getLatestReturnValue(self):
+    return self.__latestReturnValue
+
+  # Getting scope's attributes for easier scope navigation
   def getQuadCont(self):
     return self.__quadCont 
 
@@ -219,22 +247,19 @@ class Scope:
   def getCurrentFunctionParams(self):
     return self.__currentFunctionParams 
 
-  def getLatestReturnValue(self):
-    return self.__latestReturnValue
-
-  def getTemps(self):
-    return self.__temps
-    
   def getMatchingParams(self):
     return self.__matchingParams
 
-  # setters
+  # SETTERS: for setting attributes from outside the class
+  # Used for updating the scope's general identificators
   def setScopeType(self, scopeType):
     self.__scopeType = scopeType
 
   def setContext(self, context):
     self.__context = context
 
+  # Constantly being updated through the syntax, used for easier
+  # readability when adding or accessing scope's content
   def setLatestName(self, latestName):
     self.__latestName = latestName
 
@@ -243,12 +268,14 @@ class Scope:
 
   def setLatestType(self, latestType):
     self.__latestType = latestType
-           
+
+  def setLatestReturnValue(self):
+    self.__latestReturnValue = self.__latestExpValue
+        
   def setLatestDimension(self, lim):
     self.__latestDimension = self.__latestDimension + 1
     if lim != -1:
       self.__r = lim * self.__r
-      # print("ADDING DIM", self.__latestDimension, lim, temp)
       self.__dimensionNodes.append(DimensionNode(self.__latestDimension, lim))
 
   def resetLatestDimension(self):
@@ -257,6 +284,7 @@ class Scope:
   def setLatestExpValue(self, val):
     self.__latestExpValue = val
 
+  # Modifying the scope's main attributes for navigation
   def setQuadCont(self, val):
     self.__quadCont = val
 
@@ -271,39 +299,20 @@ class Scope:
 
   def clearCurrentFunctionParams(self):
     self.__currentFunctionParams = []
-    
-  def setLatestReturnValue(self):
-    self.__latestReturnValue = self.__latestExpValue
-
-  def setTemps(self, key, val):
-    self.__temps[key] = val
-
-  def findConstVA(self, val):
-    globalScope = SymbolTable.instantiate().getGlobalScope()
-    if val in globalScope.getScopeConstants():
-      return globalScope.getScopeConstants()[val].getVirtualAddress()
       
   def setMatchingParams(self, val):
     self.__matchingParams = val
 
-  def getTypeConstants(self, operand):
-    if isinstance(operand,float):
-      return 'flt'
-    elif isinstance(operand,int):
-      return 'int'
-    elif isinstance(operand, str):
-      if len(operand) == 3 and operand[0] == '\'':
-        return 'cha'
-      else:
-        return 'str'
-
   # methods
+  # verifyArrContent
+  # What: assures the array is correctly declared and assigned
+  # Parameters: The variable's respective attributes
+  # When is it used: Every time a variable value with dimensions is read on the sample programs
   def verifyArrContent(self, array, varType, dimensions, dimensionNodes):
     newVarType = varType
     if varType[-1] == 's':
       newVarType = varType[:3]
 
-    # print("LEN ARRAY", len(array))
     if len(array) == 1 and len(array) != dimensions:
       raise Exception('ERROR! Variable with incorrect dimensions')
     else:
@@ -316,28 +325,18 @@ class Scope:
             for j in i:
               if len(j) != arrSize1:
                 raise Exception('ERROR! Variable with incorrect dimensions')                      
-              if self.getTypeConstants(j) != newVarType:
+              if helpers.getTypeConstants(j) != newVarType:
                 raise Exception('ERROR! Variable with incorrect type for dimensions')
       else:
         for j in array[0]:
-          if self.getTypeConstants(j) != newVarType:
+          if helpers.getTypeConstants(j) != newVarType:
             raise Exception('ERROR! Variable with incorrect type for dimensions')
     return True
 
-  def addVariableWithDimensions(self, varName, varType, dimensions, dimNodes, offset, isParam, memPointer, isObject, contP, flatList):
-    temp = 0
-    while temp < len(flatList):
-      if temp == 0:
-        self.__scopeVariables[varName] = Variable(varName, varType, dimensions, self.__dimensionNodes, offset, isParam, memPointer, isObject)
-        self.__scopeVariables[varName].setValue(flatList[temp])
-      else:
-        varName = strObj = str(int(offset))
-        self.__scopeVariables[varName + strObj] = Variable(varName, varType, dimensions, self.__dimensionNodes, offset, isParam, memPointer, isObject)
-        self.__scopeVariables[varName + strObj].setValue(flatList[temp])
-      temp += 1
-      # offset -= 1
-
-
+  # addVariable
+  # What: adds variables to respective scope
+  # Parameters: The variable's respective attributes
+  # When is it used: Every time a variable value is read on the sample programs
   def addVariable(self, varName, varType, dimensions, isParam, varDim):
     if varName in self.getScopeVariables():
       raise Exception('ERROR! Variable with identifier:', varName, 'already exists!')
@@ -390,9 +389,6 @@ class Scope:
           temp += 1
       else:
         self.__scopeVariables[varName] = Variable(varName, varType, dimensions, self.__dimensionNodes, offset, isParam, memPointer, False)
-    else:
-      #TODO for CLASSES AND OBJECTS
-      pass
     self.__dimensionNodes = []
     self.resetLatestDimension()
 
@@ -417,10 +413,17 @@ class Scope:
       constantTypePointer[value] = memPointer.getInitialAddress() + memPointer.getOffset()
       memPointer.setOffset()
 
+  # addFunction
+  # What: adds function values to the Global or Class's scopeFunctions object
+  # Parameters: The name and the type of the function
+  # Returns an updated __scopeFunctions object for the global/class scope
+  # When is it used: Every time a function value is DECLARED on the sample programs
   def addFunction(self, funcName, funcType):
+    # Error checking if repeating function
     if funcName in self.getScopeFunctions():
       raise Exception('ERROR! Function with identifier: ', funcName, 'already exists!')
 
+    # Generating function context, since it's a scope
     if (SymbolTable.instantiate().getCurrentScope().getScopeType() == 'global'):
       keyword = 'function'
     elif (SymbolTable.instantiate().getCurrentScope().getScopeType() == 'class'):
@@ -430,6 +433,11 @@ class Scope:
     self.__scopeFunctions[funcName] = Scope(funcType, funcName, keyword, quadruple.quadCounter)
     SymbolTable.instantiate().setCurrentScope(self.__scopeFunctions[funcName])
     
+  # addClass
+  # What: adds class values to the Global scopeClasses object
+  # Parameters: The name of the class (does not have a type)
+  # Returns an updated __scopeClasses object for the global scope
+  # When is it used: Every time a class value is DECLARED on the sample programs
   def addClass(self, className):
     if className in self.getScopeClasses():
       raise Exception('ERROR! Class with identifier:', className, 'already exists!')
@@ -451,6 +459,11 @@ class Scope:
       return globalScope.__scopeVariables[varName]
     self.resetLatestDimension()
 
+  # sawCalledFunction
+  # What: looks for the function that's being called
+  # Parameters: Function's possible identifiers
+  # Returns the function that was called if correctly done
+  # When is it used: Every time a function is called in the syntax
   def sawCalledFunction(self, funcName, scope, className):
     globalScope = SymbolTable.instantiate().getGlobalScope()
     pointer = globalScope
@@ -469,8 +482,8 @@ class Scope:
         else:
           raise Exception('ERROR! FUNCTION with identifier:', funcName, 'is not defined in this program')
     
-    # print("GENERATE ERA", funcName, scope, pointer)
     if scope == 'class': 
+      # generates a special ERA for classes
       quadruple.saveQuad('era', funcName, scope, pointer.getScopeName())
     else:
       quadruple.saveQuad('era', funcName, scope, -1)
@@ -483,6 +496,11 @@ class Scope:
     self.__latestFuncName = funcName
     return pointer.getScopeFunctions()[funcName]
 
+  # doesClassExist
+  # What: looks for the class that's being called
+  # Parameters: Class's possible identifiers
+  # Returns the class that was called if correctly done
+  # When is it used: Every time a class is called in the syntax
   def doesClassExist(self, className, idName, type):
     globalScope = SymbolTable.instantiate().getGlobalScope()
     if not className in globalScope.getScopeClasses():
@@ -498,6 +516,11 @@ class Scope:
         raise Exception('ERROR! Function with identifier:', idName, 'is not defined in the class')
       return currentClass.__scopeName # returns class name
 
+  # verifyDim
+  # What: checks that the called variable is declared correctly
+  # Parameters: Variable's possible identifiers
+  # Returns a dimensional variable if it's declared and called correctly  
+  # When is it used: Every time a dimensional variable is called in the syntax
   def verifyDim(self, varName):
     globalScope = SymbolTable.instantiate().getGlobalScope()
     if not varName in self.__scopeVariables and not varName in globalScope.getScopeVariables():
@@ -513,6 +536,7 @@ class Scope:
   
     return varPointer[varName]
 
+  # Counts either if local or param variables
   def countVars(self):
     for item, val in self.__scopeVariables.items():
       if val.getIsParam():
@@ -522,9 +546,15 @@ class Scope:
     
     self.__quadCont = quadruple.quadCounter
 
+  # Method used to print for debugging purposes
   def __repr__(self):
     return "{\n starts :%s type: %s \n context: %s \n name: %s \n vars: %s \n}" % (self.starts, self.getScopeType(), self.getContext(), self.__scopeName, self.__scopeVariables)
 
+
+################################################
+# SYMBOL TABLE: stores every class, function, variable, and anything
+# else that was read on the program. It's the "dictionary" and pointer for
+# all of the content in the program
 class SymbolTable:
   isAlive = None
 
@@ -532,9 +562,11 @@ class SymbolTable:
     SymbolTable.isAlive = self
     self.__globalScope = {}
     keyword = "global"
+
+    # initiating scopes
     self.__globalScope["global"] = Scope(keyword, keyword, keyword, 1)
     self.__currentScope = self.__globalScope["global"]
-    self.__classStack = []
+    self.__classStack = [] # used when adding classes (smaller global content)
 
   @classmethod
   def instantiate(cls):
@@ -542,6 +574,7 @@ class SymbolTable:
       SymbolTable()
     return SymbolTable.isAlive
 
+  # GETTERS: used to access each element in this class
   def getCurrentScope(self):
     return self.__currentScope
 
@@ -551,6 +584,7 @@ class SymbolTable:
   def getStack(self):
     return self.__classStack[-1]
 
+  # SETTERS: for setting attributes from outside the class
   def setCurrentScope(self, val):
     self.__currentScope = val
 
@@ -560,10 +594,12 @@ class SymbolTable:
   def setStackPop(self,):
     self.__classStack.pop()
 
+  # adds a function scope within the global scope
   def addFunctionScope(self):
     current = self.getCurrentScope()
     current.addFunction(self.__currentScope.getLatestName(), self.__currentScope.getLatestType())
 
+  # adds special or class scope
   def addClassScope(self):
     current = self.getCurrentScope()
     self.setStackPush(current.getLatestName())
@@ -582,9 +618,11 @@ class SymbolTable:
       j['real'].resetOffset()
       j['temp'].resetOffset()
 
+  # returns to global scope
   def exitClassScope(self):
     self.setCurrentScope(self.__globalScope["global"])
 
+  # printing method used for debugging purposes
   def printingAll(self):
     for key, val in self.__globalScope.items():
       print(key, ': ', val)
@@ -631,6 +669,7 @@ class SymbolTable:
           print(len(oo.getScopeTemps()))
           print('---------------------------------')
   
+  # Calculates the number and type of data needed in each declared function
   def getFuncSize(self, func):
     res = {
       "local": {}, 
@@ -640,7 +679,6 @@ class SymbolTable:
     for i, j in func.getScopeVariables().items():
       varType = j.getVarType()
       if not varType in res["local"]:
-        # print("OFFSET", int(j.getOffset()))
         res["local"][varType] = int(j.getOffset()) + 1
       else:
         res["local"][varType] = int(res["local"][varType] + j.getOffset() + 1)
@@ -653,6 +691,9 @@ class SymbolTable:
 
     return res
 
+  # Creates the "skeleton" for the virtual machine
+  # It creates a dictionary with variables, constants, and temp values
+  # Also stores functions, classes, and their content within
   def buildForVM(self):
     res = []
     tempDirFunc = {"global": {
@@ -681,7 +722,6 @@ class SymbolTable:
           "vars": val1.getScopeVariables(),
           "temps": val1.getScopeTemps(),
         }
-        # print(key1, pointer[key1])
 
       # classes are their own "world" inside the global scope
       # meaning they have global variables and dirFunc
@@ -701,20 +741,12 @@ class SymbolTable:
             "vars": valClass.getScopeVariables(),
             "temps": valClass.getScopeTemps(),
           }
-          # print(keyClass, pointer[keyClass])
-
-    # print("ENTRO")
-    # print("DIRFUNC")
-    # for i, j in tempDirFunc.items():
-    #   print(tempDirFunc[i])
-    # print("DIRCLASS")
-    # for i, j in tempDirClass.items():
-    #   print(tempDirClass[i])
   
     res.append(tempDirFunc)
     res.append(tempArr)
     return res
 
+  # initiating the SymbolTable every time a program is runned
   def reset(self):
     self.__globalScope = {}
     keyword = "global"

@@ -13,6 +13,7 @@ from jumps import Jumps
 import quadHelpers
 import condHelpers
 import moduleHelpers
+import helpers
 import sys
 # sys.tracebacklimit=0 # DEPENDS IF I WANT TO LOG ERRORS AT THE MOMENT
 
@@ -247,14 +248,16 @@ def p_while_loop(p):
   '''
 
 ################################################
-# CICLO WHILE
+# WHILE LOOP
+# General structure of a while loop with action points
 def p_do_while_loop(p):
   '''
   do_while_loop : DO saw_while block WHILE cond2 saw_do_while_end SEMICOLON
   '''
 
-################################################
-# DECLARACION VARS
+ ################################################
+# VARIABLE DECLARATION
+# Used only when declaring variables in a new scope (not an expression)
 def p_decs(p):
   '''
   decs : dec decs1
@@ -270,8 +273,10 @@ def p_decs1(p):
   decs1 : decs
         | empty
   '''
+
 ################################################
-# type
+# TYPE
+# Handles the conditions between the type being appropriate for its declaration
 def p_type(p):
   '''
   type : compound ID saw_id saw_variable type1
@@ -724,7 +729,7 @@ def p_saw_asig(p):
 
 def p_saw_end_value(p):
   ''' saw_end_value : '''
-  constType = quadHelpers.getTypeConstant(p[-1])
+  constType = helpers.getTypeConstants(p[-1])
   symbolTable.getCurrentScope().addConstant(p[-1], constType)
   tempAddressPointer = symbolTable.getGlobalScope().getScopeConstants()[constType]
   curr = p[-1]
@@ -762,14 +767,14 @@ def p_check_and_operator(p):
   check_and_operator  :
   '''
   workingStack = quadruple.getWorkingStack()
-  res = quadHelpers.check_and_operator(quadruple)
+  res = quadHelpers.check_and_or_operator(quadruple)
 
 def p_check_or_operator(p):
   '''
   check_or_operator :
   '''
   workingStack = quadruple.getWorkingStack()
-  res = quadHelpers.check_or_operator(quadruple)
+  res = quadHelpers.check_and_or_operator(quadruple)
 
 def p_saw_and(p):
   '''
@@ -906,7 +911,7 @@ def p_saw_declared_dim(p):
   ''' saw_declared_dim : '''
   current = symbolTable.getCurrentScope()
   current.setLatestDimension(p[-1])
-  constType = quadHelpers.getTypeConstant(p[-1])
+  constType = helpers.getTypeConstants(p[-1])
   symbolTable.getCurrentScope().addConstant(p[-1], constType)
   tempAddressPointer = symbolTable.getGlobalScope().getScopeConstants()[constType]
 
