@@ -1,0 +1,18 @@
+program fibR;
+
+func int fib(int x) {
+   if (x <= 1 ) then {
+      return x
+   };
+   return ( {fib(x - 1)} + {fib(x - 2)})
+}
+
+int main() {
+  var int x;
+  var int i;
+  print("Enter the number of terms of series : ")
+  /*  cin >> x; */
+  x = 6
+  print("Fibonnaci Series : ")
+  print({fib(6)})
+}

@@ -1,17 +1,19 @@
 from quad import Quad
 from vm import MemoryContainer
-quadruple = Quad.instantiate()
+import helpers 
 
 ################################################
 # DIMENSION NODE: for handling the dimensions in each variable
 # This follows the implementation seen in class where the offset and
 # MDim or k are accessed. Used for easier accessing and setting.
+quadruple = Quad.instantiate()
 class DimensionNode:
-  def __init__(self, dim, lim, temp):
+  def __init__(self, dim, lim):
     self.__dim = dim
-    self.__r = (lim + 1) * temp
+    self.__mDim = None
     self.__lim = lim
     self.__offset = 0
+    self.__content = []
 
   # GETTERS: used to access each element in this class
   # Get the current dimension
@@ -22,18 +24,23 @@ class DimensionNode:
   def getLim(self):
     return self.__lim
 
-  # Get the current mDim or K
-  def getR(self):
-    return self.__r
+  def getMDim(self):
+    return self.__mDim
 
   # Get the current offset when adding dimensions
   def getOffset(self):
     return self.__offset
-
+    
   # SETTERS: for setting attributes from outside the class
   # Set the current mDim or K
-  def setR(self, val):
-    self.__r = val
+  def getVirtualAddress(self):
+    return self.__virtualAddress
+
+  def getContent(self):
+    return self.__content
+
+  def setMDim(self, val):
+    self.__mDim = val
   
   # Set the current displacement
   def setOffset(self, val):
@@ -41,7 +48,7 @@ class DimensionNode:
 
   # Method used to print for debugging purposes
   def __repr__(self):
-    return "lim: %s m or k = %s" % (self.__lim, self.__r)
+    return "lSup: %s mDim = %s" % (self.__lim, self.__mDim)
 
 ################################################
 # VARIABLE: for handling all of the attribute's attributes
@@ -56,10 +63,13 @@ class Variable:
     self.__isParam = isParam
     self.__virtualAddress = memPointer.getInitialAddress() + memPointer.getOffset()
     self.__isObject = isObject
+    self.__memPointer = memPointer
+    self.__offset = offset
+    self.__value = None
 
     # incrementing offset when variable is created in memory
-    if dimensions > 0:
-      memPointer.setDimensionalOffset(int(offset))
+    if varName == '':
+      pass
     else:  
       memPointer.setOffset()
 
@@ -92,6 +102,15 @@ class Variable:
   def getIsObject(self):
     return self.__isObject
 
+  def getValue(self):
+    return self.__value
+
+  def getOffset(self):
+    return self.__offset
+
+  def getMemPointer(self):
+    return self.__memPointer
+
   # SETTERS: for setting attributes from outside the class
   # Getting the variable's name
   def setVarName(self, varName):
@@ -113,6 +132,9 @@ class Variable:
   def setIsObject(self, value):
     self.__isObject = value
 
+  def setValue(self, value):
+    self.__value = value
+  
   # Method used to print for debugging purposes
   def __repr__(self):
     if self.__dimensions > 0:
@@ -136,34 +158,43 @@ class Scope:
     self.__scopeConstants = {} # Not always has value, only if Global
 
     # For easier syntax checking
+class Scope:
+  # SCOPE: what a block contains.
+  # Global scopes contain variables, functions, and classes
+  # Class local scopes contain variables and functions (empty scopeClasses objects)
+  # Function local scopes contain variables (empty scopeFunctions and scopeClasses objects)
+
+  def __init__(self, type, name, context, starts):
+    self.__scopeType = type # Will be used to validate if local or global
+    self.__scopeName = name # Main identifier
+    self.__context = context # Distinguishes between functions, classFunctions...
+    self.__scopeFunctions = {} # Not always has value, only if Global or Class
+    self.__scopeVariables = {} # Has value if a variable is declared in that Scope
+    self.__scopeClasses = {} # Not always has value, only if Global
+    self.__scopeConstants = {} # Not always has value, only if Global
+    self.__scopeTemps = {} # Used to store temporal values
+
+    # for keeping track of Scope attributes
     self.__latestName = None
     self.__latestFuncName = None
     self.__latestType = None
     self.__latestExpValue = None
-    self.__latestDimension = 0
 
-    # For functions and modules
+    # for arrays and matrices
+    self.__latestDimension = 0
+    self.__dimensionNodes = []
+    self.__r = 1
+
+    # for functions and modules
     self.__quadCont = 0
     self.__numParams = 0
     self.__numLocalVars = 0
     self.__latestReturnValue = None
     self.__currentFunctionParams = []
-    self.__dimensionNodes = []
     self.__matchingParams = False
 
-    # Helping with function size checking
-    self.__temps = {
-      'int' : 0,
-      'ints': 0,
-      'flt' : 0,
-      'flts': 0,
-      'boo' : 0,
-      'boos': 0,
-      'cha' : 0,
-      'chas': 0,
-      'str' : 0,
-      'strs': 0,
-    }
+    # for quadruple number when Scope initiates
+    self.starts = starts
 
     # Global and Class Scopes have their own memory addresses (resetting)
     if type == 'global' or type == 'class':
@@ -190,6 +221,9 @@ class Scope:
 
   def getScopeConstants(self):
     return self.__scopeConstants
+
+  def getScopeTemps(self):
+    return self.__scopeTemps
 
   def getLatestName(self):
     return self.__latestName
@@ -221,9 +255,6 @@ class Scope:
   def getLatestReturnValue(self):
     return self.__latestReturnValue
 
-  def getTemps(self):
-    return self.__temps
-    
   def getMatchingParams(self):
     return self.__matchingParams
 
@@ -246,8 +277,8 @@ class Scope:
   def setLatestDimension(self, lim):
     self.__latestDimension = self.__latestDimension + 1
     if lim != -1:
-      temp = 1 if self.__latestDimension == 1 else self.__dimensionNodes[0].getR()
-      self.__dimensionNodes.append(DimensionNode(self.__latestDimension, lim, temp))
+      self.__r = lim * self.__r
+      self.__dimensionNodes.append(DimensionNode(self.__latestDimension, lim))
 
   def resetLatestDimension(self):
     self.__latestDimension = 0
@@ -273,9 +304,6 @@ class Scope:
   def setLatestReturnValue(self):
     self.__latestReturnValue = self.__latestExpValue
 
-  def setTemps(self, key, val):
-    self.__temps[key] = val
-
   def findConstVA(self, val):
     globalScope = SymbolTable.instantiate().getGlobalScope()
     if val in globalScope.getScopeConstants():
@@ -285,26 +313,77 @@ class Scope:
     self.__matchingParams = val
 
   # methods
-  def addVariable(self, varName, varType, dimensions, isParam):
+  def verifyArrContent(self, array, varType, dimensions, dimensionNodes):
+    newVarType = varType
+    if varType[-1] == 's':
+      newVarType = varType[:3]
+
+    # print("LEN ARRAY", len(array))
+    if len(array) == 1 and len(array) != dimensions:
+      raise Exception('ERROR! Variable with incorrect dimensions')
+    else:
+      if dimensions == 2:
+        arrSize1 = dimensionNodes[0].getLim()
+        arrSize2 = dimensionNodes[1].getLim()
+        for i in array:
+          if len(i) != arrSize2:
+            raise Exception('ERROR! Variable with incorrect dimensions')
+            for j in i:
+              if len(j) != arrSize1:
+                raise Exception('ERROR! Variable with incorrect dimensions')                      
+              if helpers.getTypeConstants(j) != newVarType:
+                raise Exception('ERROR! Variable with incorrect type for dimensions')
+      else:
+        for j in array[0]:
+          if helpers.getTypeConstants(j) != newVarType:
+            raise Exception('ERROR! Variable with incorrect type for dimensions')
+    return True
+
+  def addVariableWithDimensions(self, varName, varType, dimensions, dimNodes, offset, isParam, memPointer, isObject, contP, flatList):
+    temp = 0
+    while temp < len(flatList):
+      if temp == 0:
+        self.__scopeVariables[varName] = Variable(varName, varType, dimensions, self.__dimensionNodes, offset, isParam, memPointer, isObject)
+        self.__scopeVariables[varName].setValue(flatList[temp])
+      else:
+        varName = strObj = str(int(offset))
+        self.__scopeVariables[varName + strObj] = Variable(varName, varType, dimensions, self.__dimensionNodes, offset, isParam, memPointer, isObject)
+        self.__scopeVariables[varName + strObj].setValue(flatList[temp])
+      temp += 1
+      # offset -= 1
+
+
+  def addVariable(self, varName, varType, dimensions, isParam, varDim):
     if varName in self.getScopeVariables():
       raise Exception('ERROR! Variable with identifier:', varName, 'already exists!')
 
     # if it has dimensions it needs to complete the dimensionNodes
     offset = 0
     if dimensions > 0:
-      size = self.__dimensionNodes[0].getR()
       for dimNode in self.__dimensionNodes:
-        mDim = dimNode.getR() / (dimNode.getLim() + 1)
-        dimNode.setR(int(mDim))
-        offset = offset + dimNode.getLim() * mDim
-        dimNode.setOffset(int(offset))
-      self.__dimensionNodes[-1].setR(0)
+        mDim = self.__r / (dimNode.getLim())
 
+        self.__r = int(mDim)
+        dimNode.setMDim(int(mDim))
+      self.__r = 1
     # adding the variable depending on the scope it's in, considering classes as global and local memory
     if self.__context == 'global' or self.__context == 'class':
       memPointer = self.memory.memSpace['global'][varType]['real']
       isObject = True if self.__context == 'class' else False
-      self.__scopeVariables[varName] = Variable(varName, varType, dimensions, self.__dimensionNodes, offset, isParam, memPointer, isObject)
+      if dimensions > 0 and self.verifyArrContent(varDim, varType, dimensions, self.__dimensionNodes):
+        temp = 0
+        flatList = [item for sublist in varDim for item in sublist]
+        while temp < len(flatList):
+          if temp == 0:
+            self.__scopeVariables[varName] = Variable(varName, varType, dimensions, self.__dimensionNodes, offset, isParam, memPointer, isObject)
+            self.__scopeVariables[varName].setValue(flatList[temp])
+          else:
+            strObj = str(int(temp))
+            self.__scopeVariables[varName + strObj] = Variable(varName, varType, dimensions, self.__dimensionNodes, offset, isParam, memPointer, isObject)
+            self.__scopeVariables[varName + strObj].setValue(flatList[temp])
+          temp += 1
+      else:
+        self.__scopeVariables[varName] = Variable(varName, varType, dimensions, self.__dimensionNodes, offset, isParam, memPointer, isObject)
     elif SymbolTable.instantiate().getCurrentScope().getContext() == 'function' or SymbolTable.instantiate().getCurrentScope().getContext() == 'classFunction':
       globalScope = SymbolTable.instantiate().getGlobalScope()
       if SymbolTable.instantiate().getCurrentScope().getContext() == 'function':
@@ -313,7 +392,19 @@ class Scope:
       else:
         classScope = globalScope.getScopeClasses()[SymbolTable.instantiate().getStack()]
         memPointer = classScope.memory.memSpace['local'][varType]['real']
-      self.__scopeVariables[varName] = Variable(varName, varType, dimensions, self.__dimensionNodes, offset, isParam, memPointer, False)
+      if dimensions > 0 and self.verifyArrContent(varDim, varType, dimensions, self.__dimensionNodes):
+        temp = 0
+        flatList = [item for sublist in varDim for item in sublist]
+        while temp < len(flatList):          
+          if temp == 0:
+            self.__scopeVariables[varName] = Variable(varName, varType, dimensions, self.__dimensionNodes, offset, isParam, memPointer, False)
+            self.__scopeVariables[varName].setValue(flatList[temp])
+          else:
+            self.__scopeVariables[varName + str(temp)] = Variable(varName, varType, dimensions, self.__dimensionNodes, offset, isParam, memPointer, False)
+            self.__scopeVariables[varName + str(temp)].setValue(flatList[temp])
+          temp += 1
+      else:
+        self.__scopeVariables[varName] = Variable(varName, varType, dimensions, self.__dimensionNodes, offset, isParam, memPointer, False)
     else:
       #TODO for CLASSES AND OBJECTS
       pass
@@ -358,9 +449,7 @@ class Scope:
       keyword = 'classFunction'
     else:
       keyword = 'function' # remove UnboundLocalError
-
-    # Generating and pointing to new function Scope
-    self.__scopeFunctions[funcName] = Scope(funcType, funcName, keyword)
+    self.__scopeFunctions[funcName] = Scope(funcType, funcName, keyword, quadruple.quadCounter)
     SymbolTable.instantiate().setCurrentScope(self.__scopeFunctions[funcName])
     
 
@@ -374,7 +463,7 @@ class Scope:
       raise Exception('ERROR! Class with identifier:', className, 'already exists!')
 
     classType = 'class'
-    self.__scopeClasses[className] = Scope(classType, className, classType)
+    self.__scopeClasses[className] = Scope(classType, className, classType, -1)
     SymbolTable.instantiate().setStackPush(className)
     SymbolTable.instantiate().setCurrentScope(self.__scopeClasses[className])
 
@@ -408,7 +497,11 @@ class Scope:
         else:
           raise Exception('ERROR! FUNCTION with identifier:', funcName, 'is not defined in this program')
     
-    quadruple.saveQuad('era', funcName, -1, -1)
+    # print("GENERATE ERA", funcName, scope, pointer)
+    if scope == 'class': 
+      quadruple.saveQuad('era', funcName, scope, pointer.getScopeName())
+    else:
+      quadruple.saveQuad('era', funcName, scope, -1)
     functionParams = pointer.getScopeFunctions()[funcName].__scopeVariables
     self.setMatchingParams(True)
     for item, val in functionParams.items():
@@ -458,7 +551,7 @@ class Scope:
     self.__quadCont = quadruple.quadCounter
 
   def __repr__(self):
-    return "{\n type: %s \n context: %s \n name: %s \n vars: %s}" % (self.getScopeType(), self.getContext(), self.__scopeName, self.__scopeVariables)
+    return "{\n starts :%s type: %s \n context: %s \n name: %s \n vars: %s \n}" % (self.starts, self.getScopeType(), self.getContext(), self.__scopeName, self.__scopeVariables)
 
 class SymbolTable:
   isAlive = None
@@ -467,7 +560,7 @@ class SymbolTable:
     SymbolTable.isAlive = self
     self.__globalScope = {}
     keyword = "global"
-    self.__globalScope["global"] = Scope(keyword, keyword, keyword)
+    self.__globalScope["global"] = Scope(keyword, keyword, keyword, 1)
     self.__currentScope = self.__globalScope["global"]
     self.__classStack = []
 
@@ -532,6 +625,9 @@ class SymbolTable:
       for i, ii in val.getScopeVariables().items():
         print(i, ': ', ii)
 
+      print('\n \n GLOBAL TEMPS')
+      print(len(val.getScopeTemps()))
+
       print('\n \n GLOBAL FUNCTIONS')
       for j, jj in val.getScopeFunctions().items():
         print(j, ': ', jj)
@@ -539,8 +635,10 @@ class SymbolTable:
         print('\n \n FUNCTION VARIABLES')
         for m, mm in jj.getScopeVariables().items():
           print(m, ': ', mm)
-        print('---------------------------------')
 
+        print('\n \n FUNCTION TEMPS')
+        print(len(jj.getScopeTemps()))
+        print('---------------------------------')
 
       print('\n \n CLASSES')
       for k, kk in val.getScopeClasses().items():
@@ -556,11 +654,95 @@ class SymbolTable:
         
           for x, xx in oo.getScopeVariables().items():
             print(x, ': ', xx)
+
+          print('\n \n CLASS FUNC TEMPS')
+          print(len(oo.getScopeTemps()))
           print('---------------------------------')
   
+  def getFuncSize(self, func):
+    res = {
+      "local": {}, 
+      "temps": {},  
+    }
+
+    for i, j in func.getScopeVariables().items():
+      varType = j.getVarType()
+      if not varType in res["local"]:
+        res["local"][varType] = int(j.getOffset()) + 1
+      else:
+        res["local"][varType] = int(res["local"][varType] + j.getOffset() + 1)
+    for i, j in func.getScopeTemps().items():
+      varType = j.getVarType()
+      if not varType in res["temps"]:
+        res["temps"][varType] = 1
+      else:
+        res["temps"][varType] += 1
+
+    return res
+
+  def buildForVM(self):
+    res = []
+    tempDirFunc = {"global": {
+      "vars": self.getGlobalScope().getScopeVariables(),
+      "temps": self.getGlobalScope().getScopeTemps(),
+      "consts": self.getGlobalScope().getScopeConstants(),
+      "funcs": {}
+    }}
+
+    tempArr = []
+    tempDirClass = {
+      "global": {}
+    }
+
+    pointer = tempDirFunc["global"]
+    for key, val in self.__globalScope.items():
+      # functions
+      pointer = pointer["funcs"]
+      for key1, val1, in val.getScopeFunctions().items():
+        size = self.getFuncSize(val.getScopeFunctions()[key1])
+
+        pointer[key1] = {
+          "type": val1.getScopeType(),
+          "size": size,
+          "start": val1.starts,
+          "vars": val1.getScopeVariables(),
+          "temps": val1.getScopeTemps(),
+        }
+
+      # classes are their own "world" inside the global scope
+      # meaning they have global variables and dirFunc
+      for key2, val2, in val.getScopeClasses().items():
+        tempArr.append({key2: tempDirClass})
+        pointer = tempArr[-1]
+        pointer = pointer[key2]["global"]
+        pointer["vars"] = val2.getScopeVariables(),
+        pointer["funcs"] = {}
+        pointer = pointer["funcs"]
+        for keyClass, valClass, in val2.getScopeFunctions().items():
+          size = self.getFuncSize(val2.getScopeFunctions()[keyClass])
+          pointer[keyClass] = {
+            "type": valClass.getScopeType(),
+            "size": size,
+            "start": valClass.starts,
+            "vars": valClass.getScopeVariables(),
+            "temps": valClass.getScopeTemps(),
+          }
+
+    # print("ENTRO")
+    # print("DIRFUNC")
+    # for i, j in tempDirFunc.items():
+    #   print(tempDirFunc[i])
+    # print("DIRCLASS")
+    # for i, j in tempDirClass.items():
+    #   print(tempDirClass[i])
+  
+    res.append(tempDirFunc)
+    res.append(tempArr)
+    return res
+
   def reset(self):
     self.__globalScope = {}
     keyword = "global"
-    self.__globalScope["global"] = Scope(keyword, keyword, keyword)
+    self.__globalScope["global"] = Scope(keyword, keyword, keyword, 1)
     self.__currentScope = self.__globalScope["global"]
     self.__classStack = []

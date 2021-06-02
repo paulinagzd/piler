@@ -28,7 +28,7 @@ int main() {
   k = i + 1
   f = 3.14
   while (i > 0) then {
-    print(dos(i + k, f * 3) + 3)
+    print({dos(i + k, f * 3)} + 3)
     print(i, j * 2, f * 2+1.5)
     i = i - k
   };
