@@ -740,7 +740,7 @@ class SymbolTable:
             "vars": valClass.getScopeVariables(),
             "temps": valClass.getScopeTemps(),
           }
-  
+
     res.append(tempDirFunc)
     res.append(tempArr)
     return res

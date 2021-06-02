@@ -366,9 +366,6 @@ class VM:
     global paramCont
     global arrParam
     arrParam.append(paramPoint[paramDir])
-
-  # def endFunc(self):
-  #   return False
   
   def ver(self, verVal, upperLim):
     if verVal < 0 or verVal > upperLim - 1:

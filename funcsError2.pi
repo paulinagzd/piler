@@ -1,3 +1,9 @@
+/* 
+Should print the following exceptions
+
+Exception: ERROR! Multiplying null values
+*/
+
 program patito;
 var int i, j, k;
 var flt f;

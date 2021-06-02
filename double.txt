@@ -1,6 +1,0 @@
-program double;
-var n : int;
-{
-    n = n * 2;
-    print(n);
-}
