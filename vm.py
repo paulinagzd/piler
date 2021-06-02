@@ -4,6 +4,7 @@ import helpers
 
 functionsReturning = {}
 currentScope = None
+scopePointer = None
 arrParam = []
 localStack = []
 paramCont = 0
@@ -52,8 +53,6 @@ memNumbers = {
   "constStr": 53000,
 }
 
-cont = 0
-scopePointer = None
 
 def verifySize(funcSize, mem):
   for i, j in funcSize["local"].items():

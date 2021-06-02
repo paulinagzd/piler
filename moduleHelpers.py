@@ -6,6 +6,11 @@ import helpers
 quadruple = Quad.instantiate()
 symbolTable = SymbolTable.instantiate()
 
+# incrementParamCounter
+# What: Keeps track of parameters that are being called
+# Parameters: param counter
+# Returns the updated counter
+# When is it used: When a function is called and it has parameters
 def incrementParamCounter(cont):
     listLen = len(symbolTable.getCurrentScope().getCurrentFunctionParams())
     if cont > listLen:
@@ -14,7 +19,11 @@ def incrementParamCounter(cont):
     cont += 1 
     return cont
   
-
+# verifyParamMatch
+# What: Assures that the called parameter matches the declared one
+# Parameters: param counter
+# Returns the updated counter
+# When is it used: When a function is called and it has parameters
 def verifyParamMatch(cont):
   incoming = quadruple.pilaO.pop()
 
@@ -25,7 +34,11 @@ def verifyParamMatch(cont):
   else:
     quadruple.saveQuad('param', incoming, -1, cont + 1)
     return cont
-  
+
+# generateGoSub
+# What: In charge of saving quads of function calls and their assignment if non void
+# Parameters: if its a class and its name when true
+# When is it used: When a function is called
 def generateGoSub(isClass, className):
   currentScope = symbolTable.getCurrentScope()
   quadruple.saveQuad('gosub', currentScope.getLatestFuncName(), -1, -1) #initial address

@@ -767,14 +767,14 @@ def p_check_and_operator(p):
   check_and_operator  :
   '''
   workingStack = quadruple.getWorkingStack()
-  res = quadHelpers.check_and_operator(quadruple)
+  res = quadHelpers.check_and_or_operator(quadruple)
 
 def p_check_or_operator(p):
   '''
   check_or_operator :
   '''
   workingStack = quadruple.getWorkingStack()
-  res = quadHelpers.check_or_operator(quadruple)
+  res = quadHelpers.check_and_or_operator(quadruple)
 
 def p_saw_and(p):
   '''
