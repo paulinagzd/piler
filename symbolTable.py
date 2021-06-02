@@ -149,24 +149,8 @@ class Variable:
 # SCOPE: what a block contains.
 # Global scopes contain variables, functions, and classes
 # Class local scopes contain variables and functions (empty scopeClasses objects)
-# Function local scopes contain variables (empty scopeFunctions and scopeClasses objects)
+# Function local scopes contain variables (empty scopeFunctions and scopeClasses objects
 class Scope:
-  def __init__(self, type, name, context):
-    self.__scopeType = type # Will be used to validate if local or global
-    self.__scopeName = name # Main identifier
-    self.__context = context # Distinguishes between functions, classFunctions...
-    self.__scopeFunctions = {} # Not always has value, only if Global or Class
-    self.__scopeVariables = {} 
-    self.__scopeClasses = {} # Not always has value, only if Global
-    self.__scopeConstants = {} # Not always has value, only if Global
-
-    # For easier syntax checking
-class Scope:
-  # SCOPE: what a block contains.
-  # Global scopes contain variables, functions, and classes
-  # Class local scopes contain variables and functions (empty scopeClasses objects)
-  # Function local scopes contain variables (empty scopeFunctions and scopeClasses objects)
-
   def __init__(self, type, name, context, starts):
     self.__scopeType = type # Will be used to validate if local or global
     self.__scopeName = name # Main identifier

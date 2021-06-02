@@ -682,7 +682,10 @@ class VM:
     
     # self.end()
      
-# works like a Memory SCOPE, divided in G, L, T, C, and Objs      
+# 
+################################################
+# MAIN MEMORY: works like a Memory SCOPE, divided in Global,
+# Local, Constants, and Objs      
 class MainMemory:
   isAlive = None
   # ["global" [reales]  [temp]]
@@ -692,10 +695,9 @@ class MainMemory:
     MainMemory.isAlive = self
     self.__global = {}
     self.__local = {}
+    self.__constants = {}
     self.__localArr = []
     self.localMem = CallStackMemory()
-    self.__constants = {}
-    self.__classes = {}
     self.__pointer = None
   
   def getGlobal(self):
@@ -715,9 +717,6 @@ class MainMemory:
 
   def getConstants(self):
     return self.__constants
-
-  def getClasses(self):
-    return self.__classes
 
   def getPointer(self):
     return self.__pointer
@@ -782,6 +781,10 @@ class MainMemory:
     self.__classes = {}
     self.__pointer = None
 
+
+################################################
+# CALL STACK MEMORY: contains an index of variables and temps
+# that are counters updated within function calls.
 class CallStackMemory:
   def __init__(self):
     self.variables = {
