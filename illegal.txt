@@ -1,8 +1,0 @@
-program illegal;
-{
-    if(2 < 3) {
-        else {
-            print("hello there");
-        }
-    }
-}

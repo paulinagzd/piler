@@ -1,3 +1,9 @@
+/* 
+Should print the following exceptions
+
+Exception: ERROR! Too many variables!
+*/
+
 program patito;
 var int i, j, p;
 var ints Arreglo[12] = {1,2,3,4,5,6,7,8,9,10,11,12};
@@ -18,7 +24,6 @@ func int fact(int j) {
   };
 }
 
-/*
 func void inicia(int y) {
   var int x;
   x = 0
@@ -27,20 +32,19 @@ func void inicia(int y) {
     x = x + 1
   };
 }
-*/
 
 int main() {
-  read(p)
+  p = 10
   j = p * 2
   i = 0
-  /* inicia(p * j - 5) */
-  /*
+  inicia(p * j - 5)
+
   do {
     Arreglo[i] = Arreglo[i] * {fact(Arreglo[i] - p)}
     Matriz[i][Arreglo[i + p] * p] = Arreglo[i]
     i = i + 1
   } while (i < 12);
-*/
+
   while (i >= 0) then {
     print("resultado", Arreglo[i], {fact(i + 2)})
     print(Matriz[i][p* 2 - i])

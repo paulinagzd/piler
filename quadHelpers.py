@@ -223,7 +223,6 @@ def expression_evaluation(p):
     if currentDim > 1:
       left_operand = quadruple.pilaO.pop()
       right_operand = quadruple.pilaO.pop()
-      print("LR", left_operand, right_operand)
       tempAddress = tempAddressPointer.getInitialAddress() + tempAddressPointer.getOffset()
       quadruple.saveQuad("+", left_operand, right_operand, tempAddress)
       symbolTable.getCurrentScope().getScopeTemps()[tempCounter] = (Variable('', currType, 0, [], tempAddressPointer.getOffset(), False, tempAddressPointer, False))

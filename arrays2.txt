@@ -1,9 +1,0 @@
-program arreglos;
-var int i;
-var ints A[10];
-var int j;
-var ints B[5][6];
-var int k;
-int main () {
-  A[i+j*k] = j + B[i*j][k-i] * A[k]
-}

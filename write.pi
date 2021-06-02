@@ -1,7 +1,7 @@
 program aritmetica;
 var int a;
 var int b;
-{
+int main() {
     a = 8 * (7 - 4) + 5
     a = 9
     if (a == 2) then {

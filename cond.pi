@@ -15,8 +15,11 @@ func int one() {
 
     b == a ? print(a) : print(b);
     c = a + b
+    return 1
 }
 
 int main() {
-
+  var int x;
+  x = {one()}
+  print("Resultado: ", x)
 }
