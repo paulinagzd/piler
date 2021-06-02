@@ -10,6 +10,11 @@ localStack = []
 paramCont = 0
 returnVal = 0
 
+# getTypeConstants
+# What: Function to get the type of constant depending of instances
+# Parameters: The value of the address
+# Returns the type of each value, either constant or variable
+# When is it used: During every type matching call with constants (expressions)
 def getTypeConstant(operand):
   if operand == 'True' or operand == 'False':
     return 'boo'
@@ -23,37 +28,11 @@ def getTypeConstant(operand):
     else:
       return 'str'
 
-memNumbers = {
-  "globalInt": 5000,
-  "globalInts": 7000,
-  "globalFlt": 9000,
-  "globalFlts": 11000,
-  "globalCha": 13000,
-  "globalChas": 15000,
-  "globalBoo": 17000,
-  "globalBoos": 19000,
-  "globalStr": 21000,
-  "globalStrs": 23000,
-
-  "localInt": 25000,
-  "localInts": 27000,
-  "localFlt": 29000,
-  "localFlts": 31000,
-  "localCha": 33000,
-  "localChas": 35000,
-  "localBoo": 37000,
-  "localBoos": 39000,
-  "localStr": 41000,
-  "localStrs": 43000,
-
-  "constInt": 45000,
-  "constFlt": 47000,
-  "constCha": 49000,
-  "constBoo": 51000,
-  "constStr": 53000,
-}
-
-
+# verifySize
+# What: Used to verify if the called function fits in memory
+# Parameters: The function's size and Main Memory
+# When is it used: Every time a function is called correctly and
+# should be added to the call stack
 def verifySize(funcSize, mem):
   for i, j in funcSize["local"].items():
     if j + mem.localMem.variables[i] <= 1000:
@@ -85,7 +64,6 @@ def generateERA(funcName, className, scope):
   return True
 
 def getClassification(address):
-  # print("ADDRESS", address)
   if address >= 45000 and address < 55000:
     return 'const'
   elif address >= 25000 and address < 45000:
