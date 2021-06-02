@@ -46,6 +46,11 @@ def verifySize(funcSize, mem):
     else:
       raise Exception("ERROR! Too many variables!")
 
+# generateERA
+# What: Finds and checks if the called function or class fits in memory and the call stack
+# Parameters: Attributes of the sent function
+# Returns or updates a pointer with the respective function or class
+# When is it used: Every time an era quad is called (called function declaration)
 def generateERA(funcName, className, scope):
   dirFunc = VM.get().getDirClass() if scope == 'class' else VM.get().getDirFunc()
   mem = MainMemory.instantiate()
@@ -87,6 +92,10 @@ def point(address):
     mem.setPointer(mem.getGlobal())
   return mem.getPointer()
 
+################################################
+# MEM SPACE CONTAINER: keeps track of created memory in the 
+# Symbol Table. This just updates and assign addresses for the table,
+# but further memory handling will be done by quad evaluation
 class MemSpaceContainer:
   def __init__(self, initialAddress):
     self.__initialAddress = initialAddress
@@ -107,7 +116,8 @@ class MemSpaceContainer:
   def setDimensionalOffset(self, val):
     self.__offset += val
 
-# this is the main directory for memory addresses separated by scope
+################################################
+# MEMORY CONTAINER: this is the main directory for memory addresses separated by scope
 # elements contain their offset for when assigning new variables
 class MemoryContainer:
   def __init__(self, name):
@@ -205,6 +215,11 @@ class MemoryContainer:
         'str': MemSpaceContainer(53000),
       }
     }
+
+################################################
+# VM: our virtual memory. It's composed of the quad list, the function,
+# and class directories, as well as the call stack and next pointer for
+# quadruples
 class VM:
   isAlive = None
   def __init__(self, quadList, dirFunc, dirClass):
@@ -252,11 +267,11 @@ class VM:
     functionPointer[funcName]["goHere"] = goHere
     self.__callStack.append(functionPointer)
 
+  # freeing up memory
+  # 1. setting variables and temp to their None values
+  # 2. removing from the counter the space to pop
   def popCallStack(self):
     if self.__callStack:
-      #liberar memoria
-      #1. volver a poner como None las variables y los temporales utilizados
-      #2. bajar el counter de direcciones memorias usadas
       mem = MainMemory.instantiate()
       curr = mem.localMem.variables
       for i, j in curr.items():
