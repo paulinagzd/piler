@@ -68,6 +68,10 @@ def generateERA(funcName, className, scope):
     scopePointer = {funcName: dirFunc['global']['funcs'][funcName]}
   return True
 
+# getClassification
+# What: Function to get the classification of an address
+# Parameters: address directory
+# When is it used: Every time it is needed to specify the address classification
 def getClassification(address):
   if address >= 45000 and address < 55000:
     return 'const'
@@ -258,7 +262,10 @@ class VM:
   def getNextPointer(self):
     return self.__nextPointer 
 
-  # Call Stack access
+  # pushCallStack
+  # What: Used to add a function call to the callstack
+  # Parameters: functionpointer, address to go after execution
+  # When is it used: Whenever there is a function call quadruple
   def pushCallStack(self, functionPointer, goHere):
     mem = MainMemory.instantiate()
     mem.setLocal(functionPointer, goHere)
@@ -267,9 +274,10 @@ class VM:
     functionPointer[funcName]["goHere"] = goHere
     self.__callStack.append(functionPointer)
 
-  # freeing up memory
-  # 1. setting variables and temp to their None values
-  # 2. removing from the counter the space to pop
+  # popCallStack
+  # What: Used to pop the call stack after a called function is done
+  # Parameters: 
+  # When is it used: Once execution of the function is finished
   def popCallStack(self):
     if self.__callStack:
       mem = MainMemory.instantiate()
@@ -278,9 +286,17 @@ class VM:
         curr[i] -= j      
     return self.__callStack.pop()
 
+  # getCallStack
+  # What: Access current call stack
+  # Parameters: 
+  # When is it used: When stack state is needed
   def getCallStack(self):
     return self.__callStack
 
+  # topCallStack
+  # What: Access top of the current call stack
+  # Parameters: 
+  # When is it used: Indicator of the currently executing function
   def topCallStack(self):
     if self.__callStack:
       return self.__callStack[-1]
@@ -291,51 +307,67 @@ class VM:
   def assignValueToDir(self, value, pointer, key):
     pointer[key] = value
 
-  def add(self, leftVal, rightVal):
+  ######## OPERATOR FUNCTIONS ASSOCIATED TO OPERCODES############
+  # addition
+  def add(self, leftVal, rightVal): 
     return leftVal + rightVal
-
+  
+  # subtraction
   def subtract(self, leftVal, rightVal):
     return leftVal - rightVal
 
+  # multiplication
   def multiply(self, leftVal, rightVal):
     return leftVal * rightVal
 
+  # divition
   def divide(self, leftVal, rightVal):
     return leftVal / rightVal
 
+  # assignment 
   def assign(self, assignWhat, assignWhatDir, assignTo, assignToDir):
     self.assignValueToDir(assignWhat[assignWhatDir], assignTo, assignToDir)
 
+  # less than operator
   def lt(self, leftVal, rightVal):
     return leftVal < rightVal
-      
+
+  #greater than operator   
   def gt(self, leftVal, rightVal):
     return leftVal > rightVal
-      
+
+  #less than or equal  
   def lte(self, leftVal, rightVal):
     return leftVal <= rightVal
-      
+
+  #greater than or equal  
   def gte(self, leftVal, rightVal):
     return leftVal >= rightVal
-      
+
+  #equal 
   def equal(self, leftVal, rightVal):
     return leftVal == rightVal
-      
+
+  #not equal 
   def notEqual(self, leftVal, rightVal):
     return leftVal != rightVal
 
+  #and boolean operator
   def andFunc(self, leftVal, rightVal):
     return leftVal and rightVal
-      
+
+  #or boolean operator   
   def orFunc(self, leftVal, rightVal):
     return leftVal or rightVal
 
+  #print operator
   def printLine(self, val):
     #remove quotations
     if isinstance(val, str):
       val = val.strip('"')
     print(val)
 
+  #read operator
   def readLine(self, type):
     inValue = input('> ')
     inValueType = getTypeConstant(literal_eval(inValue))
@@ -343,39 +375,48 @@ class VM:
       return inValue
     else:
       raise Exception("ERROR! Incorrect data type as input (should be", type, "received ", inValueType)
-      
+  
+  # goto operator
   def goto(self, quadNumber):
     # pointing nextPointer to nextQuad
     self.__nextPointer = quadNumber
-      
+  
+  #gotoF operator
   def gotoF(self, tempVal, quadNumber):
 
     return False
 
+  #gotoV operator
   def gotoV(self):
     return False
-      
+
+  #goSub operator   
   def goSub(self):
     return False
 
+  #era operator
   def era(self, funcName, scope, className):
     if generateERA(funcName, className, scope) == True:
       self.__nextPointer += 1
 
+  #param operator
   def param(self, paramPoint, paramDir):
     global paramCont
     global arrParam
     arrParam.append(paramPoint[paramDir])
-  
+
+  #ver operator
   def ver(self, verVal, upperLim):
     if verVal < 0 or verVal > upperLim - 1:
       raise Exception("ERROR! Dimensions out of index range")
   
+  #return operator
   def funcReturn(self, retPointer, retAddress):
     # access value I want to send
     valueToSend = retPointer[retAddress]
     return valueToSend
   
+  #return array operator indicator
   def returnIsArray(self, address):
     if isinstance(address, list):
       address = address[0]
@@ -396,6 +437,11 @@ class VM:
     print("---SUCCESSFUL EXECUTION---")
     
   #MAIN VM PROGRAM
+  # execute
+  # What: Driver program to read along the quadruple list, compute based on the current cuadruple reading
+  # Parameters: Inherent VM function
+  # When is it used: Invoked from the piler program once compilation is done
+  # Switch statement, ends at the operCode 28 and halts program execution
   def execute(self):
     global arrParam
     global paramCont
