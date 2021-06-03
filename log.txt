@@ -1,0 +1,133 @@
+test files
+adding and renaming test files
+Merge pull request #29 from paulinagzd/docu
+removing unnecessary code and more docs
+documentation in virtual machine
+updating documentation
+updating documentation and light refactoring
+fix merge conflicts
+Merge pull request #28 from paulinagzd/read-write
+READ and SORT
+write expressions and read
+Merge pull request #26 from paulinagzd/virtual-machine-ops
+missing setter in dim nodes
+working matrices and arrays
+classes and objects
+Merge branch 'recursion-works' into virtual-machine-ops
+recursion working again, merge with branch
+Merge pull request #27 from paulinagzd/recursion-works
+recursion, works
+mvp arrays and matrices TODO check indexing
+array declaration correction MUST come with values
+changing test files
+recursive functions and print statements
+TODO return, read and write
+wonky, but working
+verifying era
+arithmetic operations
+Virtual Machine call stack
+pair programming
+functions are calculated by size
+initial code documentation
+todo implementation
+fix error in parser and vm indexing
+fix era
+fix missing era
+ignore json
+fix merge conflict due to internet disconnection
+saving temps on dirFuncs
+Temp count
+continuing memory implementation
+Merge pull request #25 from paulinagzd/do-while
+adding while loops, functionality passed
+Merge pull request #24 from paulinagzd/virtual-machine-ops
+working quads on classes and objects vars and funcs
+classes create their own memory
+Merge pull request #22 from paulinagzd/virtual-machine-ops
+correct quads correct referencing TODO memory assign in RUN TIME and classes
+merging with dimension and master changes
+Merge pull request #21 from paulinagzd/handle-dimensions
+typo that broke plyler
+for recursion syntax change
+normal non gourmet dimensions
+dimensions working in memory TODO small tweaks
+fix merge conflicts with master
+Merge pull request #23 from paulinagzd/intermediate-code
+quads are now addresses and operation codes TODO change temps in scope change
+eliminating S/R conflict
+TODO memory assigning for quad continuation in 2D arrays
+further dev memory
+Execution implementation
+removed unnecessary print statement
+array access implementation
+dimensional handling on declared variables TODO called variables
+Merge pull request #20 from paulinagzd/virtual-machine
+remove json file
+VIRTUAL MEMORY ASSIGNED TO VARIABLES AND CONSTANTS, TODO APPLY THEM TO QUADS
+CONSTANTS ARE STORED IN MEMORY
+adding support to constants, TODO virtual addresses
+saw program pesky typo in function
+merging with masters latest changes
+bug fixes: multiple function call, constant char identifying
+Virtual Machine operation codes and class
+Merge pull request #19 from paulinagzd/refactor
+cleaning code, fixing unread boolean values
+.gitignore is now working
+Merge pull request #18 from paulinagzd/pau-a5
+added ternary expressions
+MVP: quads match class example
+FUNCTION AND MODULES: Initial syntax
+Merge pull request #14 from paulinagzd/pau-if-else
+removing unused functions
+Merge pull request #13 from paulinagzd/pau-if-else
+WORKING NON LINEAR CODE
+Merge pull request #12 from paulinagzd/pau-if-else
+read and write
+WORKING QUADS TODO VAR VALUE
+assignment fix
+ASSIGNMENTS
+Index assignment change
+Save quads in stack with id
+how to store quads
+wip cycles and non linear
+Merge pull request #11 from paulinagzd/while-loops
+Reset table for new file reads
+Merge pull request #10 from paulinagzd/quads
+Merge branch 'master' into quads
+Boolean handling in expressions
+Merge pull request #9 from paulinagzd/pau-a4
+type checking
+Merge pull request #8 from paulinagzd/pau-a4
+QUADS assigned variables, read and write ready
+Merge pull request #7 from paulinagzd/quads
+Parenthese handling in arithmetic expressions
+New symbol table merge
+First quad implementation
+Merge pull request #6 from paulinagzd/pau-a4
+removes unnecessary printing
+WORKING FUNCTION TABLE
+Merge pull request #5 from paulinagzd/pau-a3
+to merge
+small implementation arithmetic operators
+Merge branch 'master' into pau-a3
+Merge pull request #4 from paulinagzd/symbol-table
+ready to merge TODO clean code and assign values
+saves variables and functions with scopes TODO assign values
+Puntos neuralgicos
+Symbol Table improvement
+TODO void handling and connecting logic
+Merge pull request #3 from paulinagzd/symbol-table
+Symbol Table implementation
+sending empty params
+simplifying params, removing objects with period from params
+Merge pull request #2 from paulinagzd/pipe
+minor fix, else if ahora puede ser consecutivo
+Merge pull request #1 from paulinagzd/pau-a1
+Cleaning code, MVP syntax ready
+WIP for loops and assignations
+code cleaning WIP
+generated files
+WIP general syntax rules, TODO cleaning code
+mvp
+Test files
+first commit
