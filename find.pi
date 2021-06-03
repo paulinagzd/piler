@@ -4,14 +4,20 @@ var ints a[10] = {21,2,3,4,5,6,7,8,9,10};
 var int cont;
 
 func int find(int n) {
-   var int i;
+   var int i, res;
    i = 0
+   res = i
    while(i < 10) then {
      if (a[i] == n) then {
        print("Found! ")
-       return i
+       res = i
+       return res
      };
     i = i + 1
+  };
+
+  if (res == 0) then {
+    return -2
   };
 }
 

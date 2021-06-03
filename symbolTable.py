@@ -34,7 +34,7 @@ class DimensionNode:
 
   def getContent(self):
     return self.__content
-
+  
   def setMDim(self, val):
     self.__mDim = val
   
@@ -312,18 +312,20 @@ class Scope:
     newVarType = varType
     if varType[-1] == 's':
       newVarType = varType[:3]
-    if len(array) == 1 and len(array) != dimensions or len(array) == 1 and dimensionNodes[0].getLim() != len(array[0]):
+    if dimensions == 1 and len(array) != dimensions or len(array) == 1 and dimensionNodes[0].getLim() != len(array[0]):
+      print("HERE", dimensions, len(array))
       raise Exception('ERROR! Variable with incorrect dimensions')
     else:
       if dimensions == 2:
         arrSize1 = dimensionNodes[0].getLim()
         arrSize2 = dimensionNodes[1].getLim()
+        if len(array) != arrSize1:
+          raise Exception('ERROR! Variable with incorrect dimensions')
         for i in array:
           if len(i) != arrSize2:
             raise Exception('ERROR! Variable with incorrect dimensions')
-          for j in i:
-            if len(i) != arrSize1:
-              raise Exception('ERROR! Variable with incorrect dimensions')                      
+            
+          for j in i:                  
             if helpers.getTypeConstants(j) != newVarType:
               raise Exception('ERROR! Variable with incorrect type for dimensions')
       else:

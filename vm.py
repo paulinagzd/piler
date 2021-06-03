@@ -217,7 +217,7 @@ class MemoryContainer:
     }
 
 ################################################
-# VM: our virtual memory. It's composed of the quad list, the function,
+# VM: our virtual machine. It's composed of the quad list, the function,
 # and class directories, as well as the call stack and next pointer for
 # quadruples
 class VM:
@@ -685,9 +685,6 @@ class VM:
 # Local, Constants, and Objs      
 class MainMemory:
   isAlive = None
-  # ["global" [reales]  [temp]]
-  # ["localFunc1" [varsLocalesMemoria] [tempsGenerados]]
-  # [Constantes consts con direcciones de mmeoria]
   def __init__(self):
     MainMemory.isAlive = self
     self.__global = {}
