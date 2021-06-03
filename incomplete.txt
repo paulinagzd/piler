@@ -1,3 +1,0 @@
-program incomplete;
-{
-    print("oh no", a);

@@ -2,7 +2,7 @@
 # Luis Felipe Miranda Icazbalceta
 # A01194111
 # A00820799
-# Lexer y Parser de Piler en PLY
+# Piler's Lexer and Parser in PLY
 
 import ply.lex as lex
 import ply.yacc as yacc
@@ -15,12 +15,14 @@ import condHelpers
 import moduleHelpers
 import helpers
 import sys
-# sys.tracebacklimit=0 # DEPENDS IF I WANT TO LOG ERRORS AT THE MOMENT
+sys.tracebacklimit=0 # depends on the amount of errors to log
 
+# instantiating singleton classes
 symbolTable = SymbolTable.instantiate()
 quadruple = Quad.instantiate()
 jumps = Jumps.instantiate()
 
+# global variables for syntax checking
 pointer = None
 classPointer = None
 funcPointer = None
@@ -57,8 +59,6 @@ reserved = {
   'class' : 'CLASS',
   'att' : 'ATTRIBUTES',
   'met' : 'METHODS',
-  'file' : 'FILE',
-  'dataframe' : 'DATAFRAME',
   'return' : 'RETURN',
   'main' : 'MAIN',
 }
@@ -86,7 +86,6 @@ tokens = [
   'COLON',
   'SEMICOLON',
   'QUESTION',
-  'EXCLAMATION',
   'AND',
   'OR',
   'AS',
@@ -113,7 +112,6 @@ t_COMMA = r'\,'
 t_COLON = r'\:'
 t_SEMICOLON = r'\;'
 t_QUESTION = r'\?'
-t_EXCLAMATION = r'\!'
 t_AND = r'\&\&'
 t_OR = r'\|\|'
 t_AS = r'\='
@@ -143,7 +141,6 @@ def t_ID(t):
 
 def t_COMMENT(t):
   r'(?s)/\*.*?\*/'
-  # r'/\*(.|\n)*?\*/'
   t.lineno += t.value.count('\n')
 
 def t_CSTCHAR(t):
@@ -160,7 +157,6 @@ def t_newline(t):
   r'\n+'
   t.lexer.lineno += len(t.value)
 
-
 def t_error(t):
   print("ERROR! at")
   print(t)
@@ -168,10 +164,9 @@ def t_error(t):
 
 lexer = lex.lex()
 
-# grammar
+# GRAMMAR
 ################################################
-
-# program
+# PROGRAM STRUCTURE
 def p_program(p):
   '''
   program : PROGRAM ID SEMICOLON saw_program program_content main
@@ -187,7 +182,7 @@ def p_program_content(p):
   '''
 
 ################################################
-# function
+# FUNCTIONS
 def p_main(p):
   '''
   main : INT MAIN saw_main OPAREN CPAREN block scope_end
@@ -229,7 +224,7 @@ def p_param2(p): ####### OJO
   '''
 
 ################################################
-# class
+# CLASSES
 def p_class(p):
   '''
   class : CLASS ID saw_id saw_class COLON class_block class_scope_end SEMICOLON
@@ -241,15 +236,14 @@ def p_class_block(p):
   '''
 
 ################################################
-# CICLO WHILE
+# WHILE LOOP
 def p_while_loop(p):
   '''
   while_loop : WHILE saw_while cond2 THEN block SEMICOLON saw_while_end
   '''
 
 ################################################
-# WHILE LOOP
-# General structure of a while loop with action points
+# DO WHILE LOOP
 def p_do_while_loop(p):
   '''
   do_while_loop : DO saw_while block WHILE cond2 saw_do_while_end SEMICOLON
@@ -279,8 +273,7 @@ def p_decs1(p):
 # Handles the conditions between the type being appropriate for its declaration
 def p_type(p):
   '''
-  type : compound ID saw_id saw_variable type1
-       | simple ID saw_id saw_variable type1
+  type : simple ID saw_id saw_variable type1
        | multiple ID saw_id OBRACKET CSTINT saw_declared_dim CBRACKET type3 arr_dec saw_variable type2
   '''
 
@@ -339,6 +332,7 @@ def p_type_simple(p):
          | CHAR saw_type
   '''
 
+# arrays and matrices are declared with plural values
 def p_type_multiple(p):
   '''
   multiple : INTS saw_type
@@ -348,15 +342,8 @@ def p_type_multiple(p):
            | CHARS saw_type
   '''
 
-def p_type_compound(p):
-  '''
-  compound : ID saw_type
-           | DATAFRAME saw_type
-           | FILE saw_type
-  ''' 
-
 ################################################
-# block
+# BLOCK
 def p_block(p):
   '''
   block : OCURLY b1 CCURLY
@@ -365,44 +352,45 @@ def p_block(p):
 
 def p_b1(p):
   '''
-  b1 : estatuto b1
+  b1 : stmt b1
      | empty
   '''
 
 ################################################
-# ESTATUTO
-def p_estatuto(p):
+# STATEMENT
+def p_stmt(p):
   '''
-  estatuto : assign
-           | function_call
-           | conditional
-           | write
-           | read
-           | while_loop
-           | do_while_loop
-           | ternary
-           | RETURN saw_return_value exp
+  stmt : assign
+       | function_call
+       | conditional
+       | write
+       | read
+       | while_loop
+       | do_while_loop
+       | ternary
+       | RETURN saw_return_value exp
   '''
 
-def p_estatuto_redux(p): # TERNARY ONE LINERS
+# FOR TERNARY AND ONE LINERS
+def p_stmt_redux(p): 
   '''
-  estatuto_redux : assign
-                 | function_call
-                 | write
-                 | read
-                 | ternary
-                 | RETURN saw_return_value exp
+  stmt_redux : assign
+             | function_call
+             | write
+             | read
+             | ternary
+             | RETURN saw_return_value exp
   '''
 
 ################################################
-# assign
+# ASSIGNATION
 def p_assign(p):
   '''
   assign : variable saw_var_factor AS saw_asig exp
   '''
 
 ################################################
-# conditional
+# CONDITIONAL
 def p_conditional(p):
   '''
   conditional : IF cond2 THEN block cond1 SEMICOLON bc_end
@@ -420,14 +408,14 @@ def p_cond2(p):
   '''
 
 ################################################
-# conditional ternary
+# TERNARY CONDITIONAL
 def p_ternary(p):
   '''
-  ternary : exp QUESTION saw_cond estatuto_redux COLON saw_else estatuto_redux SEMICOLON bc_end
+  ternary : exp QUESTION saw_cond stmt_redux COLON saw_else stmt_redux SEMICOLON bc_end
   '''
 
 ################################################
-# write
+# WRITE (PRINT)
 def p_write(p):
   '''
   write : PRINT saw_print OPAREN exp e1 CPAREN saw_print_end
@@ -440,7 +428,7 @@ def p_e1(p):
   '''
 
 ################################################
-# read
+# READ (INPUT)
 def p_read(p):
   '''
   read  : READ saw_read OPAREN variable saw_read_exp l1 CPAREN saw_read_end
@@ -460,7 +448,7 @@ def p_boolean(p):
   '''
 
 ################################################
-# VARIABLE (llamada)
+# VARIABLE (CALLING)
 def p_variable(p):
   '''
   variable : ID saw_id saw_called_var
@@ -481,7 +469,7 @@ def p_variable2(p):
   '''
 
 ################################################
-# function_call
+# FUNCTION (CALLING)
 def p_function_call(p):
   '''
   function_call : ID saw_id verify_func OPAREN exp verify_param function_call1 CPAREN generate_gosub
@@ -544,21 +532,21 @@ def p_gexp1(p):
 
 def p_mexp(p):
   '''
-  mexp : termino mexp1
+  mexp : term mexp1
   '''
 
 def p_mexp1(p):
   '''
-  mexp1 : PLUS saw_plusminus_operator termino mexp1
-        | MINUS saw_plusminus_operator termino mexp1
+  mexp1 : PLUS saw_plusminus_operator term mexp1
+        | MINUS saw_plusminus_operator term mexp1
         | empty
   '''
 
 ################################################
-# TERMINO
-def p_termino(p):
+# TERM
+def p_term(p):
   '''
-  termino : factor term1 check_plusminus_operator
+  term : factor term1 check_plusminus_operator
   '''
 
 def p_term1(p):
@@ -567,11 +555,6 @@ def p_term1(p):
         | DIV saw_multdiv_operator factor term1
         | empty
   '''
-
-# def term2(p):
-#   '''
-#   term2 : factor
-#   '''
 
 ################################################
 # FACTOR
@@ -582,7 +565,6 @@ def p_factor(p):
          | variable saw_var_factor check_multdiv_operator
          | OCURLY saw_oparen function_call CCURLY saw_cparen check_multdiv_operator
   '''
-#          | negative check_multdiv_operator
 
 def p_saw_var_factor(p):
   '''
@@ -620,10 +602,6 @@ def p_arrcst(p):
          | CSTSTRING append_val
   '''
 
-# def p_negative(p):
-#   '''
-#   negative : MINUS varcst
-#   '''
 ################################################
 # EMPTY
 def p_empty(p):
@@ -979,27 +957,3 @@ def resetGlobals():
   cont = 0
 
 parser = yacc.yacc()
-
-# lexer.input(
-#   '''
-#  program patito;
-# var int i, j, p;
-# var ints Arreglo[12];
-# var ints Matriz[12][8];
-
-# func int fact(int j) {
-#   var int i;
-#   i = j + (p - j * 2 + j)
-#   if (j == 1) then {
-#     return (j)
-#   } else {
-#     return (j * {fact(j-1)})
-#   };
-# }
-
-# int main() {
-#   i = 0
-# }
-#   '''
-# )
-

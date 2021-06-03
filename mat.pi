@@ -1,8 +1,6 @@
 program mat;
 var int i;
-var ints A[8] = {1,2,3,4,5,6,7,8};
 var int j;
-var ints B[4][6] = {{1,2,3,4,5,6},{1,2,3,4,5,6}, {1,2,3,4,5,6}, {1,2,3,4,5,6}};
 var int k;
 
 class Clase: {
@@ -25,23 +23,17 @@ class Clase: {
       var int k;
       i = 2
       k = 8
-      print(k)
-      /*   i = j + (i - j * 2 + j)  */
       if (j == 1) then {
         return (j)
       } else {
-        return (j)
-        /* return (j * {fact(j - 1)}) */
+        return (j * {Clase.fact(j - 1)})
       };
     }
 };
 
 int main() {
-
-  /* A[i+j*k] = j + B[i*j][k - i] * A[k] */
-  /* B[i+j][A[i] * k] = i + Clase.a */
-  /* fact(3) */
-  Clase.a = 1
+  Clase.a = 3
+  /* {Clase.fact(3)} */
   Clase.b = 1.1
   k = {Clase.fact(3)}
   Clase.claseFunc(Clase.a, Clase.b)

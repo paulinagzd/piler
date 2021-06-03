@@ -1,8 +1,14 @@
 from re import split
 from jumps import TBD
 
+################################################
+# QUAD: class that keeps track of all stacks used to
+# create quadruples, as well as the corresponding
+# operation codes. 
 class Quad:
   isAlive = None
+
+  # operation codes key and value pairs to store when saving quad
   operCodes = {
     '+': 1,
     '-': 2,
@@ -35,12 +41,12 @@ class Quad:
 
   def __init__(self):
       Quad.isAlive = self
-      self.pOper = []
-      self.pilaO = []
-      self.pilaDim = []
-      self.pilaArr = []
-      self.quads = {}
-      self.quadCounter = 1
+      self.pOper = [] # for operators
+      self.pilaO = [] # for operands
+      self.pilaDim = [] # for dimensions
+      self.pilaArr = [] # for arrays
+      self.quads = {} # our dictionary with index value pairs
+      self.quadCounter = 1 # keeping an index
 
   @classmethod
   def instantiate(cls):
@@ -48,14 +54,20 @@ class Quad:
       Quad()
     return Quad.isAlive
 
+  # saveQuad
+  # What: stores the quadruple on the quads dictionary
+  # Parameters: the operator and operands, as well as the res or temp value
+  # When is it used: When any type of quadruple has to be stored for future execution
   def saveQuad(self, operator, leftOperand, rightOperand, tvalue):
     codeNumber = self.operCodes[operator]
     q = QuadContainer(codeNumber, leftOperand, rightOperand, tvalue) # left and right operand contain ADDRESSES
-    # q = QuadContainer(self.quadCounter, operator, leftOperand, rightOperand, tvalue) # left and right operand contain ADDRESSES
     self.quads[self.quadCounter] = q
     self.quadCounter += 1
-    # print(q)
 
+  # getWorkingStack
+  # What: returns stack that's being operated on in expressions
+  # Parameters: none (self from class)
+  # When is it used: When solving expressions, returning if it's nested or not
   def getWorkingStack(self):
     workingStack = []
     if '(' not in self.pOper:
@@ -71,6 +83,7 @@ class Quad:
       workingStack = self.pOper[index + 1:]
       return workingStack
   
+  # for starting over with new programs
   def reset(self):
     self.pOper = []
     self.pilaO = []
@@ -79,17 +92,20 @@ class Quad:
     self.quads = {}
     self.quadCounter = 1
 
-    
+  # Method used to print for debugging purposes
   def print(self):
     for item, value in self.quads.items():
       print(item, ': ', value)
       
+################################################
+# QUAD CONTAINER: this contains an object with
+# a quadruple's four corresponding operands. It's
+# instantiated from QUAD class.
 class QuadContainer:
   isAlive = None
 
   def __init__(self, op, left, right, res):
     QuadContainer.isAlive = self
-    # self.__id = ide
     self.__op = op
     self.__left = left
     self.__right = right
@@ -100,42 +116,30 @@ class QuadContainer:
     if QuadContainer.isAlive is None:
       QuadContainer()
     return QuadContainer.isAlive
-
+    
+  # GETTERS: used to access each element in this class
+  # for operator (see operCodes in QUAD)
   def getOp(self):
       return self.__op
 
+  # left operand
   def getLeft(self):
     return self.__left
 
+  # right operand
   def getRight(self):
     return self.__right
 
+  # res operand
   def getRes(self):
     return self.__res
-  
-  def setId(self, val):
-    self.__id = val
 
+  # used to set pending jumps in GOTO type of Quads
   def setJump(self, val):
     if not isinstance(self.getRes(), TBD):
       raise Exception("ERROR! Quad has no pending jump")
     self.__res = val
-
+  
+  # Method used to print for debugging purposes
   def __repr__(self):
     return "{%s %s %s %s}" % (self.getOp(), self.getLeft(), self.getRight(), self.getRes())
-
-class QuadsStack:
-  isAlive = None
-  cont = 0
-
-  def __init__(self):
-    QuadsStack.isAlive = self
-    self.__stack = []
-
-  @classmethod
-  def instantiate(cls):
-    if QuadsStack.isAlive is None:
-      QuadsStack()
-    return QuadsStack.isAlive
-
-  

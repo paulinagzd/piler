@@ -1,0 +1,33 @@
+/* 
+Should print the following exceptions
+
+Exception: ERROR! Void functions cannot return value
+*/
+
+program find;
+var ints a[10] = {21,2,3,4,5,6,7,8,9,10};
+
+var int cont;
+
+func void find(int n) {
+   var int i;
+   i = 0
+   while(i < 10) then {
+     if (a[i] == n) then {
+       print("Found! ")
+       return i
+     };
+    i = i + 1
+  };
+}
+
+int main() {
+  var int n;
+  var int i;
+
+  print("ENTER NUMBER TO SEARCH FOR: ")
+  read(n)
+  i = {find(n)}
+
+  print("In position ", i + 1)
+}

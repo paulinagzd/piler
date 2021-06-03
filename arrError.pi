@@ -1,0 +1,15 @@
+/* 
+Should print the following exceptions
+
+Exception: ERROR! Variable with incorrect dimensions
+*/
+
+program arreglos;
+var int i, j;
+var ints A[11] = {0,0,0,0,0,0,0,0,0,0,0, 12};
+
+int main () {
+  i = 2
+  j = 1
+  i = j * A[j+1] + j
+}

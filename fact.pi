@@ -1,13 +1,14 @@
 program factorial;
 
 func int factorial(int n)
-{
-    if (n > 1) then {
-        return n * {factorial(n - 1)}
-    }   
-    else {
-        return 1
+{   var int i, res;
+    i = 1
+    res = 1
+    while(i <= n) then {
+        res = res * i
+        i = i + 1
     };
+    return res
 }
 
 int main()
@@ -15,8 +16,8 @@ int main()
     var int n;
 
     print("Enter a positive integer: ")
-    /* read(n) */
-    n = 5
+    read(n)
+    /* n = 5 */
 
     print("The factorial is = ", {factorial(n)})
 }
