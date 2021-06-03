@@ -313,7 +313,6 @@ class Scope:
     if varType[-1] == 's':
       newVarType = varType[:3]
     if dimensions == 1 and len(array) != dimensions or len(array) == 1 and dimensionNodes[0].getLim() != len(array[0]):
-      print("HERE", dimensions, len(array))
       raise Exception('ERROR! Variable with incorrect dimensions')
     else:
       if dimensions == 2:
