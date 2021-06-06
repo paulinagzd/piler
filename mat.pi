@@ -8,6 +8,7 @@ class Clase: {
     var int a;
     var flt b;
     var str st;
+    var ints arr[3] = {1,1,1};
   
   met:
     func void claseFunc(int a, flt b) {
@@ -16,6 +17,11 @@ class Clase: {
       b = a + b * 8.17
       Clase.st = "hello world!"
       print("C", c, "B", b, Clase.st)
+      c = 0
+      while (c < 3) then {
+        print(Clase.arr[c])
+        c = c + 1
+      };
     }
 
     func int fact(int j) {

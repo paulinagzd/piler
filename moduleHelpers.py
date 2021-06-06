@@ -11,8 +11,8 @@ symbolTable = SymbolTable.instantiate()
 # Parameters: param counter
 # Returns the updated counter
 # When is it used: When a function is called and it has parameters
-def incrementParamCounter(cont):
-    listLen = len(symbolTable.getCurrentScope().getCurrentFunctionParams())
+def incrementParamCounter(cont, functionCall):
+    listLen = len(functionCall.getCurrentFunctionParams())
     if cont > listLen:
       raise Exception("ERROR! function {} called {} arguments, has {}".format(symbolTable.getCurrentScope().getLatestFuncName(), cont, listLen))
     
@@ -24,11 +24,10 @@ def incrementParamCounter(cont):
 # Parameters: param counter
 # Returns the updated counter
 # When is it used: When a function is called and it has parameters
-def verifyParamMatch(cont):
+def verifyParamMatch(cont, functionCall):
   incoming = quadruple.pilaO.pop()
-
   incoming_type = helpers.getTypeV2(incoming)
-  original = symbolTable.getCurrentScope().getCurrentFunctionParams()[cont]
+  original = functionCall.getCurrentFunctionParams()[cont]
   if incoming_type != original.getVarType():
     raise Exception("ERROR! Parameter mismatch")
   else:
@@ -39,19 +38,18 @@ def verifyParamMatch(cont):
 # What: In charge of saving quads of function calls and their assignment if non void
 # Parameters: if its a class and its name when true
 # When is it used: When a function is called
-def generateGoSub(isClass, className):
+def generateGoSub(isClass, className, functionCall):
   currentScope = symbolTable.getCurrentScope()
-  quadruple.saveQuad('gosub', currentScope.getLatestFuncName(), -1, -1) #initial address
-  currentScope.clearCurrentFunctionParams()
+  quadruple.saveQuad('gosub', functionCall.getScopeName(), -1, -1) #initial address
   currentScope.setMatchingParams(False)
   keyword = ''
   if isClass:
-    funcType = symbolTable.getGlobalScope().getScopeClasses()[className].getScopeFunctions()[currentScope.getLatestFuncName()].getScopeType()
+    funcType = symbolTable.getGlobalScope().getScopeClasses()[className].getScopeFunctions()[functionCall.getScopeName()].getScopeType()
   else:
     if currentScope.getContext() == 'classFunction':
-      funcType = symbolTable.getGlobalScope().getScopeClasses()[symbolTable.getStack()].getScopeFunctions()[currentScope.getLatestFuncName()].getScopeType()
+      funcType = symbolTable.getGlobalScope().getScopeClasses()[symbolTable.getStack()].getScopeFunctions()[functionCall.getScopeName()].getScopeType()
     else:
-      funcType = symbolTable.getGlobalScope().getScopeFunctions()[currentScope.getLatestFuncName()].getScopeType()
+      funcType = symbolTable.getGlobalScope().getScopeFunctions()[functionCall.getScopeName()].getScopeType()
   pointingScope = symbolTable.getGlobalScope()
   # need to point either to global or class memory
   if currentScope.getContext() == 'classFunction':
@@ -65,7 +63,7 @@ def generateGoSub(isClass, className):
     tempAddressPointer = pointingScope.memory.memSpace[keyword][funcType]['temp']
     tempAddress = tempAddressPointer.getInitialAddress() + tempAddressPointer.getOffset()
     quadruple.pilaO.append(tempAddress)
-    quadruple.saveQuad('=', symbolTable.getCurrentScope().getLatestFuncName(), -1, tempAddress) #temp address
-    symbolTable.getCurrentScope().getScopeTemps()[quadHelpers.tempCounter] = (Variable('', funcType, 0, [], tempAddressPointer.getOffset(), False, tempAddressPointer, False))
+    quadruple.saveQuad('=', functionCall.getScopeName(), -1, tempAddress) #temp address
+    functionCall.getScopeTemps()[quadHelpers.tempCounter] = (Variable('', funcType, 0, [], tempAddressPointer.getOffset(), False, tempAddressPointer, False))
     quadHelpers.tempCounter += 1
     tempAddressPointer.setOffset() # TODO, will I need more space? or not

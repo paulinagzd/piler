@@ -1,4 +1,13 @@
 program factr;
+ 
+func int patito(int pp) {
+  return (pp * 3)
+}
+
+func int pelos(int param) {
+  return {patito(param * 2)}
+}
+
 func int factorial(int n) {
   if (n > 1) then {
     return n * {factorial(n - 1)}
@@ -13,6 +22,8 @@ int main()
 
   n = 3 + 7
 
-  print("Factorial of 10", {factorial(n)}) 
+  print("Factorial of 6", {factorial(6)})
+  print({pelos(2)})
+  print({factorial({pelos(1)})} * 2)
 }
 

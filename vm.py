@@ -4,7 +4,8 @@ import helpers
 
 functionsReturning = {}
 currentScope = None
-scopePointer = None
+scopePointer = []
+classPointer = {}
 arrParam = []
 localStack = []
 paramCont = 0
@@ -46,6 +47,14 @@ def verifySize(funcSize, mem):
     else:
       raise Exception("ERROR! Too many variables!")
 
+def setGlobalClass(dirClass):
+  global classPointer
+  if len(dirClass) > 1000:
+    raise Exception("ERROR! Too many variables!")
+  for i, j in dirClass[0].items():
+    classPointer[j.getVirtualAddress()] = j.getValue()
+
+
 # generateERA
 # What: Finds and checks if the called function or class fits in memory and the call stack
 # Parameters: Attributes of the sent function
@@ -61,11 +70,12 @@ def generateERA(funcName, className, scope):
         if funcName in j[className]['global']['funcs']:
           funcSize = j[className]['global']['funcs'][funcName]["size"]
           verifySize(funcSize, mem)
-          scopePointer = {funcName: j[className]['global']['funcs'][funcName]}
+          scopePointer.append({funcName: j[className]['global']['funcs'][funcName]})
+          setGlobalClass(j[className]['global']['vars'])
   else:
     funcSize = dirFunc['global']['funcs'][funcName]["size"]
     verifySize(funcSize, mem)
-    scopePointer = {funcName: dirFunc['global']['funcs'][funcName]}
+    scopePointer.append({funcName: dirFunc['global']['funcs'][funcName]})
   return True
 
 # getClassification
@@ -446,6 +456,7 @@ class VM:
     global arrParam
     global paramCont
     global returnVal
+    global classPointer
     operCode = self.__quadList[self.__nextPointer].getOp()
     while (operCode < 28):
       currentQuad = self.__quadList[self.__nextPointer]
@@ -588,7 +599,10 @@ class VM:
       # TODO PRINT
       elif operCode == 14:
         pointerVal = self.returnIsArray(currentQuad.getRes())
-        self.printLine(self.getPointerType(pointerVal)[pointerVal])
+        pointerValArr = self.getPointerType(pointerVal)
+        if pointerVal not in pointerValArr:
+          pointerValArr = classPointer
+        self.printLine(pointerValArr[pointerVal])
         self.__nextPointer += 1
 
       # TODO READ
@@ -622,11 +636,12 @@ class VM:
         
       elif operCode == 19: # goSub
         global scopePointer
-        funcName = list(scopePointer)[0]
-        scopePointer[funcName]["arrParam"] = arrParam
+        funcName = list(scopePointer[-1])[0]
+        scopePointer[-1][funcName]["arrParam"] = arrParam
         arrParam = []
-        VM.get().pushCallStack(scopePointer, self.__nextPointer + 1)
+        VM.get().pushCallStack(scopePointer[-1], self.__nextPointer + 1)
         calledFunction = VM.get().topCallStack()
+        scopePointer.pop()
         self.__nextPointer = calledFunction[funcName]["start"]
 
       elif operCode == 20: # era
@@ -657,6 +672,8 @@ class VM:
       elif operCode == 23: # verify
         verDir = currentQuad.getLeft()
         verVal = self.getPointerType(verDir)
+        if verDir not in verVal:
+          verVal = classPointer
         valToSend = verVal[verDir]
         upperLim = currentQuad.getRes()
         self.ver(valToSend, upperLim)
@@ -706,6 +723,8 @@ class VM:
         leftVal = self.getPointerType(leftDir)
         resDir = currentQuad.getRes()
         resVal = self.getPointerType(resDir)
+        if leftDir not in leftVal:
+          leftVal = classPointer
         res = self.add(leftVal[leftDir], currentQuad.getRight())
         self.assignValueToDir(res, resVal, resDir)
         self.__nextPointer += 1
@@ -775,7 +794,7 @@ class MainMemory:
     for i, j in globalTemps.items():
       self.__global[j.getVirtualAddress()] = None
     if len(globalTemps) > 1000:
-      raise Exception("ERROR! Too many variables!")   
+      raise Exception("ERROR! Too many variables!")     
 
   def setLocal(self, functionPointer, goHere):
     # sends a dictionary with function name: attributes
