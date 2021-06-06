@@ -27,8 +27,8 @@ int main() {
   var int i;
 
   print("ENTER NUMBER OF ELEMENTS IN ARRAY: ")
-  read(n)
-  selectionSort(n)
+  /* read(n) */
+  selectionSort(10)
 
   i = 0
   print("Sorted array is: ")

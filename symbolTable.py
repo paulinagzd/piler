@@ -179,6 +179,7 @@ class Scope:
     self.__latestReturnValue = None
     self.__currentFunctionParams = []
     self.__matchingParams = False
+    self.__nested = False
 
     # for quadruple number when Scope initiates
     self.starts = starts
@@ -488,10 +489,10 @@ class Scope:
     else:
       quadruple.saveQuad('era', funcName, scope, -1)
     functionParams = pointer.getScopeFunctions()[funcName].__scopeVariables
-    self.setMatchingParams(True)
+    pointer.getScopeFunctions()[funcName].setMatchingParams(True)
     for item, val in functionParams.items():
       if val.getIsParam():
-        self.setCurrentFunctionParams(val)
+        pointer.getScopeFunctions()[funcName].setCurrentFunctionParams(val)
       
     self.__latestFuncName = funcName
     return pointer.getScopeFunctions()[funcName]

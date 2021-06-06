@@ -15,7 +15,7 @@ import condHelpers
 import moduleHelpers
 import helpers
 import sys
-sys.tracebacklimit=0 # depends on the amount of errors to log
+# sys.tracebacklimit=0 # depends on the amount of errors to log
 
 # instantiating singleton classes
 symbolTable = SymbolTable.instantiate()
@@ -30,6 +30,7 @@ aux = False
 cont = 0
 varArr = []
 varDim = []
+paramStack = []
 
 # reserved words
 reserved = {
@@ -465,14 +466,14 @@ def p_variable1(p):
 def p_variable2(p):
   '''
   variable2 : PERIOD ID saw_called_var_from_class
-            | PERIOD ID saw_called_var_from_class saw_id_arr_class OBRACKET is_dim exp CBRACKET variable1 end_dim
+            | PERIOD ID saw_called_var_from_class saw_id_arr_class OBRACKET is_dim_class exp CBRACKET variable1 end_dim
   '''
 
 ################################################
 # FUNCTION (CALLING)
 def p_function_call(p):
   '''
-  function_call : ID saw_id verify_func OPAREN exp verify_param function_call1 CPAREN generate_gosub
+  function_call : ID saw_id verify_func OPAREN exp verify_param_start function_call1 CPAREN generate_gosub
                 | ID saw_id verify_func OPAREN CPAREN generate_gosub
                 | ID saw_id function_call2
   '''
@@ -652,10 +653,9 @@ def p_saw_id_arr_class(p):
   current = symbolTable.getCurrentScope()
   aux = current.getLatestName()
   symbolTable.getCurrentScope().setLatestName(p[-1])
-  global pointer
-  pointer = current.doesClassExist(aux)
-  quadruple.pilaO.append(pointer.getVirtualAddress())
-  quadruple.pilaArr.append(pointer)
+  global classPointer
+  quadruple.pilaO.append(classPointer.getVirtualAddress())
+  quadruple.pilaArr.append(classPointer)
 
 def p_saw_variable(p):
   ''' saw_variable : '''
@@ -847,6 +847,7 @@ def p_count_vars(p):
 def p_verify_func(p):
   ''' verify_func : '''
   global funcPointer
+  global paramStack
   extraParam = ''
   keyword = ''
   if funcPointer != None:
@@ -855,29 +856,40 @@ def p_verify_func(p):
   else:
     keyword = 'global'
     extraParam = ''
-  symbolTable.getCurrentScope().sawCalledFunction(symbolTable.getCurrentScope().getLatestName(), keyword, extraParam)
+  res = symbolTable.getCurrentScope().sawCalledFunction(symbolTable.getCurrentScope().getLatestName(), keyword, extraParam)
+  paramStack.append(res)
+
+def p_verify_param_start(p):
+  ''' verify_param_start : '''
+  global paramStack
+  cont = moduleHelpers.verifyParamMatch(0, paramStack[-1])
 
 def p_verify_param(p):
   ''' verify_param : '''
   global cont
-  cont = moduleHelpers.verifyParamMatch(cont)
+  global paramStack
+  cont = moduleHelpers.verifyParamMatch(cont, paramStack[-1])
 
 
 def p_increment_cont(p):
   ''' increment_cont : '''
   global cont
-  cont = moduleHelpers.incrementParamCounter(cont)
+  global paramStack
+  cont = moduleHelpers.incrementParamCounter(cont, paramStack[-1])
 
 def p_generate_gosub(p):
   ''' generate_gosub : '''
-  moduleHelpers.generateGoSub(False, '')
   global cont
+  global paramStack
+  moduleHelpers.generateGoSub(False, '', paramStack[-1])
+  paramStack.pop()
   cont = 0
 
 def p_generate_gosub_obj(p):
   ''' generate_gosub_obj : '''
   global funcPointer
-  moduleHelpers.generateGoSub(True, funcPointer)
+  global paramStack
+  moduleHelpers.generateGoSub(True, funcPointer, paramStack[-1])
   global cont
   cont = 0
 
@@ -908,6 +920,14 @@ def p_is_second_dim(p):
   for i in quadruple.pilaDim:
     if i["id"] == quadruple.pilaArr[-1]:
       i["dim"] = 2
+
+def p_is_dim_class(p):
+  ''' is_dim_class : '''
+  global classPointer
+  if classPointer.getDimensions() > 0:
+    dim = 1
+    quadruple.pilaDim.append({"id": classPointer, "dim": dim})
+    quadruple.pOper.append('$') #fake bottom 
 
 def p_end_dim(p):
   ''' end_dim : '''
